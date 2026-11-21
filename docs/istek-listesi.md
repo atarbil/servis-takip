@@ -4,7 +4,26 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. Dış servis takibi (21.11.2026)
+İki tür dış iş takip edilecek: (a) **tamire ürün gönderdiğimiz yerler** (üretici/yetkili servis, tamirci), (b) **hizmet ve malzeme aldığımız
+dış servisler** (taşeron montaj, kablolama, ücretli destek vb.).
+- **Dış servis firmaları:** cari kartında "Dış servis" işareti; bu firmalar ayrı listede, cari ekstresi ve bakiyesiyle.
+- **Tamire gönderme kaydı (sevk):**
+  - Ne gönderildi: müşterinin cihazı (envanterden seçilebilir) veya kendi stok ürünümüz; marka/model, seri no, aksesuarlar, arıza açıklaması, fotoğraf.
+  - İlgili iş ve müşteri (varsa), gönderilen firma, gönderim tarihi, gönderim şekli (elden / kargo + takip no), beklenen dönüş tarihi.
+  - Durum: Gönderildi → Firmada → Tamir edildi / Değişim yapıldı / Tamir edilemedi → Teslim alındı → Müşteriye teslim edildi.
+    Her adım tarih ve not ile geçmişe yazılır; değişimde yeni seri no girilir.
+  - Ücret: firmanın aldığı servis ücreti + malzeme bedeli → dış servis carisine borç (alacak) olarak işlenir.
+  - Sevk formu / teslim tutanağı yazdırma (firma logolu).
+- **Hizmet / malzeme alımı:** dış servisten alınan hizmet (montaj, kablolama vb.) ve malzeme tutarı bir işe bağlanarak kaydedilir; firmaya borç yazılır.
+- **İşe maliyet olarak yansıma:** işe bağlı dış servis ücretleri iş maliyetine eklenir, fiyatlandırma ekranında ve kârlılık raporunda görünür.
+  Fişe "dış servis bedeli" satırı olarak eklenebilir.
+- **Takip ekranı:** "Dışarıda olanlar" listesi; kaç gündür dışarıda, beklenen dönüşü geçenler kırmızı. Panelde kart, menüde sayaç.
+  Telegram akşam özetinde "X cihaz dış serviste, Y tanesi gecikmede".
+- **Müşteri ve envanter:** cari kartında ve envanterdeki cihazda "dış servis geçmişi" sekmesi.
+- Derlemede karar: (1) Dış servis ücreti girilince otomatik cari borcu mu oluşsun, yoksa firma faturası gelince alış faturası olarak mı girilsin?
+  (Öneri: kayıtta ücret girilir, "Faturalandır" ile tek tıkla alış faturasına dönüşür.) (2) Kendi stok ürünümüz tamire giderken stoktan
+  geçici olarak düşsün mü? (Öneri: hayır; "dış serviste" diye işaretlenir, stok sayısı değişmez.)
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
