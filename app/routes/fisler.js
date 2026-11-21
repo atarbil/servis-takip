@@ -28,7 +28,8 @@ module.exports = (r, { db, web, Y }) => {
   async function fisGetir(id) {
     const f = (await db.query(`
       SELECT f.*, f.ara_toplam - f.maliyet_toplam AS kar, c.unvan, c.adres AS cari_adres, c.telefon AS cari_telefon,
-             c.vergi_dairesi, c.vergi_no, i.baslik AS is_baslik
+             c.vergi_dairesi, c.vergi_no, c.il AS cari_il, c.ilce AS cari_ilce, c.kod AS cari_kod, i.baslik AS is_baslik,
+             (SELECT bakiye FROM v_cari_bakiye b WHERE b.id = f.cari_id) AS cari_bakiye
       FROM satis_fisleri f JOIN cariler c ON c.id = f.cari_id LEFT JOIN isler i ON i.id = f.is_id WHERE f.id = $1`, [id])).rows[0];
     if (!f) throw web.hata(404, 'Fiş bulunamadı.');
     f.satirlar = (await db.query(`

@@ -87,8 +87,64 @@ function girisZemini() {
     const sol = (i * 53) % 100; const boy = 3 + (i % 4) * 2; const sure = 12 + (i % 7) * 3; const gecikme = -(i * 1.7);
     return `<span class="giris-parcacik" style="left:${sol}%;width:${boy}px;height:${boy}px;animation-duration:${sure}s;animation-delay:${gecikme}s"></span>`;
   }).join('');
-  return html`<div class="giris-izgara"></div>${ham(parcacik)}
+  return html`<div class="giris-izgara"></div>${ham(parcacik)}${ham(girisSahnesi())}
     <div class="giris-alt">© ${new Date().getFullYear()} ${ctx.firmaAdi && ctx.firmaAdi !== 'Firma Adı' ? ctx.firmaAdi + ' · ' : ''}Servis Takip</div>`;
+}
+
+// Giriş sahnesi: merdivendeki usta duvara kamera takar, ağ kablosu switch'e döşenir, bağlantı kurulunca veri akar.
+function girisSahnesi() {
+  const basamak = Array.from({ length: 7 }, (_, i) => {
+    const t = (i + 0.5) / 7; const y = 600 - t * 330;
+    return `<line x1="${150 + t * 45}" y1="${y}" x2="${205 + t * 40}" y2="${y}"/>`;
+  }).join('');
+  const port = Array.from({ length: 6 }, (_, i) => `<rect x="${392 + i * 15}" y="566" width="10" height="8" rx="1.5" class="gs-port"/>
+    <circle cx="${397 + i * 15}" cy="562" r="1.8" class="gs-port-led" style="animation-delay:${(i * 0.37) % 1.3}s"/>`).join('');
+  return `<svg class="giris-sahne" viewBox="0 0 640 640" aria-hidden="true" preserveAspectRatio="xMinYMax meet">
+  <defs>
+    <linearGradient id="gs-isik" x1="0" x2="1"><stop offset="0" stop-color="#bae6fd" stop-opacity=".55"/><stop offset="1" stop-color="#bae6fd" stop-opacity="0"/></linearGradient>
+    <filter id="gs-parla"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <!-- duvar -->
+  <g class="gs-duvar"><rect x="30" y="60" width="270" height="540" rx="6"/>
+    ${Array.from({ length: 12 }, (_, i) => `<line x1="30" x2="300" y1="${105 + i * 45}" y2="${105 + i * 45}"/>`).join('')}</g>
+  <line x1="0" y1="600" x2="640" y2="600" class="gs-zemin"/>
+  <!-- kablo: kameradan duvar boyunca switch'e, oradan giriş kutusuna -->
+  <path class="gs-kablo gs-kablo1" pathLength="1" d="M252 148 C 268 160 280 172 280 200 L 280 560 Q 280 578 300 578 L 384 578"/>
+  <path class="gs-kablo gs-kablo2" pathLength="1" d="M496 572 C 575 572 540 470 575 392"/>
+  <path class="gs-veri gs-veri1" d="M252 148 C 268 160 280 172 280 200 L 280 560 Q 280 578 300 578 L 384 578"/>
+  <path class="gs-veri gs-veri2" d="M496 572 C 575 572 540 470 575 392"/>
+  <!-- kamera -->
+  <polygon class="gs-isik" points="330,131 640,40 640,250"/>
+  <g class="gs-kamera">
+    <rect x="236" y="112" width="16" height="40" rx="3" class="gs-ayak"/>
+    <rect x="246" y="116" width="78" height="30" rx="9" class="gs-govde"/>
+    <rect x="244" y="110" width="88" height="9" rx="4" class="gs-siper"/>
+    <circle cx="326" cy="131" r="10" class="gs-mercek"/><circle cx="328" cy="129" r="3" fill="#7dd3fc"/>
+    <circle cx="262" cy="131" r="3.5" class="gs-led"/>
+  </g>
+  <!-- merdiven -->
+  <g class="gs-merdiven"><line x1="150" y1="600" x2="195" y2="270"/><line x1="205" y1="600" x2="245" y2="270"/>${basamak}</g>
+  <!-- usta -->
+  <g class="gs-usta">
+    <rect x="196" y="300" width="13" height="70" rx="5" class="gs-tulum" transform="rotate(8 202 300)"/>
+    <rect x="212" y="300" width="13" height="62" rx="5" class="gs-tulum" transform="rotate(-4 218 300)"/>
+    <rect x="186" y="366" width="24" height="9" rx="4" class="gs-ayakkabi"/><rect x="208" y="357" width="24" height="9" rx="4" class="gs-ayakkabi"/>
+    <rect x="194" y="226" width="40" height="82" rx="12" class="gs-tulum"/>
+    <rect x="196" y="250" width="36" height="7" class="gs-serit"/><rect x="196" y="270" width="36" height="7" class="gs-serit"/>
+    <rect x="186" y="282" width="16" height="14" rx="3" class="gs-canta"/>
+    <line x1="200" y1="240" x2="190" y2="292" class="gs-kol-arka"/>
+    <circle cx="216" cy="206" r="16" class="gs-ten"/>
+    <path d="M198 204 a18 18 0 0 1 36 0 z" class="gs-kask"/><rect x="196" y="201" width="42" height="5" rx="2.5" class="gs-kask"/>
+    <g class="gs-kol"><line x1="226" y1="236" x2="242" y2="190" class="gs-kol-c"/><line x1="242" y1="190" x2="244" y2="158" class="gs-kol-c"/>
+      <circle cx="244" cy="156" r="6" class="gs-ten"/><line x1="244" y1="152" x2="246" y2="140" class="gs-tornavida"/></g>
+    <g class="gs-kivilcim" filter="url(#gs-parla)"><circle cx="250" cy="140" r="2.5"/><circle cx="256" cy="134" r="1.8"/><circle cx="244" cy="133" r="1.5"/></g>
+  </g>
+  <!-- alet çantası -->
+  <rect x="96" y="578" width="44" height="22" rx="4" class="gs-alet"/><path d="M108 578 v-7 h20 v7" class="gs-alet-sap"/>
+  <!-- switch / NVR -->
+  <g class="gs-switch"><rect x="384" y="554" width="112" height="36" rx="5" class="gs-kasa"/>${port}
+    <text x="440" y="586" text-anchor="middle" class="gs-etiket">PoE SWITCH</text></g>
+</svg>`;
 }
 
 function girisEkrani() {

@@ -1,5 +1,6 @@
 // Alış faturası girişi
 import { api } from '../api.js';
+import { izgaraBagla, KISAYOL_YARDIM } from '../izgara.js';
 import { html, $, $$, para, paraSade, dovizPara, durumRozet, bildir, onayla, sayiCoz, sayiGiris, bugunStr, zaman, esc } from '../ui.js';
 import { cariSecici, cariYeniYakala, urunSecici, urunYeniYakala, finansPenceresi, kurAl, kurDegeri } from '../bilesen.js';
 
@@ -34,7 +35,21 @@ export default async function (el, [id], ctx) {
     return t;
   }, { ara: 0, kdv: 0, dara: 0, dkdv: 0 });
 
-  function ciz() {
+  // Excel gibi klavye ile gezinme (yeniden çizimde odak korunur)
+  let izgara = null;
+  function ciz() { const o = izgara?.odakNe(); cizIc(); if (o) izgara.odakla(o); }
+  const bosSatir = () => ({ urun_id: null, ad: '', miktar: 1, birim_fiyat: 0, kdv_orani: 20 });
+  izgara = izgaraBagla(el, {
+    yeniSatir: () => { satirlar.push(bosSatir()); ciz(); },
+    satirSil: (i) => { satirlar.splice(i, 1); ciz(); },
+    satirEkle: (i) => { satirlar.splice(i, 0, bosSatir()); ciz(); },
+    kisayollar: {
+      F4: () => $('[data-stok-listesi]', el)?.click(),
+      'Ctrl+B': () => $('[data-barkod]', el)?.click(),
+      'Ctrl+S': () => $('[data-a=kaydet]', el)?.click(),
+    },
+  });
+  function cizIc() {
     const taslak = a.durum === 'taslak';
     el.innerHTML = String(html`
       <div class="detay-ust"><div style="flex:1;min-width:240px"><a href="#/alislar" class="btn-metin">← Alış faturaları</a>
@@ -66,7 +81,7 @@ export default async function (el, [id], ctx) {
             <td class="sayi s-tutar" style="vertical-align:middle">${paraSade(hesap(s).net)}</td><td><button class="btn-ikon" data-sil="${i}">✕</button></td></tr>`
           : html`<tr><td>${s.ad}${s.kod ? html`<div class="alt-satir">${s.kod}</div>` : ''}</td><td class="sayi">${sayiGiris(s.miktar)} ${s.birim}</td><td class="sayi">${s.doviz_fiyat != null && a.doviz !== 'TRY' ? html`${dovizPara(s.doviz_fiyat, a.doviz)}<small class="doviz-not">${para(s.birim_fiyat)}</small>` : paraSade(s.birim_fiyat)}</td><td class="sayi">${s.kdv_orani}</td><td class="sayi">${paraSade(s.tutar)}</td></tr>`)}
           ${!satirlar.length ? html`<tr><td colspan="6" class="bos-durum">Ürün ekleyin</td></tr>` : ''}</tbody></table></div>
-        ${taslak ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Ürün satırı</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button><button class="btn ikincil kucuk" data-barkod>📷 Barkodla ekle</button></div>` : ''}</div>
+        ${taslak ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Ürün satırı</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button><button class="btn ikincil kucuk" data-barkod>📷 Barkodla ekle</button></div><div class="fatura-ipucu">⌨️ ${KISAYOL_YARDIM}</div>` : ''}</div>
       <div class="kart"><div class="kart-govde"><div class="toplam-kutu" id="toplam"></div></div></div>`);
     toplamCiz();
     if (!taslak) return;

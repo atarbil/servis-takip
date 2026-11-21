@@ -4,27 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Satış fişi: profesyonel fatura ekranı + Excel gibi klavye ile gezinme (21.11.2026)
-- **Görünüm:** muhasebe programlarındaki fatura ekranı gibi. Üstte iki blok olacak: solda cari (unvan, adres, VD/VN, güncel bakiye),
-  sağda belge (fiş no, tarih, vade, durum). Ortada sabit başlıklı, ince çizgili, sıkı satırlı bir kalem tablosu olacak.
-  Altta KDV oranlarına göre döküm (%20 / %10 / %1), ara toplam, iskonto, KDV ve genel toplam bulunacak; ayrıca "yazıyla" tutar yazacak.
-  Toplam alanı ekranın altında sabit duracak.
-- **Excel gibi kullanım:**
-  - Hücreler arasında **yön tuşlarıyla** gezilecek (↑ ↓ ← →).
-  - **Enter** ve **Tab** bir sonraki hücreye geçirecek. Son hücrede basılınca yeni satır açılacak.
-  - Hücreye girince içerik seçili gelecek; yazmaya başlayınca eski değerin yerine yazılacak. **F2** ile düzenlemeye geçilecek, **Esc** ile vazgeçilecek.
-  - Ürün hücresinde öneri listesi açılacak; liste ↑ ↓ ile gezilecek, Enter ile seçilecek. Seçince imleç miktara geçecek.
-  - Kısayollar:
-    - **Ctrl+Delete:** satır sil
-    - **Ctrl+Insert:** araya satır ekle
-    - **F4:** stok listesi
-    - **Ctrl+B:** barkod
-    - **Ctrl+S:** kaydet
-    - **F9:** kurları güncelle
-  - Yön tuşları satır numarası, aktif satır vurgusu ve aktif hücre çerçevesiyle görünür olacak.
-- Satır sütunları: Sıra · Kod · Ürün / açıklama · Miktar · Birim · Birim fiyat · İsk.% · KDV% · Tutar (· Maliyet / kâr, sadece yöneticiye, gizlenebilir).
-- Telefonda mevcut kart görünümü kalacak; klavye düzeni masaüstü içindir.
-- Derlemede karar: aynı ekran **alış faturası** ve **teklif / proforma** için de kullanılsın mı? (Öneri: evet, üçü aynı düzende.)
+_Şu an bekleyen istek yok._
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -33,6 +13,17 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 21.11.2026 — 4. derleme
+- **Fatura tarzı satış fişi:** üstte cari bloğu (unvan, adres, VD/VN, telefon, güncel bakiye) ve belge bloğu (fiş no, tarih, vade, iş, açıklama).
+  Ortada sıra no ve kod sütunlu, ince çizgili kalem tablosu. Altta brüt toplam, iskonto, ara toplam, KDV ve genel toplam; KDV oranı dökümü,
+  yazıyla tutar, maliyet/kâr (gizlenebilir). Masaüstünde toplamlar ekranın altında sabit duruyor. Telefonda etiketli kart görünümü.
+- **Excel gibi klavye:** ↑ ↓ ← → ile hücreler arası gezinme, Enter/Tab sonraki hücre (son hücrede yeni satır), F2 düzenle, Esc geri al,
+  Ctrl+Insert araya satır, Ctrl+Delete satır sil, F4 stok listesi, Ctrl+B barkod, Ctrl+S kaydet, F9 kurları güncelle.
+  Ürün seçilince imleç miktara geçiyor. Aynı klavye düzeni alış faturası ve teklif/proforma kalemlerinde de var.
+- **Ürün önerisi düzeltmesi:** hızlı yazıp hemen Enter'a basınca, eski listedeki ilk ürün yerine güncel arama sonucu seçiliyor.
+- **Giriş ekranı sahnesi:** merdivendeki usta duvara kamera takıyor (tornavida ve kıvılcım), ağ kablosu duvardan PoE switch'e döşeniyor,
+  kamera ışığı yeşile dönüp taramaya başlıyor, kablodan veri akıyor ve ikinci kablo giriş kutusuna bağlanıyor.
 
 ### 21.11.2026 — 3. derleme
 - **Müşteri envanteri:** menüde "Envanter" ve cari kartında "Envanter" sekmesi. Tür, marka, model, seri no, konum, IP, kurulum tarihi,

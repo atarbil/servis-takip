@@ -1,5 +1,6 @@
 // Teklif / proforma düzenleyici
 import { api } from '../api.js';
+import { izgaraBagla, KISAYOL_YARDIM } from '../izgara.js';
 import { html, $, $$, para, paraSade, dovizPara, pencere, bildir, onayla, sayiCoz, sayiGiris, bugunStr, zaman, esc } from '../ui.js';
 import { cariSecici, urunSecici, kurAl, kurDegeri, urunFiyati } from '../bilesen.js';
 import { teklifYazdir, proformaYazdir } from '../belgeler.js';
@@ -37,7 +38,21 @@ export default async function (el, [id], ctx) {
   const toplam = () => { let ara = 0; let kdv = 0; for (const s of satirlar) { const h = hesap(s); ara += h.net; kdv += h.kdv; } return { ara: r2(ara), kdv: r2(kdv), genel: r2(ara + kdv) }; };
   const goster = (s) => (kdvDahil ? r2(Number(s.birim_fiyat) * (1 + Number(s.kdv_orani) / 100)) : Number(s.birim_fiyat));
 
-  function ciz() {
+  // Excel gibi klavye ile gezinme (yeniden çizimde odak korunur)
+  let izgara = null;
+  function ciz() { const o = izgara?.odakNe(); cizIc(); if (o) izgara.odakla(o); }
+  const bosSatir = () => ({ urun_id: null, aciklama: '', miktar: 1, birim: 'adet', birim_fiyat: 0, iskonto_orani: 0, kdv_orani: 20 });
+  izgara = izgaraBagla(el, {
+    yeniSatir: () => { satirlar.push(bosSatir()); degisti = true; ciz(); },
+    satirSil: (i) => { satirlar.splice(i, 1); degisti = true; ciz(); },
+    satirEkle: (i) => { satirlar.splice(i, 0, bosSatir()); degisti = true; ciz(); },
+    kisayollar: {
+      F4: () => $('[data-stok-listesi]', el)?.click(),
+      'Ctrl+B': () => $('[data-barkod]', el)?.click(),
+      'Ctrl+S': () => $('[data-a=kaydet]', el)?.click(),
+    },
+  });
+  function cizIc() {
     const ac = !kilitli();
     el.innerHTML = String(html`
       <div class="detay-ust"><div style="flex:1;min-width:240px"><a href="#/teklifler" class="btn-metin">← Teklif / Proforma</a>
@@ -99,7 +114,7 @@ export default async function (el, [id], ctx) {
           ${!satirlar.length ? html`<tr><td colspan="8" class="bos-durum">Kalem ekleyin</td></tr>` : ''}</tbody></table></div>
         ${ac ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Kalem</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button>
           <button class="btn ikincil kucuk" data-barkod>📷 Barkodla ürün</button>
-          <span class="soluk" style="font-size:.84rem">Listeden ürün seçebilir veya stokta olmayan bir kalemi serbest yazabilirsiniz.</span></div>` : ''}</div>
+          <span class="soluk" style="font-size:.84rem">Listeden ürün seçebilir veya stokta olmayan bir kalemi serbest yazabilirsiniz.</span></div><div class="fatura-ipucu">⌨️ ${KISAYOL_YARDIM}</div>` : ''}</div>
       <div class="kart"><div class="kart-govde"><div class="toplam-kutu" id="toplam"></div></div></div>
       ${t.id && t.durum !== 'iptal' && !t.fis_id ? html`<div style="text-align:right"><button class="btn tehlike-cizgi" data-a="iptal">Belgeyi iptal et</button></div>` : ''}`);
     toplamCiz();

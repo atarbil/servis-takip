@@ -163,6 +163,7 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   input.after(kutu);
   input.setAttribute('autocomplete', 'off');
   let ogeler = []; let aktif = -1; let zmn; let sira = 0;
+  let yukleniyor = false; let enterBekliyor = false; // yazıp hemen Enter'a basılırsa güncel sonuç gelince seçilir
   const ciz = () => {
     kutu.innerHTML = String(html`${ogeler.map((o, i) => html`<div class="secici-oge ${i === aktif ? 'aktif' : ''}" data-i="${i}">${goster(o)}</div>`)}
       ${!ogeler.length ? html`<div class="secici-bos">${bosMetin}</div>` : ''}${ekstra ? ekstra(input.value) : ''}`);
@@ -170,12 +171,20 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   };
   const yukle = async () => {
     const benim = ++sira;
-    try { const s = await getir(input.value.trim()); if (benim !== sira) return; ogeler = s; aktif = s.length ? 0 : -1; ciz(); } catch { /* */ }
+    try {
+      const s = await getir(input.value.trim()); if (benim !== sira) return;
+      ogeler = s; aktif = s.length ? 0 : -1; yukleniyor = false; ciz();
+      if (enterBekliyor) { enterBekliyor = false; if (aktif >= 0) secildi(ogeler[aktif]); }
+    } catch { yukleniyor = false; enterBekliyor = false; }
   };
-  input.addEventListener('input', () => { clearTimeout(zmn); zmn = setTimeout(yukle, 180); });
-  input.addEventListener('focus', yukle);
+  // yazildi: odaklandıktan sonra kullanıcı yazdı mı? Yazmadan ↑↓/Enter listeyi değil tabloyu gezdirir (Excel gibi kalem tablosu).
+  let yazildi = false;
+  input.addEventListener('input', () => { yazildi = true; yukleniyor = true; enterBekliyor = false; clearTimeout(zmn); zmn = setTimeout(yukle, 180); });
+  input.addEventListener('focus', () => { yazildi = false; yukle(); });
   input.addEventListener('keydown', (e) => {
-    if (kutu.hidden) return;
+    if (e.key === 'ArrowDown' && e.altKey) { yazildi = true; if (kutu.hidden) yukle(); e.preventDefault(); return; }
+    if (e.key === 'Enter' && yazildi && yukleniyor) { e.preventDefault(); enterBekliyor = true; return; }
+    if (kutu.hidden || (!yazildi && input.closest('tr[data-i]'))) return;
     if (e.key === 'ArrowDown') { aktif = Math.min(aktif + 1, ogeler.length - 1); ciz(); e.preventDefault(); }
     else if (e.key === 'ArrowUp') { aktif = Math.max(aktif - 1, 0); ciz(); e.preventDefault(); }
     else if (e.key === 'Enter' && aktif >= 0) { e.preventDefault(); secildi(ogeler[aktif]); }
