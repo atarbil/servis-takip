@@ -25,6 +25,7 @@ export default async function (el, [id], ctx) {
       ${c.tip !== 'musteri' ? html`<button class="btn birincil" data-a="odeme">Ödeme yap</button>` : ''}
       ${c.tip !== 'tedarikci' ? html`<button class="btn ikincil" data-a="is">+ Yeni iş</button><button class="btn ikincil" data-a="fis">+ Satış fişi</button>` : ''}
       ${c.tip !== 'musteri' ? html`<a class="btn ikincil" href="#/alis/yeni?cari=${c.id}">+ Alış faturası</a>` : ''}
+      ${c.tip !== 'tedarikci' ? html`<button class="btn ikincil" data-a="teklif">+ Teklif</button><button class="btn ikincil" data-a="proforma">+ Proforma</button>` : ''}
       <button class="btn ikincil" data-a="devir">Devir / düzeltme</button>
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
     </div>
@@ -107,6 +108,7 @@ export default async function (el, [id], ctx) {
       else if (a === 'duzenle') { if (await cariFormu(c)) ctx.yenile(); }
       else if (a === 'is') { const r = await yeniIsPenceresi(ctx, { cari: c, havuza: true }); if (r) ctx.git(`is/${r.id}`); }
       else if (a === 'fis') { const r = await api.post('/fisler', { cari_id: c.id }); ctx.git(`fis/${r.id}`); }
+      else if (a === 'teklif' || a === 'proforma') { const { yeniBelge } = await import('./teklifler.js'); yeniBelge(ctx, a, c); }
       else if (a === 'devir') {
         const r = await pencere({
           baslik: 'Devir / bakiye düzeltme',

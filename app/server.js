@@ -40,7 +40,7 @@ const telegram = process.env.TELEGRAM_TOKEN
   : null;
 
 const ctx = { db, AYAR, web, oturum, telegram, G: girisGerekli, Y: yonetici };
-for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram']) {
+for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram', 'teklifler']) {
   require(`./routes/${modul}`)(r, ctx);
 }
 
@@ -86,6 +86,14 @@ async function isle(req, res) {
     for (const f of bulunan.y.isleyiciler) sonuc = await f(req, res);
     if (!res.headersSent) web.json(res, 200, sonuc === undefined ? { tamam: true } : sonuc);
     return;
+  }
+
+  // Firma logosu herkese açık (giriş ekranında görünür)
+  if (yol === '/logo') {
+    const l = (await db.query("SELECT deger FROM ayarlar WHERE anahtar = 'firma_logo'")).rows[0]?.deger;
+    const dosya = l ? web.guvenliYol(AYAR.dosyaKlasor, l) : null;
+    if (!dosya || !fs.existsSync(dosya)) { res.writeHead(404); return res.end(); }
+    return web.dosyaGonder(res, dosya, 'public, max-age=300');
   }
 
   // Yüklenen dosyalar (imza, fotoğraf) sadece giriş yapmış kullanıcılara

@@ -4,50 +4,25 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Panel yenileme (21.11.2026)
-- Sağ üst köşede **Dolar ve Euro kuru** (TCMB günlük kur).
-- Paneldeki "Telefonla gelen işi yaz" kutusu kalkacak; yerine sağ üstte, her sayfada görünen **"+ İş ekle"** düğmesi.
-- Sol üst köşede **firma logosu** (Ayarlar'dan yüklenecek; giriş ekranında ve tüm çıktılarda da kullanılacak).
-- Panel çok boş görünüyor: ekranın tamamı kullanılsın (havuzda bekleyenler, bugün/yarın işleri, sahadaki ekipler, son tahsilatlar vb.).
-
-### 2. Proforma fatura şablonu (21.11.2026)
-Mevcut kullanılan formata göre (örnek: Belge_32.pdf):
-- Sol üstte logo; altında firma ünvanı (kalın), adres, e-posta, GSM, web, vergi dairesi ve vergi no.
-- Ortada başlık **PROFORMA FATURA**.
-- Solda müşteri ünvanı (kalın) ve altında VN; sağda **Tarih**.
-- Tablo: sıra no, Açıklama (kalın), Miktar ("5 ad"), Fiyat, KDV (%), Tutar (KDV Hariç).
-- Sağ altta Net / KDV (%20) / **Toplam**; altında **kaşe + imza görseli**.
-
-### 3. Teklif şablonu (21.11.2026)
-Mevcut kullanılan formata göre (örnek: TEKLIF.pdf):
-- Üstte geniş başlık görseli: solda logo (Atar Bilişim + CODES), sağda marka logoları şeridi ve iletişim bilgileri (adres, e-posta, web, iki GSM).
-- Ortada başlık **TEKLİF FORMU**.
-- Müşteri ünvanı (kalın, çok satırlı olabilir), adresi, VD/VN; sağda **Tarih**.
-- Giriş cümlesi: "Yapmış olduğumuz görüşmeler sonrasında hazırlamış olduğumuz fiyat teklifimizi değerlendirmenize sunarız."
-- Proformayla aynı tablo ve Net / KDV / Toplam.
-- Kapanış: "Teklifimiz ile ilgili sorularınızı cevaplandırmaya hazır olduğumuzu belirtir, çalışmalarınızda başarılar dileriz." + "Saygılarımızla,"
-- Sağ altta kaşe + imza görseli.
-- Not: Teklif, kabul edilince satış fişine / işe dönüştürülebilmeli (değerlendirilecek).
-
-### 4. Tahsilat makbuzu şablonu (21.11.2026)
-- Örnek format gönderilmedi; proforma/teklif ile aynı görsel dilde hazırlanacak (logo, firma bilgileri, kaşe + imza).
-- Kasa/banka tahsilat kaydından tek tıkla yazdırılabilmeli.
-
-### 5. "Fiyatlandırma bekleyenler" menüsü (21.11.2026)
-- Tamamlanmış işlerin fiyatlandırmasını yönetici yapıyor.
-- Henüz fiyatlandırılmamış (fişi kesilmemiş veya taslakta kalmış) işlerin ayrı bir menüde listelenmesi; menüde bekleyen sayısı rozet olarak görünsün.
-- Listeden tıklayınca doğrudan fiş ekranı açılsın.
-
-### Görseller (21.11.2026)
-- `docs/gorseller/atar-logo.png`: Atar Bilişim logosu (e-posta imzasından kırpıldı, ~300 px). Sol üst köşe, giriş ekranı ve çıktılarda kullanılacak.
-- `docs/gorseller/teklif-baslik-seridi.jpg`: Teklif formunun üst şeridi (logo + CODES + marka logoları + iletişim bilgileri, 1000×222).
-- Not: Logo düşük çözünürlüklü; baskıda daha net olması için varsa logonun orijinal dosyası (PNG/SVG/PDF) istenecek.
-- **Kaşe + imza görseli** alındı (21.11.2026), arka planı saydamlaştırıldı. Güvenlik nedeniyle GitHub'a konmadı; özellik hazır olunca Ayarlar'dan sunucuya yüklenecek (dosya sadece sunucuda, giriş yapmış yöneticiye açık).
-- Kaşe/imza **isteğe bağlı**: teklif ve proforma yazdırılırken "Kaşe ve imza ekle" seçeneği ile her belgede ayrı ayrı açılıp kapatılabilecek.
-
-### Ortak gereksinimler (2, 3, 4 için)
-- Ayarlar'a **logo** ve **kaşe/imza görseli** yükleme alanı; teklif için ayrıca **başlık şeridi görseli** (marka logoları).
-- Firma bilgilerine web adresi ve ikinci GSM alanı.
+_(şu an yok)_
 
 ## İsteğe bağlı fikirler
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
+- Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
+
+## Tamamlananlar
+
+### 21.11.2026 — 1. derleme
+- **Panel yenileme:** sağ üstte TCMB Dolar/Euro kuru (30 dk'da bir güncellenir); "+ İş ekle" düğmesi her sayfada;
+  sol üstte firma logosu (giriş ekranında ve çıktılarda da); panel ekranın tamamını kullanıyor
+  (bugün/yarın, sahadakiler, havuz, fiyatlandırma bekleyenler, kasa, son tahsilatlar, vadesi geçenler).
+- **Fiyatlandırma menüsü:** tamamlanmış ama fişi onaylanmamış işler; menüde bekleyen sayısı rozeti; tek tıkla fiş.
+- **Teklif ve proforma fatura:** örnek formatlara birebir şablonlar (TK-/PF- numaralı), isteğe bağlı kaşe/imza,
+  teklif ↔ proforma kopyalama, kabul edilince satış fişine dönüştürme. Stoğu ve cariyi etkilemez.
+- **Tahsilat makbuzu:** tutar yazıyla, ödeme şekli, tahsilat sonrası bakiye, isteğe bağlı kaşe/imza, tek A4'e 2 nüsha seçeneği.
+  Tahsilat girerken otomatik, kasa listesinden sonradan yazdırılabilir.
+- **Ayarlar → Firma bilgileri:** GSM, web, vergi dairesi/no ayrı alanlar; teklif giriş/kapanış metinleri;
+  logo, kaşe/imza ve teklif başlık şeridi yükleme.
+
+### 21.11.2026
+- Telegram botu ile havuza iş ekleme.

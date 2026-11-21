@@ -1,6 +1,6 @@
 // Yazdırılabilir belgeler (tarayıcıdan "PDF olarak kaydet" de yapılabilir)
 import { html, para, paraSade, miktar, tarih, zaman, yazdir } from './ui.js';
-import { belgeUst } from './bilesen.js';
+import { belgeUst, firmaBlok } from './bilesen.js';
 
 export function teslimFormuYazdir(ctx, is) {
   const t = is.teslim;
@@ -72,4 +72,111 @@ export function tabloYazdir(ctx, baslik, altBaslik, basliklar, satirlar, toplam)
     <table><thead><tr>${basliklar.map((b) => html`<th class="${b.sayi ? 'sayi' : ''}">${b.ad}</th>`)}</tr></thead>
     <tbody>${satirlar.map((s) => html`<tr>${s.map((v, i) => html`<td class="${basliklar[i].sayi ? 'sayi' : ''}">${v}</td>`)}</tr>`)}</tbody>
     ${toplam ? html`<tfoot><tr>${toplam.map((v, i) => html`<td class="${basliklar[i].sayi ? 'sayi' : ''}">${v}</td>`)}</tr></tfoot>` : ''}</table></div>`);
+}
+
+// =====================================================================
+// Teklif / proforma / tahsilat makbuzu (Atar Bilişim örnek formatları)
+// =====================================================================
+
+const BIRIM_KISA = { adet: 'ad', metre: 'm', paket: 'pk', kutu: 'kt', takım: 'tk', saat: 'sa' };
+const miktarBirim = (m, b) => `${miktar(m)} ${BIRIM_KISA[b] || b || ''}`.trim();
+const kase = (ctx) => (ctx.ayarlar.kase_imza ? html`<img class="belge-kase" src="/dosya/${ctx.ayarlar.kase_imza}" alt="Kaşe ve imza">` : '');
+
+// Sayıyı Türkçe yazıya çevirir: 1250.5 -> "Bin İki Yüz Elli Türk Lirası Elli Kuruş"
+export function tutarYaziyla(tutar) {
+  const BIR = ['', 'Bir', 'İki', 'Üç', 'Dört', 'Beş', 'Altı', 'Yedi', 'Sekiz', 'Dokuz'];
+  const ON = ['', 'On', 'Yirmi', 'Otuz', 'Kırk', 'Elli', 'Altmış', 'Yetmiş', 'Seksen', 'Doksan'];
+  const BASAMAK = ['', 'Bin', 'Milyon', 'Milyar', 'Trilyon'];
+  const uclu = (n) => {
+    const y = Math.floor(n / 100); const o = Math.floor((n % 100) / 10); const b = n % 10;
+    return [y ? (y === 1 ? 'Yüz' : `${BIR[y]} Yüz`) : '', ON[o], BIR[b]].filter(Boolean).join(' ');
+  };
+  const yaz = (n) => {
+    if (n === 0) return 'Sıfır';
+    const parca = [];
+    for (let i = 0; n > 0; i++, n = Math.floor(n / 1000)) {
+      const g = n % 1000;
+      if (!g) continue;
+      parca.unshift(i === 1 && g === 1 ? 'Bin' : [uclu(g), BASAMAK[i]].filter(Boolean).join(' '));
+    }
+    return parca.join(' ');
+  };
+  const kurus = Math.round(Math.abs(Number(tutar)) * 100);
+  const tl = Math.floor(kurus / 100); const kr = kurus % 100;
+  return `${yaz(tl)} Türk Lirası${kr ? ` ${yaz(kr)} Kuruş` : ''}`;
+}
+
+function kalemTablosu(satirlar) {
+  const iskontoVar = satirlar.some((s) => Number(s.iskonto_orani));
+  return html`<table class="belge-tablo"><thead><tr><th class="no"></th><th>Açıklama</th><th class="sayi">Miktar</th><th class="sayi">Fiyat</th>
+    ${iskontoVar ? html`<th class="sayi">İsk.</th>` : ''}<th class="sayi">KDV (%)</th><th class="sayi">Tutar (KDV Hariç)</th></tr></thead>
+    <tbody>${satirlar.map((s, i) => html`<tr><td class="no">${i + 1}</td><td><b>${s.aciklama}</b>${s.notu ? html`<div class="satir-not">${s.notu}</div>` : ''}</td>
+      <td class="sayi">${miktarBirim(s.miktar, s.birim)}</td><td class="sayi">${para(s.birim_fiyat)}</td>
+      ${iskontoVar ? html`<td class="sayi">${Number(s.iskonto_orani) ? '%' + Number(s.iskonto_orani) : ''}</td>` : ''}
+      <td class="sayi">%${Number(s.kdv_orani)}</td><td class="sayi">${para(s.tutar)}</td></tr>`)}</tbody></table>`;
+}
+
+function toplamBlok(b) {
+  const oranlar = [...new Set(b.satirlar.map((s) => Number(s.kdv_orani)))];
+  return html`<table class="belge-toplam"><tbody>
+    <tr><td>Net</td><td>${para(b.ara_toplam)}</td></tr>
+    <tr><td>KDV${oranlar.length === 1 ? ` (%${oranlar[0]})` : ''}</td><td>${para(b.kdv_toplam)}</td></tr>
+    <tr class="genel"><td>Toplam</td><td>${para(b.genel_toplam)}</td></tr></tbody></table>`;
+}
+
+export function proformaYazdir(ctx, t, { kaseImza = t.kase_imza } = {}) {
+  yazdir(html`<div class="belge belge2">
+    ${firmaBlok(ctx)}
+    <div class="belge-baslik">PROFORMA FATURA</div>
+    <div class="belge-musteri"><div><b class="musteri-unvan">${t.unvan}</b>
+      ${t.vergi_no ? html`<div class="musteri-vn">${t.vergi_dairesi ? `VD:${t.vergi_dairesi} ` : ''}VN:${t.vergi_no}</div>` : ''}</div>
+      <div class="tarih"><b>Tarih:</b> ${tarih(t.tarih)}</div></div>
+    ${kalemTablosu(t.satirlar)}
+    ${toplamBlok(t)}
+    ${kaseImza ? html`<div class="kase-alan">${kase(ctx)}</div>` : ''}
+  </div>`);
+}
+
+export function teklifYazdir(ctx, t, { kaseImza = t.kase_imza } = {}) {
+  const a = ctx.ayarlar;
+  yazdir(html`<div class="belge belge2">
+    ${a.teklif_serit ? html`<img class="belge-serit" src="/dosya/${a.teklif_serit}" alt="">` : firmaBlok(ctx)}
+    <div class="belge-baslik">TEKLİF FORMU</div>
+    <div class="belge-musteri"><div><b class="musteri-unvan">${t.unvan}</b>
+      ${t.cari_adres ? html`<div>${t.cari_adres}${t.ilce || t.il ? ` ${[t.ilce, t.il].filter(Boolean).join('/')}` : ''}</div>` : ''}
+      ${t.vergi_dairesi || t.vergi_no ? html`<div>${t.vergi_dairesi ? `VD:${t.vergi_dairesi}` : ''} ${t.vergi_no ? `VN:${t.vergi_no}` : ''}</div>` : ''}</div>
+      <div class="tarih"><b>Tarih:</b> ${tarih(t.tarih)}${t.gecerlilik ? html`<div class="gecerlilik">Geçerlilik: ${tarih(t.gecerlilik)}</div>` : ''}</div></div>
+    ${t.giris_metni ? html`<p class="belge-metin">${t.giris_metni}</p>` : ''}
+    ${kalemTablosu(t.satirlar)}
+    ${toplamBlok(t)}
+    ${t.kapanis_metni ? html`<p class="belge-metin kapanis">${t.kapanis_metni}</p>` : ''}
+    <p class="belge-metin">Saygılarımızla,</p>
+    ${kaseImza ? html`<div class="kase-alan">${kase(ctx)}</div>` : ''}
+  </div>`);
+}
+
+const ODEME_SEKLI = { kasa: 'Nakit', banka: 'Havale / EFT', pos: 'Kredi kartı' };
+
+export function makbuzYazdir(ctx, m, { kaseImza = true, ikiNusha = false } = {}) {
+  const bakiye = Number(m.kalan_bakiye || 0);
+  const nusha = (etiket) => html`<div class="makbuz">
+    ${etiket ? html`<div class="nusha">${etiket}</div>` : ''}
+    <div class="makbuz-ust">${firmaBlok(ctx)}
+      <div class="makbuz-bilgi"><div class="belge-baslik" style="margin:0 0 .4rem">TAHSİLAT MAKBUZU</div>
+        <div><b>No:</b> TM-${String(m.id).padStart(6, '0')}</div><div><b>Tarih:</b> ${tarih(m.tarih)}</div></div></div>
+    <div class="makbuz-kutu">
+      <div><b>Sayın:</b> ${m.unvan}</div>
+      ${m.cari_adres ? html`<div>${m.cari_adres}${m.ilce || m.il ? ` ${[m.ilce, m.il].filter(Boolean).join('/')}` : ''}</div>` : ''}
+      ${m.vergi_no ? html`<div>${m.vergi_dairesi ? `VD:${m.vergi_dairesi} ` : ''}VN:${m.vergi_no}</div>` : ''}
+    </div>
+    <p>Aşağıda belirtilen tutar tarafınızdan tahsil edilmiştir.</p>
+    <table class="belge-tablo"><thead><tr><th>Ödeme şekli</th><th>Açıklama</th><th>Belge / dekont no</th><th class="sayi">Tutar</th></tr></thead>
+      <tbody><tr><td>${ODEME_SEKLI[m.hesap_tip] || ''} <span class="soluk-yazi">(${m.hesap_ad})</span></td><td>${m.aciklama || ''}</td><td>${m.belge_no || ''}</td>
+        <td class="sayi"><b>${para(m.tutar)}</b></td></tr></tbody></table>
+    <div class="makbuz-yazi"><b>Yalnız:</b> #${tutarYaziyla(m.tutar)}#</div>
+    <div class="makbuz-bakiye">Tahsilat sonrası cari bakiyeniz: <b>${para(Math.abs(bakiye))}</b> ${bakiye > 0.004 ? '(Borç)' : bakiye < -0.004 ? '(Alacak)' : ''}</div>
+    <div class="imza-kutular"><div><b>Ödeme yapan</b><br>${m.unvan}</div>
+      <div><b>Tahsil eden</b><br>${ctx.ayarlar.firma_adi || ''}${kaseImza ? html`<br>${kase(ctx)}` : ''}</div></div>
+  </div>`;
+  yazdir(html`<div class="belge belge2">${ikiNusha ? html`${nusha('ASIL')}<div class="kesme-cizgisi"></div>${nusha('SURET')}` : nusha('')}</div>`);
 }

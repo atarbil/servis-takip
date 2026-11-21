@@ -188,6 +188,64 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Hizmet açıklaması serbest', x.veri.satirlar[1].aciklama === 'Kurulum ve ayar');
   await y('POST', `/fisler/${x.veri.id}/iptal`);
 
+  // Kur, sayaçlar, fiyatlandırma
+  x = await y('GET', '/kur');
+  kontrol('TCMB kuru okundu', x.veri.usd?.satis === 41.9578 && x.veri.eur?.satis === 48.6387 && x.veri.tarih === '20.11.2026', x.veri);
+  kontrol('Teknisyen de kuru görebilir', (await t('GET', '/kur')).durum === 200);
+  x = await y('GET', '/sayaclar');
+  kontrol('Menü sayaçları', x.durum === 200 && typeof x.veri.fiyatlandirma === 'number', x.veri);
+  x = await y('GET', '/ozet');
+  kontrol('Genişletilmiş panel özeti', Array.isArray(x.veri.havuz_isler) && Array.isArray(x.veri.son_tahsilatlar) && Array.isArray(x.veri.fiyat_bekleyen), Object.keys(x.veri));
+  kontrol('Panelde son tahsilat görünüyor', x.veri.son_tahsilatlar.some((s) => s.tutar === 5000));
+  x = await y('GET', '/fiyatlandirma');
+  kontrol('Fiyatlandırma listesi', x.durum === 200 && Array.isArray(x.veri), x.veri);
+
+  // Makbuz
+  const sonT = (await y('GET', '/finans')).veri.find((f) => f.tip === 'tahsilat' && !f.iptal);
+  x = await y('GET', `/finans/${sonT.id}/makbuz`);
+  kontrol('Makbuz verisi ve kalan bakiye', x.durum === 200 && x.veri.unvan === 'Ahmet Market' && x.veri.kalan_bakiye === 1000 + 12444 - 5000, x.veri.kalan_bakiye);
+  const masraf = (await y('POST', '/finans/masraf', { hesap_id: hesaplar[0].id, tutar: 50, aciklama: 'Yakıt' })).veri;
+  kontrol('Masraf için makbuz yazdırılmaz', (await y('GET', `/finans/${masraf.id}/makbuz`)).durum === 400);
+
+  // Teklif / proforma
+  x = await y('POST', '/teklifler', { tur: 'teklif', cari_id: musteri.id, satirlar: [{ urun_id: kamera.id, aciklama: 'x', miktar: 80, birim_fiyat: '6.670', kdv_orani: 20, notu: '2 yıl garanti' }] });
+  kontrol('Teklif oluştu, numara ve toplam doğru', /^TK-\d{4}-0001$/.test(x.veri.belge_no) && x.veri.genel_toplam === 640320 && x.veri.satirlar[0].aciklama === 'IP Kamera 4MP', x.veri);
+  kontrol('Teklife varsayılan giriş/kapanış metni geldi', /görüşmeler sonrasında/.test(x.veri.giris_metni) && /başarılar dileriz/.test(x.veri.kapanis_metni));
+  const teklifId = x.veri.id;
+  const once = (await y('GET', `/cariler/${musteri.id}`)).veri.bakiye;
+  const stokOnce = (await y('GET', `/urunler/${kamera.id}`)).veri.stok_miktari;
+  x = await y('POST', `/teklifler/${teklifId}/kopyala`, { tur: 'proforma' });
+  const pf = (await y('GET', `/teklifler/${x.veri.id}`)).veri;
+  kontrol('Proformaya kopyalandı', pf.tur === 'proforma' && /^PF-/.test(pf.belge_no) && pf.genel_toplam === 640320 && pf.giris_metni === null, pf.belge_no);
+  kontrol('Teklif cariyi ve stoğu etkilemedi', (await y('GET', `/cariler/${musteri.id}`)).veri.bakiye === once && (await y('GET', `/urunler/${kamera.id}`)).veri.stok_miktari === stokOnce);
+  x = await y('POST', `/teklifler/${teklifId}/durum`, { durum: 'gonderildi' });
+  kontrol('Durum gönderildi', x.veri.durum === 'gonderildi');
+  x = await y('POST', `/teklifler/${teklifId}/fise-donustur`);
+  const donFis = (await y('GET', `/fisler/${x.veri.id}`)).veri;
+  kontrol('Teklif taslak satış fişine dönüştü', donFis.durum === 'taslak' && donFis.genel_toplam === 640320 && donFis.satirlar[0].notu === '2 yıl garanti', donFis);
+  x = await y('GET', `/teklifler/${teklifId}`);
+  kontrol('Teklif kabul edildi ve fişe bağlandı', x.veri.durum === 'kabul' && x.veri.fis_id === donFis.id);
+  x = await y('PUT', `/teklifler/${teklifId}`, { satirlar: [] });
+  kontrol('Dönüşmüş teklifin satırları değiştirilemez', x.durum === 400, x.veri);
+  await y('POST', `/fisler/${donFis.id}/iptal`);
+  kontrol('Teklif listesi', (await y('GET', '/teklifler?tur=teklif')).veri.length === 1);
+  kontrol('Teknisyen teklif göremez', (await t('GET', '/teklifler')).durum === 403);
+
+  // Görsel yükleme ve herkese açık logo
+  kontrol('Logo yokken /logo 404', (await fetch(TABAN + '/logo')).status === 404);
+  x = await y('POST', '/ayarlar/gorsel', { tur: 'logo', veri: PNG });
+  kontrol('Logo yüklendi', x.durum === 200 && /^ayarlar\//.test(x.veri.yol), x.veri);
+  const lg = await fetch(TABAN + '/logo');
+  kontrol('Logo oturumsuz görülebiliyor', lg.status === 200 && lg.headers.get('content-type') === 'image/png');
+  x = await y('POST', '/ayarlar/gorsel', { tur: 'kase', veri: PNG });
+  const ay = (await y('GET', '/ayarlar')).veri;
+  kontrol('Kaşe yolu ayarlarda, sadece oturumla erişilir', !!ay.kase_imza && (await fetch(`${TABAN}/dosya/${ay.kase_imza}`)).status === 401);
+  await y('PUT', '/ayarlar', { kase_imza: '../../etc/passwd', firma_web: 'www.atarbilisim.com' });
+  const ay2 = (await y('GET', '/ayarlar')).veri;
+  kontrol('Görsel yolu ayarlar formundan değiştirilemez', ay2.kase_imza === ay.kase_imza && ay2.firma_web === 'www.atarbilisim.com');
+  kontrol('Telegram iç ayarı dışarı verilmiyor', !('telegram_offset' in ay2));
+  kontrol('Teknisyen görsel yükleyemez', (await t('POST', '/ayarlar/gorsel', { tur: 'logo', veri: PNG })).durum === 403);
+
   // Şifre değiştir, çıkış
   x = await t('POST', '/sifre-degistir', { eski: 'usta1234', yeni: 'yeniSifre9' });
   kontrol('Şifre değişti', x.durum === 200);

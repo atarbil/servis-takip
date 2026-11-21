@@ -34,7 +34,8 @@ export default async function (el, _p, ctx) {
         <td data-et="Tarih" class="nowrap">${tarih(x.tarih)}</td><td data-et="Hesap">${x.hesap_ad}</td><td class="ana-hucre" data-et="">${TIP[x.tip]}</td>
         <td data-et="Açıklama">${x.unvan ? html`<a href="#/cari/${x.cari_id}">${x.unvan}</a> · ` : ''}${x.aciklama || ''}${x.belge_no ? ` (${x.belge_no})` : ''}<div class="alt-satir">${x.olusturan || ''}</div></td>
         <td class="sayi pozitif" data-et="Giriş">${x.isaretli > 0 ? para(x.isaretli) : ''}</td><td class="sayi negatif" data-et="Çıkış">${x.isaretli < 0 ? para(-x.isaretli) : ''}</td>
-        <td data-et="">${!x.iptal ? html`<button class="btn-ikon" data-iptal="${x.id}" title="İptal et">⊘</button>` : html`<span class="rozet kirmizi">İptal</span>`}</td></tr>`)
+        <td data-et="" class="nowrap">${x.tip === 'tahsilat' && !x.iptal ? html`<button class="btn-ikon" data-makbuz="${x.id}" title="Makbuz yazdır">🖨</button>` : ''}
+          ${!x.iptal ? html`<button class="btn-ikon" data-iptal="${x.id}" title="İptal et">⊘</button>` : html`<span class="rozet kirmizi">İptal</span>`}</td></tr>`)
         : html`<tr><td colspan="7" class="bos-durum">Hareket yok</td></tr>`}</tbody>
       ${veri.length ? html`<tfoot><tr><td colspan="4" data-et="">Dönem toplamı</td><td class="sayi" data-et="Giriş">${para(giris)}</td><td class="sayi" data-et="Çıkış">${para(cikis)}</td><td data-et="Net">${para(giris - cikis)}</td></tr></tfoot>` : ''}</table>`);
   };
@@ -43,6 +44,8 @@ export default async function (el, _p, ctx) {
     if (b) { if (await finansPenceresi(b.dataset.f)) ciz(); return; }
     const h = e.target.closest('[data-hesap]');
     if (h) { f.hesap_id = f.hesap_id === h.dataset.hesap ? '' : h.dataset.hesap; return ciz(); }
+    const mk = e.target.closest('[data-makbuz]');
+    if (mk) { const { makbuzAc } = await import('../bilesen.js'); return makbuzAc(Number(mk.dataset.makbuz)).catch((err) => bildir(err.message, 'hata')); }
     const ip = e.target.closest('[data-iptal]');
     if (ip && await onayla('Bu hareket iptal edilsin mi? Bağlı cari kaydı da iptal edilir.', { evet: 'İptal et', tehlike: true })) {
       try { await api.post(`/finans/${ip.dataset.iptal}/iptal`); bildir('İptal edildi.'); ciz(); } catch (err) { bildir(err.message, 'hata'); }

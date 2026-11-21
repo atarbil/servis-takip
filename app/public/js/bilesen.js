@@ -210,6 +210,31 @@ export async function yeniIsPenceresi(ctx, { baslangic, ekipId, havuza = false, 
   });
 }
 
+// ---------- Tahsilat makbuzu ----------
+export function makbuzTercih(deger) {
+  try {
+    if (deger === undefined) return localStorage.getItem('makbuzYazdir') !== '0';
+    localStorage.setItem('makbuzYazdir', deger ? '1' : '0');
+  } catch { /* */ }
+  return true;
+}
+// Makbuzu yazdırma seçenekleriyle açar
+export async function makbuzAc(finansId) {
+  const ctx = window.__ctx;
+  const m = await api.get(`/finans/${finansId}/makbuz`);
+  const s = await pencere({
+    baslik: 'Tahsilat makbuzu',
+    icerik: html`<p style="margin-top:0"><b>${m.unvan}</b> · ${para(m.tutar)}</p>
+      <label class="kutu-sec"><input type="checkbox" name="kase" ${ctx.ayarlar.kase_imza ? 'checked' : 'disabled'}> Kaşe ve imza ekle
+        ${!ctx.ayarlar.kase_imza ? html`<small>(Ayarlar'dan yüklenmemiş)</small>` : ''}</label>
+      <label class="kutu-sec"><input type="checkbox" name="iki"> 2 nüsha (asıl + suret, aynı sayfada)</label>`,
+    kaydetMetin: '🖨 Yazdır',
+  });
+  if (!s) return;
+  const { makbuzYazdir } = await import('./belgeler.js');
+  makbuzYazdir(ctx, m, { kaseImza: !!s.kase, ikiNusha: !!s.iki });
+}
+
 // ---------- Tahsilat / ödeme ----------
 export async function finansPenceresi(tur, { cari, tutar } = {}) {
   const hesaplar = (await api.get('/hesaplar')).filter((h) => h.aktif);
@@ -230,7 +255,8 @@ export async function finansPenceresi(tur, { cari, tutar } = {}) {
       </div>
       <label class="alan"><span>Açıklama${tur === 'masraf' ? ' *' : ''}</span><input name="aciklama" placeholder="${tur === 'tahsilat' ? 'Nakit, havale, kredi kartı…' : ''}"></label>
       ${tur === 'tahsilat' || tur === 'odeme' ? html`<label class="alan"><span>Belge / dekont no</span><input name="belge_no"></label>` : ''}
-      ${cari && cari.bakiye !== undefined ? html`<p class="soluk">Güncel bakiye: ${bakiyeHucre(cari.bakiye)}</p>` : ''}`,
+      ${cari && cari.bakiye !== undefined ? html`<p class="soluk">Güncel bakiye: ${bakiyeHucre(cari.bakiye)}</p>` : ''}
+      ${tur === 'tahsilat' ? html`<label class="kutu-sec"><input type="checkbox" name="makbuz" ${makbuzTercih() ? 'checked' : ''}> Kaydettikten sonra tahsilat makbuzu yazdır</label>` : ''}`,
     acildi: (d) => {
       const inp = $('#f-cari', d);
       if (inp) cariSecici(inp, (c) => { secilen = c; inp.value = c.unvan; }, { yeniIzin: false });
@@ -239,19 +265,34 @@ export async function finansPenceresi(tur, { cari, tutar } = {}) {
       const t = sayiCoz(v.tutar);
       if (!t || t <= 0) throw new Error('Geçerli bir tutar girin.');
       if ((tur === 'tahsilat' || tur === 'odeme') && !secilen) throw new Error('Cari seçin.');
-      await api.post(`/finans/${tur}`, { ...v, tutar: t, cari_id: secilen?.id });
+      const r = await api.post(`/finans/${tur}`, { ...v, tutar: t, cari_id: secilen?.id });
       bildir(`${AD.split(' ')[0]} kaydedildi: ${para(t)}`, 'basari');
+      if (tur === 'tahsilat') {
+        makbuzTercih(v.makbuz);
+        if (v.makbuz && r?.id) setTimeout(() => makbuzAc(r.id), 300);
+      }
     },
   });
 }
 
 // ---------- Belge başlığı (yazdırma) ----------
-export function belgeUst(ctx, baslik, sag = '') {
+// Firma bloğu: logo, ünvan, adres, iletişim ve vergi bilgileri (proforma örneğindeki düzen)
+export function firmaBlok(ctx) {
   const a = ctx.ayarlar;
-  return html`<div class="belge-ust"><div><h1>${a.firma_adi || ''}</h1>
-    <div>${a.firma_adres || ''}</div><div>${[a.firma_telefon, a.firma_eposta].filter(Boolean).join(' · ')}</div>
-    ${a.firma_vergi ? html`<div>${a.firma_vergi}</div>` : ''}</div>
-    <div class="sag"><h1>${baslik}</h1>${sag}</div></div>`;
+  const vd = a.firma_vergi_dairesi || ''; const vn = a.firma_vergi_no || '';
+  return html`<div class="belge-firma">
+    ${a.firma_logo ? html`<img class="belge-logo" src="/logo?v=${encodeURIComponent(a.firma_logo)}" alt="">` : ''}
+    <div class="belge-unvan">${a.firma_adi || ''}</div>
+    ${a.firma_adres ? html`<div>Adres: ${a.firma_adres}</div>` : ''}
+    <div>${[a.firma_eposta && `E-Posta : ${a.firma_eposta}`, a.firma_telefon && `Tel: ${a.firma_telefon}`, a.firma_gsm && `Gsm: ${a.firma_gsm}`, a.firma_web && `Web: ${a.firma_web}`]
+      .filter(Boolean).map((x, i) => html`${i ? html`<span class="ara"></span>` : ''}${x}`)}</div>
+    ${vd || vn ? html`<div><span style="display:inline-block;min-width:46%">Vergi Dairesi : ${vd}</span>Vergi No : ${vn}</div>`
+      : a.firma_vergi ? html`<div>${a.firma_vergi}</div>` : ''}
+  </div>`;
+}
+
+export function belgeUst(ctx, baslik, sag = '') {
+  return html`<div class="belge-ust">${firmaBlok(ctx)}<div class="sag"><h1>${baslik}</h1>${sag}</div></div>`;
 }
 
 export const tabloBos = (metin, kolon = 1) => html`<tr><td colspan="${kolon}" class="bos-durum">${metin}</td></tr>`;

@@ -359,3 +359,113 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
   #btn-hizli { padding: .3rem .55rem; }
   .fis-tablo-kap { margin: 0 -1rem; }
 }
+
+/* ---------- Kur, logo, rozet (v2) ---------- */
+.kur-kutu { display: flex; align-items: center; gap: .9rem; padding: .3rem .8rem; border: 1px solid var(--cizgi); border-radius: 10px; background: #f8fafc; margin-right: .3rem; }
+.kur-kutu span { display: flex; align-items: baseline; gap: .35rem; cursor: default; }
+.kur-kutu small { font-weight: 700; color: var(--soluk); font-size: .72rem; letter-spacing: .04em; }
+.kur-kutu b { font-variant-numeric: tabular-nums; font-size: .98rem; }
+.kur-kutu em { font-style: normal; font-size: .68rem; color: var(--soluk2); }
+.yan-logo { display: block; background: #fff; border-radius: 10px; padding: .45rem .6rem; width: 100%; }
+.yan-logo img { display: block; max-width: 100%; max-height: 64px; margin: 0 auto; object-fit: contain; }
+.yan-ust:has(.yan-logo) { padding: .8rem .8rem .6rem; }
+.giris-logo { display: block; max-width: 220px; max-height: 90px; margin: 0 auto 1rem; object-fit: contain; }
+.menu-sayac { margin-left: auto; background: #f97316; color: #fff; border-radius: 99px; font-size: .72rem; padding: .05rem .5rem; font-weight: 800; }
+.yan nav a.aktif .menu-sayac { background: #fff; color: var(--ana); }
+
+/* ---------- Panel (v2) ---------- */
+.istatistik.genis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.ist .ist-alt { display: block; font-size: .78rem; color: var(--soluk); margin-top: .1rem; font-weight: 500; text-transform: none; letter-spacing: 0; }
+.izgara.uc { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+.mini-liste { list-style: none; margin: 0; padding: 0; }
+.mini-liste li { display: flex; gap: .6rem; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--cizgi2); }
+.mini-liste li:last-child { border-bottom: 0; }
+.mini-liste li.tikla { cursor: pointer; } .mini-liste li.tikla:hover { background: #f7f9fd; }
+.mini-liste .ana-metin { flex: 1; min-width: 0; }
+.mini-liste .ana-metin b, .mini-liste .ana-metin span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-liste .ana-metin small { display: block; }
+.mini-liste .sag-deger { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mini-liste .saat { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 3rem; }
+.mini-bos { padding: 1.2rem 1rem; color: var(--soluk); text-align: center; font-size: .92rem; }
+.kart-ust .sayi-rozet { background: var(--gri-acik); border-radius: 99px; padding: .05rem .55rem; font-size: .8rem; font-weight: 700; color: var(--soluk); }
+.kur-kart { display: none; }
+@media (max-width: 1250px) { .izgara.uc { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 860px) {
+  .izgara.uc { grid-template-columns: 1fr; }
+  .kur-kutu { display: none !important; }
+  .kur-kart { display: block; }
+  #btn-hizli { padding: .3rem .6rem; min-height: 34px; font-size: .88rem; }
+}
+
+/* ---------- Görsel yükleme (ayarlar) ---------- */
+.gorsel-kutu { border: 1px dashed #cbd5e1; border-radius: 10px; padding: .8rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: .8rem; }
+.gorsel-kutu .onizleme { width: 220px; height: 90px; display: grid; place-items: center; background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 16px 16px; border-radius: 8px; overflow: hidden; }
+.gorsel-kutu .onizleme img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.gorsel-kutu .bilgi { flex: 1; min-width: 200px; }
+
+/* ---------- Belge şablonları v2 (proforma / teklif / makbuz) ---------- */
+.belge-firma { font-size: 11.5px; font-weight: 700; line-height: 1.55; }
+.belge-firma .belge-logo { display: block; max-width: 260px; max-height: 120px; object-fit: contain; margin-bottom: 6px; }
+.belge-firma .belge-unvan { font-size: 19px; font-weight: 800; margin: 2px 0 8px; letter-spacing: .01em; }
+.belge-ust .belge-firma { flex: 1; }
+.belge2 { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 12.5px; color: #000; }
+.belge2 .belge-serit { display: block; width: 100%; max-height: 210px; object-fit: contain; }
+.belge2 .belge-baslik { text-align: center; font-size: 22px; font-weight: 400; margin: 28px 0 8px; letter-spacing: .01em; }
+.belge2 .belge-musteri { display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 14px; }
+.belge2 .musteri-unvan { font-size: 14px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.belge2 .musteri-vn { margin-top: 14px; }
+.belge2 .belge-musteri .tarih { white-space: nowrap; font-size: 13.5px; }
+.belge2 .gecerlilik { font-size: 11px; color: #444; text-align: right; }
+.belge2 .belge-metin { margin: 10px 0; }
+.belge2 .belge-metin.kapanis { margin-top: 36px; }
+.belge2 table.belge-tablo { width: 100%; border-collapse: collapse; margin: 14px 0 6px; }
+.belge2 .belge-tablo th { border: 0; border-bottom: 1px solid #cfcfcf; background: none; font-size: 13.5px; padding: 8px 6px; text-align: left; }
+.belge2 .belge-tablo td { border: 0; border-bottom: 1px solid #cfcfcf; padding: 7px 6px; vertical-align: top; font-size: 12.5px; }
+.belge2 .belge-tablo .sayi { text-align: right; white-space: nowrap; }
+.belge2 .belge-tablo .no { width: 16px; font-size: 9px; color: #333; padding-right: 0; vertical-align: middle; }
+.belge2 .satir-not { font-weight: 400; font-size: 11px; color: #333; margin-top: 2px; }
+.belge2 table.belge-toplam { margin-left: auto; border-collapse: collapse; font-size: 13.5px; }
+.belge2 .belge-toplam td { border: 0; padding: 1px 0 1px 8px; text-align: right; white-space: nowrap; }
+.belge2 .belge-toplam tr.genel td { font-weight: 800; }
+.belge2 .kase-alan { text-align: right; margin-top: 18px; padding-right: 50px; }
+.belge2 .belge-kase { width: 180px; max-height: 110px; object-fit: contain; }
+.belge2 .makbuz { padding: 4px 0 10px; position: relative; }
+.belge2 .makbuz-ust { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 8px; }
+.belge2 .makbuz-ust .belge-logo { max-height: 70px; max-width: 170px; }
+.belge2 .makbuz-ust .belge-unvan { font-size: 15px; margin-bottom: 4px; }
+.belge2 .makbuz-bilgi { text-align: right; white-space: nowrap; font-size: 13px; }
+.belge2 .makbuz-kutu { border: 1px solid #999; border-radius: 4px; padding: 8px 10px; margin: 12px 0 6px; }
+.belge2 .makbuz-yazi { margin: 8px 0; font-size: 13px; }
+.belge2 .makbuz-bakiye { font-size: 12px; margin-bottom: 6px; }
+.belge2 .soluk-yazi { color: #555; font-size: 11px; }
+.belge2 .makbuz .imza-kutular > div { min-height: 95px; }
+.belge2 .makbuz .belge-kase { width: 150px; max-height: 80px; }
+.belge2 .nusha { position: absolute; right: 0; top: -14px; font-size: 10px; font-weight: 700; letter-spacing: .15em; color: #666; }
+.belge2 .kesme-cizgisi { border-top: 1px dashed #999; margin: 18px 0 22px; text-align: center; height: 0; }
+.belge2 .kesme-cizgisi::after { content: ''; }
+.belge2 table.belge-toplam { width: auto; margin: 4px 0 0 auto; }
+.belge-firma .ara { display: inline-block; width: 12px; }
+/* Makbuz: iki nüsha tek A4'e sığacak kadar sıkı */
+.belge2 .makbuz { font-size: 11.5px; padding: 0; }
+.belge2 .makbuz .belge-firma { font-size: 10px; line-height: 1.4; }
+.belge2 .makbuz .belge-firma .belge-logo { max-height: 48px; max-width: 140px; margin-bottom: 2px; }
+.belge2 .makbuz .belge-firma .belge-unvan { font-size: 13px; margin: 0 0 2px; }
+.belge2 .makbuz .belge-baslik { font-size: 18px; }
+.belge2 .makbuz .makbuz-bilgi { font-size: 11.5px; }
+.belge2 .makbuz .makbuz-kutu { padding: 5px 8px; margin: 8px 0 4px; }
+.belge2 .makbuz p { margin: 4px 0; }
+.belge2 .makbuz table.belge-tablo { margin: 6px 0 4px; }
+.belge2 .makbuz .belge-tablo th { font-size: 11.5px; padding: 4px 6px; }
+.belge2 .makbuz .belge-tablo td { font-size: 11.5px; padding: 4px 6px; }
+.belge2 .makbuz .makbuz-yazi { margin: 5px 0; font-size: 12px; }
+.belge2 .makbuz .imza-kutular { margin-top: 8px; gap: 16px; }
+.belge2 .makbuz .imza-kutular > div { min-height: 78px; padding: 4px 6px; }
+.belge2 .makbuz .belge-kase { width: 130px; max-height: 58px; }
+.belge2 .nusha { position: static; text-align: right; margin-bottom: 2px; }
+.belge2 .kesme-cizgisi { margin: 12px 0 14px; }
+.istatistik.genis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.istatistik.genis .ist b { font-size: 1.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 1700px) { .istatistik.genis { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .istatistik.genis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .istatistik.genis .ist b { font-size: 1.15rem; } }
+@media (max-width: 1250px) { .izgara.uc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .izgara.uc { grid-template-columns: minmax(0, 1fr); } }

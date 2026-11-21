@@ -58,6 +58,22 @@ module.exports = (r, { db, web, Y }) => {
     await db.islem(req.kullanici.id, (q) => q('SELECT virman($1, $2, $3, $4, $5)', [req.body.kaynak_id, req.body.hedef_id, tutar, t, ac || 'Virman']));
     return { tamam: true };
   });
+  // Tahsilat makbuzu verisi: hareket, cari bilgisi ve tahsilat sonrası kalan bakiye
+  r.get('/finans/:id/makbuz', Y, async (req) => {
+    const m = (await db.query(`
+      SELECT f.*, h.ad AS hesap_ad, h.tip AS hesap_tip, c.unvan, c.adres AS cari_adres, c.il, c.ilce, c.telefon AS cari_telefon,
+             c.vergi_dairesi, c.vergi_no, k.ad_soyad AS olusturan,
+             (SELECT coalesce(sum(ch.borc - ch.alacak), 0) FROM cari_hareketler ch
+              WHERE ch.cari_id = f.cari_id AND NOT ch.iptal
+                AND (ch.tarih, ch.id) <= (SELECT x.tarih, x.id FROM cari_hareketler x WHERE x.belge_tip = f.tip::text::cari_belge AND x.belge_id = f.id LIMIT 1)
+             ) AS kalan_bakiye
+      FROM finans_hareketleri f JOIN hesaplar h ON h.id = f.hesap_id LEFT JOIN cariler c ON c.id = f.cari_id
+      LEFT JOIN kullanicilar k ON k.id = f.olusturan_id WHERE f.id = $1`, [req.params.id])).rows[0];
+    if (!m) throw web.hata(404, 'Kayıt bulunamadı.');
+    if (m.tip !== 'tahsilat') throw web.hata(400, 'Makbuz sadece tahsilatlar için yazdırılır.');
+    return m;
+  });
+
   r.post('/finans/:id/iptal', Y, async (req) => {
     await db.islem(req.kullanici.id, (q) => q('SELECT finans_iptal($1)', [req.params.id]));
     return { tamam: true };

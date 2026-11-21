@@ -6,8 +6,10 @@ const YONETICI_MENU = [
   { yol: 'panel', ad: 'Panel', ikon: 'ev' },
   { yol: 'havuz', ad: 'İş Havuzu', ikon: 'havuz' },
   { yol: 'takvim', ad: 'Takvim', ikon: 'takvim' },
+  { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
   { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
   { yol: 'cariler', ad: 'Cariler', ikon: 'kisi' },
+  { yol: 'teklifler', ad: 'Teklif / Proforma', ikon: 'belge' },
   { yol: 'fisler', ad: 'Satış Fişleri', ikon: 'fis' },
   { yol: 'alislar', ad: 'Alış Faturaları', ikon: 'alis' },
   { yol: 'urunler', ad: 'Ürünler / Stok', ikon: 'kutu' },
@@ -30,6 +32,8 @@ const IKON = {
   rapor: 'M4 20V10m6 10V4m6 16v-7m4 7H2',
   ayar: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
   menu: 'M4 6h16M4 12h16M4 18h16',
+  etiket: 'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
+  belge: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h6',
   cikis: 'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3',
 };
 export const ikon = (ad, boyut = 20) => html`<svg class="ikon" width="${boyut}" height="${boyut}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IKON[ad] || ''}"/></svg>`;
@@ -76,7 +80,7 @@ function hataEkrani(mesaj) {
 
 function girisEkrani() {
   document.body.innerHTML = String(html`<div class="giris-kap"><form class="giris-kutu" id="giris-form">
-    <div class="logo-buyuk">ST</div>
+    <img class="giris-logo" src="/logo" alt="" onerror="this.remove()">
     <h1>Servis Takip</h1>
     <label class="alan"><span>Kullanıcı adı</span><input name="kullanici_adi" autocomplete="username" autocapitalize="none" required></label>
     <label class="alan"><span>Şifre</span><input name="sifre" type="password" autocomplete="current-password" required></label>
@@ -150,8 +154,10 @@ function kabukCiz() {
   } else {
     document.body.innerHTML = String(html`<div class="kabuk">
       <aside class="yan" id="yan">
-        <div class="yan-ust"><div class="logo">ST</div><div class="yan-firma">${firma}</div></div>
-        <nav>${YONETICI_MENU.map((m) => html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad}</span></a>`)}</nav>
+        <div class="yan-ust">${ctx.ayarlar.firma_logo
+          ? html`<a href="#/panel" class="yan-logo" title="${firma}"><img src="/logo?v=${encodeURIComponent(ctx.ayarlar.firma_logo)}" alt="${firma}"></a>`
+          : html`<div class="logo">ST</div><div class="yan-firma">${firma}</div>`}</div>
+        <nav>${YONETICI_MENU.map((m) => html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad}</span>${m.sayac ? html`<b class="menu-sayac" data-sayac="${m.sayac}" hidden></b>` : ''}</a>`)}</nav>
         <div class="yan-alt">
           <div class="yan-kisi"><b>${k.ad_soyad}</b><small>Yönetici</small></div>
           <button class="btn-metin" id="btn-sifre">Şifre değiştir</button>
@@ -162,7 +168,8 @@ function kabukCiz() {
       <div class="ana">
         <header class="ust"><button class="btn-ikon mobil-menu" id="btn-menu" aria-label="Menü">${ikon('menu')}</button>
           <h1 id="ust-baslik"></h1><span class="bosluk"></span>
-          <button class="btn birincil kucuk" id="btn-hizli">+ Hızlı iş</button></header>
+          <div class="kur-kutu" id="kur" hidden></div>
+          <button class="btn birincil" id="btn-hizli">+ İş ekle</button></header>
         <main id="sayfa"></main>
       </div>
       <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = YONETICI_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad.replace('İş ', '')}</span></a>`; })}
@@ -180,12 +187,41 @@ function kabukCiz() {
   }
   $('#btn-cikis').onclick = cikis;
   $('#btn-sifre').onclick = sifreDegistir;
+  if (ctx.yonetici) { kurYukle(); setInterval(kurYukle, 30 * 60 * 1000); }
 }
+
+// ---------- Döviz kuru (TCMB) ----------
+const kurFmt = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+async function kurYukle() {
+  try {
+    const k = await api.get('/kur');
+    const el = $('#kur');
+    if (!el || (!k.usd && !k.eur)) return;
+    el.innerHTML = String(html`${k.usd ? html`<span title="Döviz alış ${kurFmt.format(k.usd.alis || 0)} · satış ${kurFmt.format(k.usd.satis)}"><small>USD</small><b>${kurFmt.format(k.usd.satis)}</b></span>` : ''}
+      ${k.eur ? html`<span title="Döviz alış ${kurFmt.format(k.eur.alis || 0)} · satış ${kurFmt.format(k.eur.satis)}"><small>EUR</small><b>${kurFmt.format(k.eur.satis)}</b></span>` : ''}
+      <em>TCMB ${k.tarih || ''}</em>`);
+    el.hidden = false;
+    ctx.kur = k;
+  } catch { /* kur alınamazsa gösterilmez */ }
+}
+
+// ---------- Menü rozetleri ----------
+let sonSayac = 0;
+async function sayacYukle(zorla = false) {
+  if (!ctx.yonetici || (!zorla && Date.now() - sonSayac < 20000)) return;
+  sonSayac = Date.now();
+  try {
+    const s = await api.get('/sayaclar');
+    $$('[data-sayac]').forEach((b) => { const n = s[b.dataset.sayac] || 0; b.textContent = n; b.hidden = !n; });
+  } catch { /* */ }
+}
+ctx.sayacYenile = () => sayacYukle(true);
 
 // ---------- Yönlendirme ----------
 const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
+  fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif',
   urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
@@ -208,8 +244,9 @@ async function yonlendir() {
   el.className = `sayfa-${ad}`;
   eski.replaceWith(el);
   window.scrollTo(0, 0);
-  const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', urun: 'urunler' }[ad] || ad;
+  const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', urun: 'urunler', teklif: 'teklifler' }[ad] || ad;
   $$('[data-yol]').forEach((a) => a.classList.toggle('aktif', a.dataset.yol === menuAd));
+  sayacYukle();
   const benim = ++sonYukleme;
   if (!modul) { el.innerHTML = '<div class="bos-durum">Sayfa bulunamadı.</div>'; return; }
   el.innerHTML = '<div class="yukleniyor"><span></span></div>';

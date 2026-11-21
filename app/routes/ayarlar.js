@@ -1,14 +1,33 @@
 'use strict';
-const { zorunlu, metin } = require('../lib/yardim');
+const { zorunlu, metin, gorselKaydet } = require('../lib/yardim');
 
-module.exports = (r, { db, web, oturum, G, Y }) => {
+const GORSEL = { logo: 'firma_logo', kase: 'kase_imza', serit: 'teklif_serit' };
+const GIZLI_ANAHTAR = new Set(['telegram_offset']);
+
+module.exports = (r, { db, web, oturum, G, Y, AYAR }) => {
+  // Logo, kaşe/imza ve teklif başlık şeridi yükleme
+  r.post('/ayarlar/gorsel', Y, async (req) => {
+    const anahtar = GORSEL[req.body.tur];
+    if (!anahtar) throw web.hata(400, 'Geçersiz görsel türü.');
+    const yol = gorselKaydet(AYAR.dosyaKlasor, req.body.veri, 'ayarlar');
+    await db.islem(req.kullanici.id, (q) => q(
+      'INSERT INTO ayarlar (anahtar, deger) VALUES ($1, $2) ON CONFLICT (anahtar) DO UPDATE SET deger = excluded.deger', [anahtar, yol]));
+    return { yol };
+  });
+  r.post('/ayarlar/gorsel-sil', Y, async (req) => {
+    const anahtar = GORSEL[req.body.tur];
+    if (!anahtar) throw web.hata(400, 'Geçersiz görsel türü.');
+    await db.islem(req.kullanici.id, (q) => q("UPDATE ayarlar SET deger = '' WHERE anahtar = $1", [anahtar]));
+    return { tamam: true };
+  });
+
   r.get('/ayarlar', G, async () => Object.fromEntries(
-    (await db.query('SELECT anahtar, deger FROM ayarlar')).rows.map((x) => [x.anahtar, x.deger])));
+    (await db.query('SELECT anahtar, deger FROM ayarlar')).rows.filter((x) => !GIZLI_ANAHTAR.has(x.anahtar)).map((x) => [x.anahtar, x.deger])));
 
   r.put('/ayarlar', Y, async (req) => {
     await db.islem(req.kullanici.id, async (q) => {
       for (const [k, v] of Object.entries(req.body)) {
-        if (!/^[a-z_]{2,40}$/.test(k)) continue;
+        if (!/^[a-z_]{2,40}$/.test(k) || GIZLI_ANAHTAR.has(k) || Object.values(GORSEL).includes(k)) continue;
         await q('INSERT INTO ayarlar (anahtar, deger) VALUES ($1, $2) ON CONFLICT (anahtar) DO UPDATE SET deger = excluded.deger', [k, v == null ? '' : String(v)]);
       }
     });

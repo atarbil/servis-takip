@@ -1,4 +1,21 @@
 import { api } from '../api.js';
+
+// Görseli tarayıcıda hazırlar: PNG ise saydamlık korunur, en büyük kenar sınırlanır
+function gorselHazirla(dosya, enBuyuk) {
+  return new Promise((coz, reddet) => {
+    const r = new Image();
+    r.onload = () => {
+      const oran = Math.min(1, enBuyuk / Math.max(r.width, r.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(r.width * oran); c.height = Math.round(r.height * oran);
+      c.getContext('2d').drawImage(r, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(r.src);
+      coz(dosya.type === 'image/png' ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.92));
+    };
+    r.onerror = () => reddet(new Error('Görsel okunamadı.'));
+    r.src = URL.createObjectURL(dosya);
+  });
+}
 import { html, $, $$, zaman, pencere, bildir, para, onayla } from '../ui.js';
 
 export default async function (el, [secili], ctx) {
@@ -12,20 +29,66 @@ export default async function (el, [secili], ctx) {
     const k = $('#s', el);
     if (sekme === 'firma') {
       const a = await api.get('/ayarlar');
-      k.innerHTML = String(html`<form class="kart" id="firma"><div class="kart-govde">
-        <p class="soluk" style="margin-top:0">Bu bilgiler teslim formu, satış fişi ve ekstre çıktılarının üstünde görünür.</p>
-        <div class="satir2"><label class="alan"><span>Firma adı</span><input name="firma_adi" value="${a.firma_adi || ''}"></label>
-          <label class="alan"><span>Telefon</span><input name="firma_telefon" value="${a.firma_telefon || ''}"></label>
-          <label class="alan"><span>E-posta</span><input name="firma_eposta" value="${a.firma_eposta || ''}"></label>
-          <label class="alan"><span>Vergi dairesi / no</span><input name="firma_vergi" value="${a.firma_vergi || ''}"></label></div>
+      const GORSEL = [
+        ['logo', 'firma_logo', 'Firma logosu', 'Sol üst köşede, giriş ekranında ve tüm çıktılarda görünür. Beyaz veya saydam arka planlı PNG önerilir.'],
+        ['kase', 'kase_imza', 'Kaşe ve imza', 'Teklif, proforma ve makbuzlarda isteğe bağlı eklenir. Saydam arka planlı PNG önerilir.'],
+        ['serit', 'teklif_serit', 'Teklif başlık şeridi', 'Teklif formunun en üstünde görünen geniş görsel (logo, marka logoları, iletişim). Yoksa logo ve firma bilgileri kullanılır.'],
+      ];
+      k.innerHTML = String(html`<div class="izgara iki"><form class="kart" id="firma"><div class="kart-ust"><h3>Firma bilgileri</h3></div><div class="kart-govde">
+        <p class="soluk" style="margin-top:0">Teklif, proforma, makbuz, satış fişi, teslim formu ve ekstre çıktılarının üstünde görünür.</p>
+        <label class="alan"><span>Firma ünvanı</span><input name="firma_adi" value="${a.firma_adi || ''}"></label>
         <label class="alan"><span>Adres</span><textarea name="firma_adres" rows="2">${a.firma_adres || ''}</textarea></label>
+        <div class="satir2">
+          <label class="alan"><span>Telefon</span><input name="firma_telefon" value="${a.firma_telefon || ''}"></label>
+          <label class="alan"><span>GSM</span><input name="firma_gsm" value="${a.firma_gsm || ''}"></label>
+          <label class="alan"><span>E-posta</span><input name="firma_eposta" value="${a.firma_eposta || ''}"></label>
+          <label class="alan"><span>Web</span><input name="firma_web" value="${a.firma_web || ''}" placeholder="www.ornek.com"></label>
+          <label class="alan"><span>Vergi dairesi</span><input name="firma_vergi_dairesi" value="${a.firma_vergi_dairesi || ''}"></label>
+          <label class="alan"><span>Vergi no</span><input name="firma_vergi_no" value="${a.firma_vergi_no || ''}"></label>
+        </div>
+        <label class="alan"><span>Teklif giriş metni (varsayılan)</span><textarea name="teklif_giris" rows="2">${a.teklif_giris || ''}</textarea></label>
+        <label class="alan"><span>Teklif kapanış metni (varsayılan)</span><textarea name="teklif_kapanis" rows="2">${a.teklif_kapanis || ''}</textarea></label>
         <label class="alan"><span>Teslim formu metni (müşteri imzası üstünde)</span><textarea name="teslim_metni" rows="2">${a.teslim_metni || ''}</textarea></label>
         <label class="alan"><span>Satış fişi alt notu (banka IBAN vb.)</span><textarea name="fis_notu" rows="2">${a.fis_notu || ''}</textarea></label>
-        <button class="btn birincil">Kaydet</button></div></form>`);
+        <button class="btn birincil">Kaydet</button></div></form>
+        <div class="kart"><div class="kart-ust"><h3>Görseller</h3></div><div class="kart-govde">
+          ${GORSEL.map(([tur, anahtar, ad, aciklama]) => html`<div class="gorsel-kutu">
+            <div class="onizleme">${a[anahtar] ? html`<img src="/dosya/${a[anahtar]}" alt="">` : html`<span class="soluk">Yüklenmedi</span>`}</div>
+            <div class="bilgi"><b>${ad}</b><p class="soluk" style="font-size:.84rem;margin:.2rem 0 .5rem">${aciklama}</p>
+              <div class="btn-grup"><button type="button" class="btn ikincil kucuk" data-yukle="${tur}">${a[anahtar] ? 'Değiştir' : 'Yükle'}</button>
+              ${a[anahtar] ? html`<button type="button" class="btn tehlike-cizgi kucuk" data-gorsel-sil="${tur}">Kaldır</button>` : ''}</div></div></div>`)}
+        </div></div></div>`);
       $('#firma', k).onsubmit = async (e) => {
         e.preventDefault();
         const v = Object.fromEntries(new FormData(e.target));
         try { await api.put('/ayarlar', v); Object.assign(ctx.ayarlar, v); bildir('Kaydedildi.', 'basari'); } catch (err) { bildir(err.message, 'hata'); }
+      };
+      k.onclick = async (e) => {
+        const y = e.target.closest('[data-yukle]');
+        if (y) {
+          const inp = document.createElement('input');
+          inp.type = 'file'; inp.accept = 'image/png,image/jpeg,image/webp';
+          inp.onchange = async () => {
+            const dosya = inp.files[0];
+            if (!dosya) return;
+            try {
+              // PNG saydamlığı korunur; çok büyük görseller küçültülür
+              const veri = await gorselHazirla(dosya, y.dataset.yukle === 'serit' ? 2400 : 1200);
+              await api.post('/ayarlar/gorsel', { tur: y.dataset.yukle, veri });
+              ctx.ayarlar = await api.get('/ayarlar');
+              bildir('Görsel yüklendi.', 'basari');
+              if (y.dataset.yukle === 'logo') location.reload(); else ciz();
+            } catch (err) { bildir(err.message, 'hata'); }
+          };
+          inp.click();
+          return;
+        }
+        const sl = e.target.closest('[data-gorsel-sil]');
+        if (sl && await onayla('Görsel kaldırılsın mı?', { evet: 'Kaldır', tehlike: true })) {
+          await api.post('/ayarlar/gorsel-sil', { tur: sl.dataset.gorselSil });
+          ctx.ayarlar = await api.get('/ayarlar');
+          if (sl.dataset.gorselSil === 'logo') location.reload(); else ciz();
+        }
       };
     } else if (sekme === 'kullanicilar') {
       const [liste, ekipler] = await Promise.all([api.get('/kullanicilar'), ctx.ekipler(true)]);

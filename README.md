@@ -6,7 +6,7 @@ Telefondan ve bilgisayardan tarayıcı ile kullanılır. Natro sunucusunda (Tür
 ## Neler var?
 
 **Yönetici (bilgisayar ve telefon)**
-- **Panel:** havuzdaki, bugünkü ve sahadaki işler, fişi kesilecekler, toplam alacak, vadesi geçenler, bu ayın satış ve kârı
+- **Panel:** TCMB Dolar/Euro kuru, havuz, bugün/yarın ve sahadaki işler, fiyatlandırma bekleyenler, kasa, son tahsilatlar, vadesi geçenler, bu ayın satış ve kârı
 - **İş havuzu:** telefonla gelen işi tek mesajla yazarsınız. Mesajda telefon numarası varsa müşteri otomatik bulunur.
 - **Takvim:** gün, 3 gün, hafta ve ay görünümü; ekip renkleri
   - Havuzdan sürükle-bırak; işi sürükleyerek başka güne veya saate taşıma
@@ -18,7 +18,9 @@ Telefondan ve bilgisayardan tarayıcı ile kullanılır. Natro sunucusunda (Tür
 - **Alış faturası:** stoğu artırır ve ortalama maliyeti günceller. Yeni ürün fatura girerken tanımlanabilir, barkodla satır eklenebilir.
 - **Cariler:** bakiye listesi, cari kartı, tarih aralıklı **ekstre** (yazdırma/PDF, Excel), işler, fişler, yıllık özet, devir bakiyesi
 - **Ürünler/stok:** barkodlar, stok hareketleri, sayım, sahadan gelen ürünü onaylama veya var olan ürünle birleştirme
-- **Kasa/banka:** tahsilat, ödeme, masraf, virman, iptal
+- **Teklif / proforma fatura:** firma şablonlarıyla yazdırma (PDF), isteğe bağlı kaşe/imza, teklif ↔ proforma kopyalama, satış fişine dönüştürme
+- **Fiyatlandırma:** tamamlanmış ama fiyatlandırılmamış işler ayrı menüde
+- **Kasa/banka:** tahsilat (makbuz yazdırma, tutar yazıyla), ödeme, masraf, virman, iptal
 - **Raporlar:** cari bakiyeler, vadesi geçenler, yıllık müşteri özeti, iş kârlılığı, aylık satış, ekip performansı, stok uyarıları. Hepsi yazdırılabilir ve Excel'e aktarılabilir.
 - **Ayarlar:** firma bilgileri (çıktılarda görünür), kullanıcılar, ekipler, hesaplar, **işlem kayıtları** (kim, neyi, ne zaman değiştirdi)
 
