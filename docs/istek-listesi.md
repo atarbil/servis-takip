@@ -22,6 +22,9 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Belgede kur elle değiştirilebilir ve "kurları güncelle" ile tüm dövizli satırlar yeniden hesaplanır.
 - Alış faturası dövizli girilebilir (fatura kuru ile TL maliyete çevrilir).
 - Ürünler listesinde dövizli fiyat ve güncel TL karşılığı birlikte görünür.
+- **Belge para birimi seçimi (kullanıcıya bırakılır):** teklif ve proforma her belgede ayrı ayrı **TL, USD veya EUR** olarak hazırlanabilir;
+  dövizli belgede fiyatlar, toplamlar ve çıktı o para biriminde olur (çıktıda bilgi amaçlı TL karşılığı ve kur gösterilebilir).
+- Satış fişi ve cari hesap **TL** kalır: dövizli teklif/proforma satış fişine dönüştürülürken seçilen kurla (varsayılan günün TCMB kuru) TL'ye çevrilir.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
