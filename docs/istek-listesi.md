@@ -38,6 +38,12 @@ Mevcut kullanılan formata göre (örnek: TEKLIF.pdf):
 - Henüz fiyatlandırılmamış (fişi kesilmemiş veya taslakta kalmış) işlerin ayrı bir menüde listelenmesi; menüde bekleyen sayısı rozet olarak görünsün.
 - Listeden tıklayınca doğrudan fiş ekranı açılsın.
 
+### Görseller (21.11.2026)
+- `docs/gorseller/atar-logo.png`: Atar Bilişim logosu (e-posta imzasından kırpıldı, ~300 px). Sol üst köşe, giriş ekranı ve çıktılarda kullanılacak.
+- `docs/gorseller/teklif-baslik-seridi.jpg`: Teklif formunun üst şeridi (logo + CODES + marka logoları + iletişim bilgileri, 1000×222).
+- Not: Logo düşük çözünürlüklü; baskıda daha net olması için varsa logonun orijinal dosyası (PNG/SVG/PDF) istenecek.
+- Kaşe + imza görseli henüz gönderilmedi.
+
 ### Ortak gereksinimler (2, 3, 4 için)
 - Ayarlar'a **logo** ve **kaşe/imza görseli** yükleme alanı; teklif için ayrıca **başlık şeridi görseli** (marka logoları).
 - Firma bilgilerine web adresi ve ikinci GSM alanı.
