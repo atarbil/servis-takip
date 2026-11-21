@@ -52,26 +52,30 @@ export function hizliIs(ctx) {
 
   pencere({
     baslik: 'İş ekle',
-    genis: true,
-    icerik: html`<div class="hizli-kutu">
-      <textarea name="mesaj" rows="3" autofocus placeholder="Örn: Ahmet Bey Kadıköy 4 kamera görüntü yok 0532 111 22 33"></textarea>
-      <div class="satir2" style="margin-top:.5rem">
-        <label class="alan" style="margin:0"><span>Cari ${html`<small class="soluk">(boşsa mesajdaki telefondan bulunur)</small>`}</span>
+    sinif: 'hizli-pencere',
+    icerik: html`<div class="hizli-kutu hi-izgara">
+      <div class="hi-sol">
+      <label class="alan" style="margin:0"><span>İş / telefondaki konuşma</span>
+        <textarea name="mesaj" rows="5" autofocus placeholder="Örn: Ahmet Bey Kadıköy 4 kamera görüntü yok 0532 111 22 33"></textarea></label>
+      <div class="satir2 hi-cari-satir">
+        <label class="alan" style="margin:0"><span>Cari ${html`<small class="soluk">(boşsa telefondan bulunur)</small>`}</span>
           <div class="hi-cari"><input id="hi-cari" placeholder="Müşteri ara…" autocomplete="off"><button type="button" class="btn-ikon" id="hi-cari-temizle" title="Cariyi kaldır" hidden>✕</button></div></label>
         <label class="alan" style="margin:0"><span>Öncelik</span>
           <select name="oncelik"><option value="2">Normal</option><option value="1">Acil</option><option value="3">Düşük</option></select></label>
       </div>
       <label class="kutu-sec hi-mod"><input type="checkbox" id="hi-ben"> <span><b>İşi ben yaptım</b> — verdiğim hizmeti ve kullandığım malzemeyi gireyim, cariye fiş açılsın</span></label>
-      <div id="hi-detay" hidden>
-        <div id="hi-satirlar"></div>
-        <div class="btn-grup" style="margin-top:.4rem">
+      <p class="soluk hi-ipucu" style="font-size:.84rem;margin:.2rem 0 0">"Acil" ile başlayan mesaj acil olur. Ctrl+Enter ile kaydedin.</p>
+      </div>
+      <div id="hi-detay" class="hi-sag" hidden>
+        <div class="hi-sag-baslik"><b>Verilen hizmet ve kullanılan malzeme</b></div>
+        <div id="hi-satirlar" data-secici-sabit></div>
+        <div class="btn-grup hi-ekle-dugmeler">
           <button type="button" class="btn ikincil kucuk" data-hi-ekle="hizmet">+ Hizmet</button>
           <button type="button" class="btn ikincil kucuk" data-hi-ekle="urun">+ Malzeme</button>
           <button type="button" class="btn ikincil kucuk" data-hi-ekle="iscilik">+ İşçilik</button>
           <button type="button" class="btn ikincil kucuk" data-hi-barkod>📷 Barkod</button></div>
-        <p class="soluk" style="font-size:.84rem;margin:.5rem 0 0">Kaydedince iş "tamamlandı" olur ve bu cariye taslak satış fişi açılır. Fiyatları orada yazıp <b>Onayla</b> deyince müşteri borçlanır, malzeme stoktan düşer.</p>
-      </div>
-      <p class="soluk hi-ipucu" style="font-size:.84rem">"Acil" ile başlayan mesaj acil olur. Ctrl+Enter ile kaydedin.</p></div>`,
+        <p class="soluk" style="font-size:.82rem;margin:.4rem 0 0">Kaydedince iş "tamamlandı" olur ve bu cariye taslak satış fişi açılır. Fiyatları orada yazıp <b>Onayla</b> deyince müşteri borçlanır, malzeme stoktan düşer.</p>
+      </div></div>`,
     kaydetMetin: 'Havuza ekle',
     acildi: (d) => {
       const t = $('textarea', d); t.focus();
@@ -85,10 +89,12 @@ export function hizliIs(ctx) {
       $('#hi-ben', d).onchange = (e) => {
         benYaptim = e.target.checked;
         $('#hi-detay', d).hidden = !benYaptim;
+        d.classList.toggle('ben-yaptim', benYaptim);
         kaydetBtn.textContent = benYaptim ? 'Kaydet ve fişi aç' : 'Havuza ekle';
         if (benYaptim && !satirlar.length) { satirlar.push(bosSatir('hizmet')); satirlarCiz(d); $('#hi-satirlar [data-k=aciklama]', d)?.focus(); }
       };
       const detay = $('#hi-detay', d);
+      $('#hi-satirlar', d).addEventListener('scroll', () => $$('#hi-satirlar .secici-liste', d).forEach((k) => { k.hidden = true; }));
       detay.addEventListener('input', (e) => {
         const tr = e.target.closest('tr[data-i]'); const k = e.target.dataset.k; if (!tr || !k || k === 'tip') return;
         const x = satirlar[Number(tr.dataset.i)];
@@ -102,7 +108,7 @@ export function hizliIs(ctx) {
       });
       detay.addEventListener('click', async (e) => {
         const ek = e.target.closest('[data-hi-ekle]');
-        if (ek) { satirlar.push(bosSatir(ek.dataset.hiEkle)); satirlarCiz(d); $(`tr[data-i="${satirlar.length - 1}"] [data-k=aciklama]`, d)?.focus(); return; }
+        if (ek) { satirlar.push(bosSatir(ek.dataset.hiEkle)); satirlarCiz(d); const k2 = $('#hi-satirlar', d); k2.scrollTop = k2.scrollHeight; $(`tr[data-i="${satirlar.length - 1}"] [data-k=aciklama]`, d)?.focus(); return; }
         const sl = e.target.closest('[data-hi-sil]');
         if (sl) { satirlar.splice(Number(sl.dataset.hiSil), 1); satirlarCiz(d); return; }
         const dg = e.target.closest('[data-hi-degistir]');

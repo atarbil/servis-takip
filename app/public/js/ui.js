@@ -88,10 +88,10 @@ export function bildir(mesaj, tur = 'bilgi', sure = 3500) {
 
 // ---------- Pencere (dialog) ----------
 // icerik: HTML; formdaki alanlar submit'te nesne olarak döner. kaydet(veri) hata atarsa pencere açık kalır.
-export function pencere({ baslik, icerik, kaydetMetin = 'Kaydet', iptalMetin = 'Vazgeç', genis = false, kaydet, acildi, tehlike = false, altBilgi = '' }) {
+export function pencere({ baslik, icerik, kaydetMetin = 'Kaydet', iptalMetin = 'Vazgeç', genis = false, kaydet, acildi, tehlike = false, altBilgi = '', sinif = '' }) {
   return new Promise((coz) => {
     const d = document.createElement('dialog');
-    d.className = 'pencere' + (genis ? ' genis' : '');
+    d.className = 'pencere' + (genis ? ' genis' : '') + (sinif ? ' ' + sinif : '');
     d.innerHTML = String(html`<form method="dialog" novalidate>
       <header><h3>${baslik}</h3><button type="button" class="kapat" aria-label="Kapat">×</button></header>
       <div class="pencere-govde">${icerik}</div>
@@ -168,6 +168,11 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
     kutu.innerHTML = String(html`${ogeler.map((o, i) => html`<div class="secici-oge ${i === aktif ? 'aktif' : ''}" data-i="${i}">${goster(o)}</div>`)}
       ${!ogeler.length ? html`<div class="secici-bos">${bosMetin}</div>` : ''}${ekstra ? ekstra(input.value) : ''}`);
     kutu.hidden = false;
+    // Kaydırılan bir alanın içindeyse (ör. iş ekle penceresinin satır listesi) liste kesilmesin: ekrana sabitlenir
+    if (input.closest('[data-secici-sabit]') && matchMedia('(min-width: 861px)').matches) {
+      const r = input.getBoundingClientRect();
+      Object.assign(kutu.style, { position: 'fixed', left: `${r.left}px`, top: `${r.bottom + 2}px`, width: `${Math.max(r.width, 320)}px`, right: 'auto' });
+    }
   };
   const yukle = async () => {
     const benim = ++sira;
