@@ -26,6 +26,11 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
   dövizli belgede fiyatlar, toplamlar ve çıktı o para biriminde olur (çıktıda bilgi amaçlı TL karşılığı ve kur gösterilebilir).
 - Satış fişi ve cari hesap **TL** kalır: dövizli teklif/proforma satış fişine dönüştürülürken seçilen kurla (varsayılan günün TCMB kuru) TL'ye çevrilir.
 
+### 4. Ana ekranda döviz çevirici (21.11.2026)
+- Panelde küçük bir çevirici kart: tutar yaz, USD ⇄ TL ve EUR ⇄ TL anında hesaplansın (TCMB günlük kuru).
+- Kuru elle değiştirme imkânı (piyasa kuru ile hesaplamak için); KDV dahil/hariç hesap kolaylığı.
+- Üst çubuktaki kur kutusuna tıklayınca da açılabilsin (her sayfadan erişim).
+
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
 - Seri no ve garanti takibi (envanterle birleştirilebilir).
