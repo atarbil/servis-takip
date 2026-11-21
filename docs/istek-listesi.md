@@ -42,7 +42,8 @@ Mevcut kullanılan formata göre (örnek: TEKLIF.pdf):
 - `docs/gorseller/atar-logo.png`: Atar Bilişim logosu (e-posta imzasından kırpıldı, ~300 px). Sol üst köşe, giriş ekranı ve çıktılarda kullanılacak.
 - `docs/gorseller/teklif-baslik-seridi.jpg`: Teklif formunun üst şeridi (logo + CODES + marka logoları + iletişim bilgileri, 1000×222).
 - Not: Logo düşük çözünürlüklü; baskıda daha net olması için varsa logonun orijinal dosyası (PNG/SVG/PDF) istenecek.
-- Kaşe + imza görseli henüz gönderilmedi.
+- **Kaşe + imza görseli** alındı (21.11.2026), arka planı saydamlaştırıldı. Güvenlik nedeniyle GitHub'a konmadı; özellik hazır olunca Ayarlar'dan sunucuya yüklenecek (dosya sadece sunucuda, giriş yapmış yöneticiye açık).
+- Kaşe/imza **isteğe bağlı**: teklif ve proforma yazdırılırken "Kaşe ve imza ekle" seçeneği ile her belgede ayrı ayrı açılıp kapatılabilecek.
 
 ### Ortak gereksinimler (2, 3, 4 için)
 - Ayarlar'a **logo** ve **kaşe/imza görseli** yükleme alanı; teklif için ayrıca **başlık şeridi görseli** (marka logoları).
