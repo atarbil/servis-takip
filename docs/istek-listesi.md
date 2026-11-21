@@ -4,7 +4,23 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. Yöneticiye her şeyi silme yetkisi (21.11.2026)
+- Yönetici her kaydı **Sil** düğmesiyle silebilsin: işler (havuz, takvim, tamamlanmış), cariler, ürünler, satış fişleri,
+  alış faturaları, teklif/proforma, kasa/banka hareketleri (tahsilat, ödeme, masraf, virman), envanter, takvim notları, kullanıcılar.
+- Silme etkileri otomatik geri alınır:
+  - Onaylı fiş/fatura silinince cari borç/alacak ve stok hareketleri geri alınır.
+  - Tahsilat/ödeme silinince kasa ve cari bakiyesi düzelir.
+  - İş silinince sahada kullanılan malzemeler stoğa geri döner, fotoğraf ve imza dosyaları da silinir.
+  - Hareketi olan cari/ürün silinirse bağlı kayıtlar listelenir; onaylanırsa hepsiyle birlikte silinir.
+- Her silme önce ne olacağını gösteren bir onay penceresi açar (ör. "cariden 12.500 ₺ borç düşecek, 3 ürün stoğa dönecek").
+- Silinen kayıt **İşlem kayıtları**nda kim, ne zaman, neyi sildi olarak kalır.
+- Teknisyen hiçbir şeyi silemez (şu anki gibi).
+- Derlemede karar: silinenler 30 gün "Silinenler" kutusunda tutulup geri alınabilsin mi? (Öneri: evet, yanlışlıkla silmeye karşı.)
+
+### 2. İş menüsü tek başlık altında (21.11.2026)
+- Sol menüde **İşler** tek başlık; tıklanınca altında açılsın: **İş Havuzu · Takvim · Tüm İşler** (Fiyatlandırma da buraya alınabilir).
+- Alt menü açık/kapalı durumu hatırlansın; bulunulan sayfa vurgulansın; havuz ve fiyatlandırma sayı rozetleri başlıkta da görünsün.
+- Telefonda alt çubuktaki "Havuz" ve "Takvim" kısayolları aynı kalsın.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
