@@ -78,6 +78,36 @@ const veriUrl = (dosya, tur) => `data:image/${tur};base64,${fs.readFileSync(dosy
   await p.click('dialog.pencere[open] button[type=submit]');
   await yazdirGoruntusu('B3_makbuz');
 
+  // Stok listesi: filtreleyip seç, teklife ekle
+  await api('POST', '/urunler', { ad: 'Dome Kamera 2MP', marka: 'Hikvision', model: 'DS-2CD1123G0E-I', ana_grup: 'Güvenlik Kamerası', alt_grup: 'IP Kamera', onerilen_satis: 1500 });
+  await api('POST', '/urunler', { ad: 'Bullet Kamera 4MP', marka: 'Hikvision', model: 'DS-2CD1043G2-I', ana_grup: 'Güvenlik Kamerası', alt_grup: 'IP Kamera', onerilen_satis: 1900 });
+  await api('POST', '/urunler', { ad: 'NVR 8 Kanal', marka: 'Dahua', model: 'NVR4108HS', ana_grup: 'Güvenlik Kamerası', alt_grup: 'Kayıt Cihazı', onerilen_satis: 3200 });
+  await p.goto(`${T}/#/teklif/${tk.id}`);
+  await p.waitForSelector('[data-stok-listesi]');
+  await p.click('[data-stok-listesi]');
+  await p.waitForSelector('#sl-liste tr[data-u]');
+  await p.selectOption('#sl-ana', 'Güvenlik Kamerası');
+  await p.waitForTimeout(400);
+  await p.selectOption('#sl-alt', 'IP Kamera');
+  await p.waitForTimeout(400);
+  const satirSay = await p.locator('#sl-liste tr[data-u]').count();
+  if (satirSay !== 2) hatalar.push(`Stok listesi filtresi 2 ürün göstermeliydi, ${satirSay} gösterdi`);
+  await p.locator('#sl-liste tr[data-u]').nth(0).click();
+  await p.fill('#sl-liste tr[data-u]:nth-child(2) [data-mik]', '4');
+  await p.screenshot({ path: `${EKRAN}/D1_stok_listesi.png` });
+  await p.click('dialog.pencere[open] button[type=submit]');
+  await p.waitForTimeout(400);
+  const kalem = await p.locator('#toplam .genel').innerText();
+  await p.click('[data-a=kaydet]'); await p.waitForTimeout(500);
+  const tk2 = await api('GET', `/teklifler/${tk.id}`);
+  if (tk2.satirlar.length !== 3) hatalar.push(`Teklifte 3 kalem olmalıydı: ${tk2.satirlar.length}`);
+  console.log('Stok listesinden eklendi, teklif toplamı:', kalem.replace(/\s+/g, ' '), '| kalem sayısı:', tk2.satirlar.length);
+  // Kalem açıklamasına model yazınca öneri
+  await p.click('[data-ekle]');
+  await p.locator('.urun-ara').last().fill('NVR4108');
+  await p.waitForSelector('.secici-oge >> text=NVR 8 Kanal', { timeout: 4000 }).catch(() => hatalar.push('Model yazınca öneri gelmedi'));
+  await p.screenshot({ path: `${EKRAN}/D2_urun_onerisi.png` });
+
   // Yeni ekranlar
   for (const [yol, ad] of [['panel', 'B4_panel'], ['fiyatlandirma', 'B5_fiyatlandirma'], ['teklifler', 'B6_teklifler'], ['ayarlar/firma', 'B7_ayarlar_firma']]) {
     await p.goto(`${T}/#/${yol}`); await p.waitForTimeout(900); await p.screenshot({ path: `${EKRAN}/${ad}.png`, fullPage: true });

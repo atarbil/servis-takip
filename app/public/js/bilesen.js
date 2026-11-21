@@ -1,6 +1,6 @@
 // Sayfalar arası ortak parçalar
 import { api } from './api.js';
-import { html, $, pencere, secici, bildir, para, miktar, sayiCoz, yerelDT, bugunStr, bakiyeHucre, esc } from './ui.js';
+import { html, $, pencere, secici, bildir, para, miktar, sayiCoz, sayiGiris, yerelDT, bugunStr, bakiyeHucre, esc, debounce } from './ui.js';
 
 // ---------- Cari seçici ----------
 // input'a bağlanır, seçilen cari {id, unvan, ...} sec() ile döner. yeniIzin: listede "Yeni cari oluştur" seçeneği
@@ -65,16 +65,88 @@ export async function cariFormu(cari, varsayilan = {}) {
 }
 
 // ---------- Ürün seçici ----------
+export const urunAltBilgi = (u) => [u.marka, u.model, [u.ana_grup, u.alt_grup].filter(Boolean).join(' › '), u.kod].filter(Boolean).join(' · ');
+
 export function urunSecici(input, sec, { yonetici = true, yeniIzin = false } = {}) {
   return secici(input, {
     getir: (q) => api.get('/urunler', { q, limit: 30 }),
-    goster: (u) => html`<b>${u.ad}</b><small>${[u.kod, u.kategori].filter(Boolean).join(' · ')}
-      ${yonetici && u.stok_miktari !== undefined ? html` · Stok: ${miktar(u.stok_miktari)} ${u.birim}` : ''}
-      ${yonetici && u.ort_maliyet ? html` · Maliyet: ${para(u.ort_maliyet)}` : ''}
-      ${u.onay_bekliyor ? html` · <span class="rozet turuncu">onay bekliyor</span>` : ''}</small>`,
+    goster: (u) => html`<div class="urun-oneri"><div class="ad"><b>${u.ad}</b>${u.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
+        <small>${urunAltBilgi(u)}</small></div>
+      ${yonetici && u.stok_miktari !== undefined ? html`<div class="deger"><span class="${u.stok_miktari > 0 ? 'stokta' : 'stok-yok'}">${miktar(u.stok_miktari)} ${u.birim}</span>
+        ${u.onerilen_satis != null ? html`<small>${para(u.onerilen_satis)}</small>` : ''}</div>` : ''}</div>`,
     sec,
     bosMetin: 'Ürün bulunamadı',
     ekstra: yeniIzin ? (q) => html`<span class="secici-ekstra" data-yeni-urun="${q}">+ "${q || 'Yeni ürün'}" oluştur</span>` : null,
+  });
+}
+
+// ---------- Stok listesi: filtreli, çoklu seçimli ürün ekleme penceresi ----------
+// Seçilen ürünleri [{urun, miktar}] olarak döndürür. fiyat: 'satis' (fiş/teklif) veya 'maliyet' (alış)
+export async function stokListesi({ fiyat = 'satis', baslik = 'Stok listesi' } = {}) {
+  const gruplar = await api.get('/urun-gruplari');
+  const f = { q: '', marka: '', ana_grup: '', alt_grup: '', stokta: '' };
+  const secilen = new Map(); // urun_id -> {urun, miktar}
+  let liste = [];
+  return pencere({
+    baslik, genis: true, kaydetMetin: 'Seçilenleri ekle',
+    icerik: html`<div class="stok-filtre">
+        <input type="search" id="sl-q" placeholder="Ara: ad, model, marka, kod…" autofocus>
+        <select id="sl-marka"><option value="">Tüm markalar</option>${gruplar.markalar.map((m) => html`<option>${m}</option>`)}</select>
+        <select id="sl-ana"><option value="">Tüm ana gruplar</option>${gruplar.gruplar.map((g) => html`<option>${g.ana}</option>`)}</select>
+        <select id="sl-alt" disabled><option value="">Tüm alt gruplar</option></select>
+        <label class="kutu-sec" style="margin:0;white-space:nowrap"><input type="checkbox" id="sl-stokta"> Sadece stokta olanlar</label>
+      </div>
+      <div class="stok-liste" id="sl-liste"></div>`,
+    altBilgi: html`<span class="soluk" id="sl-secim">Seçili ürün yok</span>`,
+    acildi: (d) => {
+      const ciz = async () => {
+        liste = await api.get('/urunler', { ...f, limit: 500 });
+        $('#sl-liste', d).innerHTML = String(liste.length ? html`<table class="tablo"><thead><tr><th style="width:36px"></th><th>Ürün</th><th>Grup</th>
+            <th class="sayi">Stok</th><th class="sayi">${fiyat === 'satis' ? 'Satış fiyatı' : 'Ort. maliyet'}</th><th class="sayi" style="width:110px">Miktar</th></tr></thead><tbody>
+          ${liste.map((u) => { const s = secilen.get(u.id); return html`<tr class="${s ? 'secili' : ''}" data-u="${u.id}">
+            <td><input type="checkbox" data-sec="${u.id}" ${s ? 'checked' : ''}></td>
+            <td><b>${u.ad}</b><div class="alt-satir">${[u.marka, u.model, u.kod].filter(Boolean).join(' · ')}</div></td>
+            <td class="alt-satir">${[u.ana_grup, u.alt_grup].filter(Boolean).join(' › ')}</td>
+            <td class="sayi ${u.stok_miktari > 0 ? '' : 'negatif'}">${miktar(u.stok_miktari)} ${u.birim}</td>
+            <td class="sayi">${fiyat === 'satis' ? (u.onerilen_satis != null ? para(u.onerilen_satis) : '—') : para(u.ort_maliyet)}</td>
+            <td class="sayi"><input class="sayi" data-mik="${u.id}" inputmode="decimal" value="${s ? sayiGiris(s.miktar) : ''}" placeholder="1" style="width:90px;min-height:34px;padding:.3rem .5rem"></td></tr>`; })}</tbody></table>`
+          : html`<div class="bos-durum">Bu filtrelere uygun ürün yok.</div>`);
+      };
+      const ozet = () => { $('#sl-secim', d).textContent = secilen.size ? `${secilen.size} ürün seçildi` : 'Seçili ürün yok'; };
+      const altDoldur = () => {
+        const g = gruplar.gruplar.find((x) => x.ana === f.ana_grup);
+        const sel = $('#sl-alt', d);
+        sel.innerHTML = String(html`<option value="">Tüm alt gruplar</option>${(g?.altlar || []).map((a) => html`<option>${a}</option>`)}`);
+        sel.disabled = !g || !g.altlar.length;
+      };
+      $('#sl-q', d).addEventListener('input', debounce((e) => { f.q = e.target.value; ciz(); }, 250));
+      $('#sl-q', d).addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+      $('#sl-marka', d).onchange = (e) => { f.marka = e.target.value; ciz(); };
+      $('#sl-ana', d).onchange = (e) => { f.ana_grup = e.target.value; f.alt_grup = ''; altDoldur(); ciz(); };
+      $('#sl-alt', d).onchange = (e) => { f.alt_grup = e.target.value; ciz(); };
+      $('#sl-stokta', d).onchange = (e) => { f.stokta = e.target.checked ? '1' : ''; ciz(); };
+      const isaretle = (id, acik, miktarDeger) => {
+        const u = liste.find((x) => x.id === id);
+        if (acik) secilen.set(id, { urun: u, miktar: miktarDeger || secilen.get(id)?.miktar || 1 }); else secilen.delete(id);
+        const tr = d.querySelector(`tr[data-u="${id}"]`);
+        if (tr) { tr.classList.toggle('secili', acik); tr.querySelector('[data-sec]').checked = acik; const m = tr.querySelector('[data-mik]'); if (acik && !m.value) m.value = '1'; if (!acik) m.value = ''; }
+        ozet();
+      };
+      d.addEventListener('change', (e) => { const c = e.target.dataset.sec; if (c) isaretle(Number(c), e.target.checked); });
+      d.addEventListener('input', (e) => {
+        const m = e.target.dataset.mik; if (!m) return;
+        const v = sayiCoz(e.target.value);
+        if (v && v > 0) isaretle(Number(m), true, v); else if (!e.target.value) isaretle(Number(m), false);
+      });
+      // Satırın boş yerine tıklayınca seç/bırak
+      d.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr[data-u]');
+        if (!tr || e.target.closest('input')) return;
+        const id = Number(tr.dataset.u); isaretle(id, !secilen.has(id));
+      });
+      ciz();
+    },
+    kaydet: () => { if (!secilen.size) throw new Error('Listeden en az bir ürün seçin.'); return [...secilen.values()]; },
   });
 }
 export function urunYeniYakala(kok, sonra) {
@@ -90,7 +162,8 @@ export function urunYeniYakala(kok, sonra) {
 export async function urunFormu(urun, varsayilan = {}) {
   const u = { birim: 'adet', kdv_orani: 20, ...varsayilan, ...(urun || {}) };
   const barkodlar = [...(u.barkodlar || [])];
-  const kategoriler = await api.get('/urun-kategorileri').catch(() => []);
+  const gruplar = await api.get('/urun-gruplari').catch(() => ({ markalar: [], gruplar: [] }));
+  const altlar = [...new Set(gruplar.gruplar.flatMap((g) => g.altlar))];
   return pencere({
     baslik: urun ? 'Ürünü düzenle' : 'Yeni ürün',
     genis: true,
@@ -98,8 +171,13 @@ export async function urunFormu(urun, varsayilan = {}) {
       <div class="satir2">
         <label class="alan"><span>Ürün adı *</span><input name="ad" value="${u.ad || ''}" required></label>
         <label class="alan"><span>Ürün kodu</span><input name="kod" value="${u.kod || ''}"></label>
-        <label class="alan"><span>Kategori</span><input name="kategori" value="${u.kategori || ''}" list="kat-liste">
-          <datalist id="kat-liste">${kategoriler.map((k) => html`<option value="${k}">`)}</datalist></label>
+        <label class="alan"><span>Marka</span><input name="marka" value="${u.marka || ''}" list="marka-liste" placeholder="Örn: Hikvision">
+          <datalist id="marka-liste">${gruplar.markalar.map((k) => html`<option value="${k}">`)}</datalist></label>
+        <label class="alan"><span>Model</span><input name="model" value="${u.model || ''}" placeholder="Örn: DS-2CD1043G0-I"></label>
+        <label class="alan"><span>Ana grup</span><input name="ana_grup" value="${u.ana_grup || ''}" list="ana-liste" placeholder="Örn: Güvenlik Kamerası">
+          <datalist id="ana-liste">${gruplar.gruplar.map((g) => html`<option value="${g.ana}">`)}</datalist></label>
+        <label class="alan"><span>Alt grup</span><input name="alt_grup" value="${u.alt_grup || ''}" list="alt-liste" placeholder="Örn: IP Kamera">
+          <datalist id="alt-liste">${altlar.map((k) => html`<option value="${k}">`)}</datalist></label>
         <label class="alan"><span>Birim</span><input name="birim" value="${u.birim || 'adet'}" list="birim-liste">
           <datalist id="birim-liste"><option value="adet"><option value="metre"><option value="paket"><option value="kutu"><option value="takım"><option value="saat"></datalist></label>
         <label class="alan"><span>Önerilen satış fiyatı (KDV hariç)</span><input name="onerilen_satis" inputmode="decimal" value="${u.onerilen_satis ?? ''}"></label>

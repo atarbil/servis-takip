@@ -50,8 +50,9 @@ export default async function (el, [id], ctx) {
           <label class="alan"><span>Tarih</span><input type="date" id="t-tarih" value="${t.tarih}" ${ac ? '' : 'readonly'}></label>
           <label class="alan"><span>${t.tur === 'teklif' ? 'Geçerlilik tarihi' : 'Son ödeme / geçerlilik'}</span><input type="date" id="t-gecerlilik" value="${t.gecerlilik || ''}" ${ac ? '' : 'readonly'}></label>
         </div>
-        ${t.tur === 'teklif' ? html`<label class="alan"><span>Giriş metni</span><textarea id="t-giris" rows="2" ${ac ? '' : 'readonly'}>${t.giris_metni || ''}</textarea></label>
-          <label class="alan"><span>Kapanış metni</span><textarea id="t-kapanis" rows="2" ${ac ? '' : 'readonly'}>${t.kapanis_metni || ''}</textarea></label>` : ''}
+        ${t.tur === 'teklif' ? html`<div class="satir2 metin-cifti">
+          <label class="alan"><span>Giriş metni</span><textarea id="t-giris" rows="2" ${ac ? '' : 'readonly'}>${t.giris_metni || ''}</textarea></label>
+          <label class="alan"><span>Kapanış metni</span><textarea id="t-kapanis" rows="2" ${ac ? '' : 'readonly'}>${t.kapanis_metni || ''}</textarea></label></div>` : ''}
         <div class="satir2">
           <label class="alan" style="margin:0"><span>İç not (çıktıda görünmez)</span><input id="t-aciklama" value="${t.aciklama || ''}"></label>
           <div class="alan" style="margin:0"><span>Seçenekler</span>
@@ -80,7 +81,7 @@ export default async function (el, [id], ctx) {
             : html`<tr><td><b>${s.aciklama}</b>${s.notu ? html`<div class="alt-satir">${s.notu}</div>` : ''}</td><td class="sayi">${sayiGiris(s.miktar)}</td><td>${s.birim}</td>
               <td class="sayi">${paraSade(s.birim_fiyat)}</td><td class="sayi">${Number(s.iskonto_orani) || ''}</td><td class="sayi">${Number(s.kdv_orani)}</td><td class="sayi">${paraSade(hesap(s).net)}</td></tr>`))}
           ${!satirlar.length ? html`<tr><td colspan="8" class="bos-durum">Kalem ekleyin</td></tr>` : ''}</tbody></table></div>
-        ${ac ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Kalem</button>
+        ${ac ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Kalem</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button>
           <button class="btn ikincil kucuk" data-barkod>📷 Barkodla ürün</button>
           <span class="soluk" style="font-size:.84rem">Listeden ürün seçebilir veya stokta olmayan bir kalemi serbest yazabilirsiniz.</span></div>` : ''}</div>
       <div class="kart"><div class="kart-govde"><div class="toplam-kutu" id="toplam"></div></div></div>
@@ -145,6 +146,20 @@ export default async function (el, [id], ctx) {
     if (ud) { Object.assign(satirlar[Number(ud.dataset.urunDegistir)], { urun_id: null, aciklama: '' }); degisti = true; return ciz(); }
     const sil = e.target.closest('[data-sil]');
     if (sil) { satirlar.splice(Number(sil.dataset.sil), 1); degisti = true; return ciz(); }
+    if (e.target.closest('[data-stok-listesi]')) {
+      const { stokListesi } = await import('../bilesen.js');
+      const sec = await stokListesi({ fiyat: 'satis' });
+      if (!sec) return;
+      // Boş kalem satırı varsa önce onu doldur
+      const boslar = () => satirlar.findIndex((x) => !x.urun_id && !String(x.aciklama || '').trim());
+      for (const { urun: u, miktar: m } of sec) {
+        const v = satirlar.find((x) => x.urun_id === u.id);
+        if (v) { v.miktar = Number(v.miktar) + m; continue; }
+        const yeni = { urun_id: u.id, aciklama: u.ad, notu: '', miktar: m, birim: u.birim, birim_fiyat: Number(u.onerilen_satis || 0), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) };
+        const b = boslar(); if (b >= 0) satirlar[b] = yeni; else satirlar.push(yeni);
+      }
+      degisti = true; bildir(`${sec.length} ürün eklendi.`, 'basari'); return ciz();
+    }
     if (e.target.closest('[data-ekle]')) { satirlar.push({ urun_id: null, aciklama: '', miktar: 1, birim: 'adet', birim_fiyat: 0, iskonto_orani: 0, kdv_orani: 20 }); degisti = true; ciz(); $$('.urun-ara', el).at(-1)?.focus(); return; }
     if (e.target.closest('[data-barkod]')) {
       const { barkodOku } = await import('../barkod.js');

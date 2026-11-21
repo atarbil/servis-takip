@@ -1,27 +1,46 @@
 'use strict';
 const { zorunlu, metin, sayi, sec, setIfadesi } = require('../lib/yardim');
 
-const ALANLAR = ['kod', 'ad', 'kategori', 'birim', 'onerilen_satis', 'kdv_orani', 'kritik_stok', 'aktif'];
+const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'kdv_orani', 'kritik_stok', 'aktif'];
 
 module.exports = (r, { db, web, G, Y }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';
 
-  // Ürün arama. Teknisyen fiyat/maliyet görmez.
+  // Ürün arama. Her kelime ad, kod, marka, model veya gruplardan birinde geçmeli (Türkçe harf farkı yok sayılır).
+  // Barkod tam eşleşirse o ürün de gelir. Teknisyen fiyat/maliyet görmez.
   r.get('/urunler', G, async (req) => {
     const p = []; const k = ['u.aktif'];
-    if (req.query.q) {
-      p.push(req.query.q);
-      k.push(`(u.ad ILIKE '%' || $1 || '%' OR u.kod ILIKE $1 || '%' OR EXISTS (SELECT 1 FROM urun_barkodlari b WHERE b.urun_id = u.id AND b.barkod = $1))`);
+    const q = String(req.query.q || '').trim();
+    if (q) {
+      const kelimeler = q.split(/\s+/).filter(Boolean).slice(0, 6);
+      const kosul = kelimeler.map((w) => { p.push(w); return `urun_arama_metni(u) LIKE '%' || arama_metni($${p.length}) || '%'`; });
+      p.push(q);
+      k.push(`((${kosul.join(' AND ')}) OR EXISTS (SELECT 1 FROM urun_barkodlari b WHERE b.urun_id = u.id AND b.barkod = $${p.length}))`);
     }
     if (req.query.onay_bekliyor === '1') k.push('u.onay_bekliyor');
-    if (req.query.kategori) { p.push(req.query.kategori); k.push(`u.kategori = $${p.length}`); }
+    for (const alan of ['marka', 'ana_grup', 'alt_grup']) {
+      if (req.query[alan]) { p.push(req.query[alan]); k.push(`u.${alan} = $${p.length}`); }
+    }
+    if (req.query.kategori) { p.push(req.query.kategori); k.push(`u.ana_grup = $${p.length}`); }
+    if (req.query.stokta === '1') k.push('u.stok_miktari > 0');
     const alan = yon(req)
       ? 'u.*, (SELECT string_agg(barkod, \', \') FROM urun_barkodlari b WHERE b.urun_id = u.id) AS barkodlar'
-      : 'u.id, u.kod, u.ad, u.birim, u.kategori, u.onay_bekliyor';
-    // Teknisyen için sık kullanılanlar üstte
-    const sira = req.query.q ? 'u.ad' : '(SELECT count(*) FROM is_malzemeleri m WHERE m.urun_id = u.id AND m.zaman > now() - interval \'90 days\') DESC, u.ad';
+      : 'u.id, u.kod, u.ad, u.marka, u.model, u.ana_grup, u.alt_grup, u.birim, u.onay_bekliyor';
+    // Aramada adı yazılanla başlayanlar üstte; aramasız listede teknisyen için sık kullanılanlar üstte
+    let sira = 'u.ad';
+    if (q) { p.push(q); sira = `(arama_metni(u.ad) LIKE arama_metni($${p.length}) || '%') DESC, u.ad`; }
+    else if (!yon(req)) sira = '(SELECT count(*) FROM is_malzemeleri m WHERE m.urun_id = u.id AND m.zaman > now() - interval \'90 days\') DESC, u.ad';
     return (await db.query(`SELECT ${alan} FROM urunler u WHERE ${k.join(' AND ')} ORDER BY ${sira}
       LIMIT ${Math.min(Number(req.query.limit) || 300, 2000)}`, p)).rows;
+  });
+
+  // Filtre seçenekleri: markalar ve ana grup -> alt gruplar
+  r.get('/urun-gruplari', G, async () => {
+    const markalar = (await db.query("SELECT DISTINCT marka FROM urunler WHERE aktif AND coalesce(marka, '') <> '' ORDER BY 1")).rows.map((x) => x.marka);
+    const satir = (await db.query(`SELECT ana_grup,
+        coalesce(jsonb_agg(DISTINCT alt_grup) FILTER (WHERE coalesce(alt_grup, '') <> ''), '[]'::jsonb) AS altlar
+      FROM urunler WHERE aktif AND coalesce(ana_grup, '') <> '' GROUP BY ana_grup ORDER BY ana_grup`)).rows;
+    return { markalar, gruplar: satir.map((g) => ({ ana: g.ana_grup, altlar: (g.altlar || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'tr')) })) };
   });
 
   r.get('/urunler/barkod/:barkod', G, async (req) => {
@@ -32,7 +51,7 @@ module.exports = (r, { db, web, G, Y }) => {
   });
 
   r.get('/urun-kategorileri', Y, async () => (await db.query(
-    'SELECT DISTINCT kategori FROM urunler WHERE kategori IS NOT NULL ORDER BY 1')).rows.map((x) => x.kategori));
+    "SELECT DISTINCT ana_grup FROM urunler WHERE coalesce(ana_grup, '') <> '' ORDER BY 1")).rows.map((x) => x.ana_grup));
 
   r.get('/urunler/:id', Y, async (req) => {
     const u = (await db.query('SELECT * FROM urunler WHERE id = $1', [req.params.id])).rows[0];

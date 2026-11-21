@@ -7,6 +7,7 @@ module.exports = (r, { db, web, oturum, AYAR, G }) => {
   r.get('/durum', async (req) => ({
     kurulum_gerekli: (await kullaniciSayisi()) === 0,
     kullanici: req.kullanici,
+    firma_adi: (await db.query("SELECT deger FROM ayarlar WHERE anahtar = 'firma_adi'")).rows[0]?.deger || null,
   }));
 
   // İlk açılış: yönetici hesabı + varsayılan ekipler ve kasa

@@ -9,7 +9,7 @@ export default async function (el, [id], ctx) {
   ctx.baslik(u.ad);
   el.innerHTML = String(html`
     <div class="detay-ust"><div style="flex:1;min-width:240px"><a href="#/urunler" class="btn-metin">← Ürünler</a>
-      <h2>${u.ad}</h2><div class="soluk">${[u.kod, u.kategori, u.birim].filter(Boolean).join(' · ')}${!u.aktif ? ' · PASİF' : ''}</div></div>
+      <h2>${u.ad}</h2><div class="soluk">${[u.marka, u.model, [u.ana_grup, u.alt_grup].filter(Boolean).join(' › '), u.kod, u.birim].filter(Boolean).join(' · ')}${!u.aktif ? ' · PASİF' : ''}</div></div>
       <div class="btn-grup"><button class="btn ikincil" data-a="duzenle">Düzenle</button><button class="btn ikincil" data-a="sayim">Stok sayımı</button></div></div>
     ${u.onay_bekliyor ? html`<div class="uyari-kutu"><b>Bu ürün sahada teknisyen tarafından eklendi ve maliyet onayı bekliyor.</b>
       ${u.sahadan_not ? html`<br>Teknisyen notu: ${u.sahadan_not}` : ''}

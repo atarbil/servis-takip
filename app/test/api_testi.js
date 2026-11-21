@@ -57,6 +57,23 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Cariler eklendi', musteri.id && tedarikci.id);
   const kamera = (await y('POST', '/urunler', { ad: 'IP Kamera 4MP', kod: 'KAM-01', onerilen_satis: 2000, barkodlar: ['8690000000011'] })).veri;
   const kablo = (await y('POST', '/urunler', { ad: 'CAT6 Kablo', birim: 'metre', onerilen_satis: 25, barkodlar: ['8690000000028'] })).veri;
+  // Marka, model, ana grup, alt grup ve çok alanlı arama
+  const hik = (await y('POST', '/urunler', { ad: 'Dome Kamera 2MP', marka: 'Hikvision', model: 'DS-2CD1123G0E-I', ana_grup: 'Güvenlik Kamerası', alt_grup: 'IP Kamera', onerilen_satis: 1500 })).veri;
+  await y('POST', '/urunler', { ad: 'NVR 8 Kanal', marka: 'Dahua', model: 'NVR4108HS', ana_grup: 'Güvenlik Kamerası', alt_grup: 'Kayıt Cihazı' });
+  await y('POST', '/urunler', { ad: 'Lazer Yazıcı', marka: 'Brother', model: 'HL-L2350DW', ana_grup: 'Yazıcı', alt_grup: 'Lazer' });
+  const ara = async (q, ek = '') => (await y('GET', `/urunler?q=${encodeURIComponent(q)}${ek}`)).veri.map((u) => u.ad);
+  kontrol('Modelden arama', (await ara('2cd1123')).includes('Dome Kamera 2MP'));
+  kontrol('Birden fazla kelime farklı alanlarda (marka + ad)', JSON.stringify(await ara('hikvision dome')) === '["Dome Kamera 2MP"]', await ara('hikvision dome'));
+  kontrol('Türkçe büyük harf / İ farkı yok sayılıyor', (await ara('GÜVENLİK KAYIT')).includes('NVR 8 Kanal') && (await ara('guvenlik')).length === 2, await ara('GÜVENLİK KAYIT'));
+  kontrol('Grup adından arama', (await ara('lazer')).includes('Lazer Yazıcı'));
+  kontrol('Marka filtresi', JSON.stringify((await y('GET', '/urunler?marka=Dahua')).veri.map((u) => u.ad)) === '["NVR 8 Kanal"]');
+  kontrol('Ana + alt grup filtresi', JSON.stringify((await y('GET', '/urunler?ana_grup=' + encodeURIComponent('Güvenlik Kamerası') + '&alt_grup=' + encodeURIComponent('IP Kamera'))).veri.map((u) => u.ad)) === '["Dome Kamera 2MP"]');
+  x = await y('GET', '/urun-gruplari');
+  kontrol('Marka ve grup listesi', x.veri.markalar.join(',') === 'Brother,Dahua,Hikvision'
+    && JSON.stringify(x.veri.gruplar.find((g) => g.ana === 'Güvenlik Kamerası').altlar) === '["IP Kamera","Kayıt Cihazı"]', x.veri);
+  const tekAra = (await t('GET', '/urunler?q=hikvision')).veri[0];
+  kontrol('Teknisyen aramasında marka/model var, fiyat yok', tekAra?.model === 'DS-2CD1123G0E-I' && tekAra.onerilen_satis === undefined, tekAra);
+  void hik;
   x = await y('POST', '/urunler', { ad: 'Başka', barkodlar: ['8690000000011'] });
   kontrol('Aynı barkod ikinci ürüne verilemez', x.durum === 409, x.veri);
   x = await y('POST', '/alislar', { cari_id: tedarikci.id, belge_no: 'A-1', satirlar: [

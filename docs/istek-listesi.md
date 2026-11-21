@@ -4,27 +4,24 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Giriş ekranı daha canlı olsun (21.11.2026)
-- İlk açılan kullanıcı giriş ekranı donuk görünüyor; efekt verilsin (hareketli arka plan, logo, yumuşak geçişler).
-
-### 2. Belgelerde "Stok listesi" düğmesi (21.11.2026)
-- Teklif, proforma, satış fişi (ve alış faturası) ekranlarında **"+ Kalem" düğmesinin yanına "Stok listesi"** yazan düğme.
-- Basınca **stok listesi ve filtre ekranı** açılsın: **marka**, **ana grup**, **alt grup** filtreleriyle; ürünler işaretlenip miktarlarıyla topluca eklensin.
-- Stok kartına eklenecek alanlar: **marka**, **model**, **ana grup**, **alt grup** (iki seviyeli ürün grubu; mevcut tek "kategori" alanının yerine geçer, mevcut kategoriler ana gruba taşınır).
-- Ürünler listesinde de aynı filtreler (marka, ana grup, alt grup) olsun.
-
-### 3. Kalem açıklamasına yazınca ürün önerisi (21.11.2026)
-- "+ Kalem" ile açılan satırda açıklamaya ürün adı yazılınca, stok kartında **adı veya modeli** geçen ürünler kendiliğinden filtrelenip listelensin.
-- Not: Şu an ad, kod ve barkodda arıyor; **marka ve model** alanlarında da arayacak, öneri listesi daha belirgin (stok, fiyat bilgisiyle) olacak.
-
-### 4. Teklif giriş/kapanış metinleri yan yana (21.11.2026)
-- Teklif ekranında giriş ve kapanış metni kutuları çok yer kaplıyor; **yan yana, yatay dikdörtgen** şeklinde daha kompakt olsun.
+_(şu an yok)_
 
 ## İsteğe bağlı fikirler
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 21.11.2026 — 2. derleme
+- **Canlı giriş ekranı:** hareketli renk geçişli arka plan, süzülen ışık efektleri ve parçacıklar, logo, kutunun ve alanların sırayla belirmesi,
+  hatalı şifrede sallanma. Hareket azaltma tercihi olan cihazlarda efektler kapanır.
+- **Stok kartı:** marka, model, ana grup, alt grup alanları (eski kategori ana gruba taşındı).
+- **"Stok listesi" düğmesi:** satış fişi, teklif/proforma ve alış faturasında "+ Kalem" yanında. Arama + marka / ana grup / alt grup
+  filtreleri, "sadece stokta olanlar", çoklu seçim ve miktar ile topluca ekleme.
+- **Ürün önerisi:** kalem açıklamasına yazınca ad, model, marka, kod ve gruplarda arar (Türkçe harf farkı yok sayılır, birden çok kelime
+  farklı alanlarda olabilir); öneride marka/model/grup, stok ve satış fiyatı görünür.
+- **Ürünler listesi:** marka / ana grup / alt grup filtreleri ve sütunları.
+- **Teklif ekranı:** giriş ve kapanış metinleri yan yana, kompakt.
 
 ### 21.11.2026 — 1. derleme
 - **Panel yenileme:** sağ üstte TCMB Dolar/Euro kuru (30 dk'da bir güncellenir); "+ İş ekle" düğmesi her sayfada;

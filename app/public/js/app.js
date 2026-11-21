@@ -1,6 +1,6 @@
 // Uygulama kabuğu: oturum, menü, sayfa yönlendirme
 import { api } from './api.js';
-import { html, $, $$, bildir, pencere } from './ui.js';
+import { html, ham, $, $$, bildir, pencere } from './ui.js';
 
 const YONETICI_MENU = [
   { yol: 'panel', ad: 'Panel', ikon: 'ev' },
@@ -57,6 +57,7 @@ window.__ctx = ctx;
 async function basla() {
   let durum;
   try { durum = await api.get('/durum'); } catch (e) { return hataEkrani(e.message); }
+  ctx.firmaAdi = durum.firma_adi;
   if (durum.kurulum_gerekli) return kurulumEkrani();
   if (!durum.kullanici) return girisEkrani();
   ctx.kullanici = durum.kullanici;
@@ -78,31 +79,45 @@ function hataEkrani(mesaj) {
     <button class="btn birincil" onclick="location.reload()">Tekrar dene</button></div></div>`);
 }
 
+// Giriş/kurulum ekranının hareketli arka planı
+function girisZemini() {
+  const parcacik = Array.from({ length: 18 }, (_, i) => {
+    const sol = (i * 53) % 100; const boy = 3 + (i % 4) * 2; const sure = 12 + (i % 7) * 3; const gecikme = -(i * 1.7);
+    return `<span class="giris-parcacik" style="left:${sol}%;width:${boy}px;height:${boy}px;animation-duration:${sure}s;animation-delay:${gecikme}s"></span>`;
+  }).join('');
+  return html`<div class="giris-izgara"></div>${ham(parcacik)}
+    <div class="giris-alt">© ${new Date().getFullYear()} ${ctx.firmaAdi && ctx.firmaAdi !== 'Firma Adı' ? ctx.firmaAdi + ' · ' : ''}Servis Takip</div>`;
+}
+
 function girisEkrani() {
-  document.body.innerHTML = String(html`<div class="giris-kap"><form class="giris-kutu" id="giris-form">
+  const firma = ctx.firmaAdi && ctx.firmaAdi !== 'Firma Adı' ? ctx.firmaAdi : '';
+  document.body.innerHTML = String(html`<div class="giris-kap">${girisZemini()}<form class="giris-kutu" id="giris-form">
     <img class="giris-logo" src="/logo" alt="" onerror="this.remove()">
-    <h1>Servis Takip</h1>
+    <h1>Hoş geldiniz</h1>
+    <p class="alt-yazi">${firma ? `${firma} · ` : ''}Servis Takip</p>
     <label class="alan"><span>Kullanıcı adı</span><input name="kullanici_adi" autocomplete="username" autocapitalize="none" required></label>
     <label class="alan"><span>Şifre</span><input name="sifre" type="password" autocomplete="current-password" required></label>
     <div class="form-hata" hidden></div>
     <button class="btn birincil tam">Giriş yap</button></form></div>`);
   const f = $('#giris-form');
-  $('input', f).focus();
+  setTimeout(() => $('input', f).focus(), 400);
   f.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btn = $('button', f); btn.disabled = true;
+    const btn = $('button', f); btn.disabled = true; btn.textContent = 'Giriş yapılıyor…';
     try {
       await api.post('/giris', { kullanici_adi: f.kullanici_adi.value, sifre: f.sifre.value });
-      location.hash = '';
-      location.reload();
+      f.style.transition = 'opacity .3s, transform .3s'; f.style.opacity = '0'; f.style.transform = 'scale(.97)';
+      setTimeout(() => { location.hash = ''; location.reload(); }, 250);
     } catch (err) {
-      const h = $('.form-hata', f); h.textContent = err.message; h.hidden = false; btn.disabled = false;
+      const h = $('.form-hata', f); h.textContent = err.message; h.hidden = false;
+      btn.disabled = false; btn.textContent = 'Giriş yap';
+      f.classList.remove('salla'); void f.offsetWidth; f.classList.add('salla');
     }
   });
 }
 
 function kurulumEkrani() {
-  document.body.innerHTML = String(html`<div class="giris-kap"><form class="giris-kutu" id="kurulum-form">
+  document.body.innerHTML = String(html`<div class="giris-kap">${girisZemini()}<form class="giris-kutu" id="kurulum-form">
     <div class="logo-buyuk">ST</div>
     <h1>Hoş geldiniz</h1>
     <p class="soluk">İlk kurulum: firma bilgisi ve yönetici hesabınızı oluşturun.</p>

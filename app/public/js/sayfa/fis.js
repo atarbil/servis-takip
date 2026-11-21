@@ -65,7 +65,7 @@ export default async function (el, [id], ctx) {
           <th class="sayi">Birim fiyat ${kdvDahil && taslak ? '(KDV dahil)' : '(KDV hariç)'}</th><th class="sayi">İsk.%</th><th class="sayi">KDV%</th><th class="sayi">Tutar</th><th class="sayi">Maliyet</th>${taslak ? html`<th></th>` : ''}</tr></thead>
           <tbody id="satirlar">${satirlar.map((s, i) => satirHtml(s, i, taslak))}</tbody></table></div>
         ${taslak ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)">
-          <button class="btn ikincil kucuk" data-ekle="urun">+ Ürün</button><button class="btn ikincil kucuk" data-ekle="iscilik">+ İşçilik</button>
+          <button class="btn ikincil kucuk" data-ekle="urun">+ Ürün</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button><button class="btn ikincil kucuk" data-ekle="iscilik">+ İşçilik</button>
           <button class="btn ikincil kucuk" data-ekle="hizmet">+ Hizmet</button><button class="btn ikincil kucuk" data-ekle="barkod">📷 Barkodla ürün</button></div>` : ''}
       </div>
       <div class="kart"><div class="kart-govde"><div class="toplam-kutu" id="toplam"></div></div></div>`);
@@ -184,6 +184,17 @@ export default async function (el, [id], ctx) {
     }
     const sil = e.target.closest('[data-sil]');
     if (sil) { satirlar.splice(Number(sil.dataset.sil), 1); degisti = true; return ciz(); }
+    if (e.target.closest('[data-stok-listesi]')) {
+      const { stokListesi } = await import('../bilesen.js');
+      const sec = await stokListesi({ fiyat: 'satis' });
+      if (!sec) return;
+      for (const { urun: u, miktar: m } of sec) {
+        const v = satirlar.find((x) => x.urun_id === u.id && x.stoktan_dus !== false);
+        if (v) v.miktar = Number(v.miktar) + m;
+        else satirlar.push({ tip: 'urun', urun_id: u.id, aciklama: u.ad, miktar: m, birim: u.birim, birim_fiyat: Number(u.onerilen_satis || 0), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20), _tahmin: Number(u.ort_maliyet || 0), onay_bekliyor: u.onay_bekliyor });
+      }
+      degisti = true; bildir(`${sec.length} ürün eklendi.`, 'basari'); return ciz();
+    }
     const ek = e.target.closest('[data-ekle]')?.dataset.ekle;
     if (ek) {
       if (ek === 'barkod') {
