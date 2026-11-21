@@ -31,6 +31,16 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Düzen **kullanıcıya özeldir** ve sunucuda saklanır: bilgisayarda yapılan düzen telefonda da geçerli
   (telefonda tek sütun, sırası aynı). Telefonda sürükleme yerine ↑ ↓ düğmeleri.
 
+### 4. "+ İş ekle"de cari bağlama ve işten cariye kayıt (22.11.2026)
+- "+ İş ekle" penceresinde **Cari** alanı: aranıp seçilir veya oradan yeni cari açılır (telefondan otomatik eşleşme de kalır).
+- İki kullanım:
+  - **Havuza at (bugünkü gibi):** iş cariye bağlı olarak havuza düşer; teknisyen sahada hizmet/malzeme ekler, iş bitince
+    fiyatlandırmaya gelir ve fiş onaylanınca cariye borç yazılır.
+  - **İşi ben yaptım / hemen kaydet:** aynı pencerede verilen hizmet (işçilik/hizmet satırı) ve kullanılan malzemeler
+    (ürün ara veya barkod) girilir. Kaydedince iş "tamamlandı" olur ve o cariye **taslak satış fişi** açılır; fiyatları orada
+    yazıp **Onayla** deyince müşteri borçlanır. Fiyat girilen satırlarla doğrudan da onaylanabilir.
+- İş detayında ve cari kartında bu kayıt görünür; malzemeler stoktan düşer (mevcut kurallarla).
+
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
 - Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
