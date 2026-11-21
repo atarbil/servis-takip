@@ -56,6 +56,7 @@ POSTGRES_PASSWORD=$(openssl rand -hex 24)
 OTURUM_GIZLI=$(openssl rand -hex 32)
 YEDEK_SAKLAMA_GUN=30
 UZAK_YEDEK_HEDEF=
+TELEGRAM_TOKEN=
 EOF
     chmod 600 .env
     echo ".env oluşturuldu (şifreler rastgele üretildi)."

@@ -1,5 +1,6 @@
 'use strict';
-const { zorunlu, metin, sayi, pozitif, gorselKaydet, mesajCoz, sec, setIfadesi } = require('../lib/yardim');
+const { zorunlu, metin, sayi, pozitif, gorselKaydet, sec, setIfadesi } = require('../lib/yardim');
+const { hizliIsEkle } = require('../lib/hizliis');
 
 module.exports = (r, { db, web, AYAR, G, Y }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';
@@ -101,13 +102,8 @@ module.exports = (r, { db, web, AYAR, G, Y }) => {
   r.post('/isler/hizli', Y, async (req) => {
     const mesaj = metin(req.body.mesaj);
     if (!mesaj) throw web.hata(400, 'Mesaj boş olamaz.');
-    const { telefon, baslik } = mesajCoz(mesaj);
-    return db.islem(req.kullanici.id, async (q) => {
-      const cari = telefon ? await q.bir(`SELECT id, unvan, adres FROM cariler WHERE id = cari_telefonla_bul($1)`, [telefon]) : null;
-      const { id } = await q.bir(`SELECT is_olustur($1, $2, $3, $4, NULL, $5, $6::smallint, $7, NULL, $8) AS id`, [
-        baslik, mesaj, cari?.id || null, cari?.adres || null, telefon, req.body.oncelik || 2,
-        req.body.plan_baslangic || null, req.body.ekip_id || null]);
-      return { id, baslik, telefon, cari: cari ? { id: cari.id, unvan: cari.unvan } : null };
+    return hizliIsEkle(db, req.kullanici.id, mesaj, {
+      oncelik: Number(req.body.oncelik) || undefined, planBaslangic: req.body.plan_baslangic || null, ekipId: req.body.ekip_id || null,
     });
   });
 

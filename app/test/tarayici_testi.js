@@ -269,7 +269,7 @@ async function sec(p, inputSec, metin, secim) {
   ok(`Tahsilat 5.000 ₺ alındı · cari kartı: ${bakiye.replace(/\s+/g, ' ')}`);
 
   // 11) Diğer sayfalar
-  for (const [yol, ad] of [['panel', '17_panel'], ['kasa', '18_kasa'], ['raporlar/is-karlilik', '19_rapor_karlilik'], ['raporlar/yillik', '19b_rapor_yillik'], ['urunler', '19c_urunler'], ['isler', '19d_isler'], ['ayarlar/denetim', '19e_denetim'], ['fisler', '19f_fisler'], ['takvim', '19g_takvim_son']]) {
+  for (const [yol, ad] of [['panel', '17_panel'], ['kasa', '18_kasa'], ['raporlar/is-karlilik', '19_rapor_karlilik'], ['raporlar/yillik', '19b_rapor_yillik'], ['urunler', '19c_urunler'], ['isler', '19d_isler'], ['ayarlar/denetim', '19e_denetim'], ['ayarlar/telegram', '19h_telegram'], ['fisler', '19f_fisler'], ['takvim', '19g_takvim_son']]) {
     await y.goto(T + '/#/' + yol);
     await y.waitForTimeout(700);
     await foto(y, ad);

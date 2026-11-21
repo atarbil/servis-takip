@@ -38,6 +38,24 @@ Kamera açılamazsa barkod elle yazılabilir. Bilgisayarda USB barkod okuyucu da
 - API: 70'e yakın kontrol, teknisyen kısıtları dahil (`app/test/api_testi.js`)
 - Gerçek tarayıcıda uçtan uca senaryo: kurulum → alış faturası → havuz → takvime sürükle-bırak → teknisyen telefonda barkod, imza, tamamla → fiş → tahsilat → ekstre (`app/test/tarayici_testi.js`)
 
+## Telegram botu (havuza iş ekleme)
+
+Bota yazılan her mesaj havuza iş olarak eklenir. Telefon numarası varsa müşteri otomatik bulunur,
+**acil** diye başlayan mesajlar acil olur, rehberden paylaşılan kişiyle de iş açılır.
+Komutlar: `/havuz`, `/bugun`, `/yardim`. Sadece programa bağlanmış **yönetici** hesaplarından gelen mesajlar kabul edilir.
+
+**Kurulum (bir kez):**
+1. Telegram'da **@BotFather**'ı açın → `/newbot` → bota bir ad verin (örn. *Atar Servis*), sonra `_bot` ile biten bir kullanıcı adı (örn. `atarservis_bot`).
+2. BotFather'ın verdiği **anahtarı** (`123456789:AA...`) kopyalayın. Bu anahtar gizlidir, kimseyle paylaşmayın.
+3. Sunucuda:
+   ```bash
+   cd /opt/servis-takip
+   grep -q '^TELEGRAM_TOKEN=' .env || echo 'TELEGRAM_TOKEN=' >> .env
+   nano .env        # TELEGRAM_TOKEN= satırının sonuna anahtarı yapıştırın, Ctrl+O, Enter, Ctrl+X
+   docker compose up -d
+   ```
+4. Programda **Ayarlar → Telegram** → **Telegram hesabımı bağla** → çıkan `/baglan KOD` mesajını bota gönderin.
+
 ## Natro'da kurulum
 
 ### 1. Sunucu

@@ -28,8 +28,19 @@ const yonetici = (req) => {
   if (req.kullanici.rol !== 'yonetici') throw web.hata(403, 'Bu işlem için yetkiniz yok.');
 };
 
-const ctx = { db, AYAR, web, oturum, G: girisGerekli, Y: yonetici };
-for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar']) {
+// Telegram botu (TELEGRAM_TOKEN ayarlıysa)
+const { TelegramBot } = require('./lib/telegram');
+const telegram = process.env.TELEGRAM_TOKEN
+  ? new TelegramBot({
+    token: process.env.TELEGRAM_TOKEN.trim(),
+    db,
+    apiUrl: process.env.TELEGRAM_API,
+    uygulamaUrl: process.env.ALAN_ADI ? `https://${process.env.ALAN_ADI}` : null,
+  })
+  : null;
+
+const ctx = { db, AYAR, web, oturum, telegram, G: girisGerekli, Y: yonetici };
+for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram']) {
   require(`./routes/${modul}`)(r, ctx);
 }
 
@@ -113,9 +124,10 @@ async function basla() {
   }
   await semaGuncelle(db, AYAR.dbKlasor);
   sunucu.listen(AYAR.port, () => console.log(`Servis Takip ${AYAR.port} portunda çalışıyor`));
+  if (telegram) telegram.basla();
 }
 
-process.on('SIGTERM', () => sunucu.close(() => db.kapat().then(() => process.exit(0))));
+process.on('SIGTERM', () => { telegram?.durdur(); sunucu.close(() => db.kapat().then(() => process.exit(0))); setTimeout(() => process.exit(0), 5000).unref(); });
 basla().catch((e) => { console.error('Başlatılamadı:', e); process.exit(1); });
 
 module.exports = { sunucu, db };

@@ -32,6 +32,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       OTURUM_GIZLI: ${OTURUM_GIZLI}
       ALAN_ADI: ${ALAN_ADI}
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN:-}
       TZ: Europe/Istanbul
       PORT: "3000"
     volumes:

@@ -1,10 +1,10 @@
 import { api } from '../api.js';
-import { html, $, $$, zaman, pencere, bildir, para } from '../ui.js';
+import { html, $, $$, zaman, pencere, bildir, para, onayla } from '../ui.js';
 
 export default async function (el, [secili], ctx) {
   ctx.baslik('Ayarlar');
   let sekme = secili || 'firma';
-  el.innerHTML = String(html`<div class="sekmeler">${[['firma', 'Firma bilgileri'], ['kullanicilar', 'Kullanıcılar'], ['ekipler', 'Ekipler'], ['hesaplar', 'Kasa / banka hesapları'], ['denetim', 'İşlem kayıtları']]
+  el.innerHTML = String(html`<div class="sekmeler">${[['firma', 'Firma bilgileri'], ['kullanicilar', 'Kullanıcılar'], ['ekipler', 'Ekipler'], ['hesaplar', 'Kasa / banka hesapları'], ['telegram', 'Telegram'], ['denetim', 'İşlem kayıtları']]
     .map(([k, a]) => html`<button data-s="${k}">${a}</button>`)}</div><div id="s"></div>`);
 
   async function ciz() {
@@ -82,6 +82,43 @@ export default async function (el, [secili], ctx) {
       }).then((r) => { if (r) ciz(); });
       $('#h-yeni', k).onclick = () => form(null);
       k.onclick = (ev) => { const b = ev.target.closest('[data-h]'); if (b) form(h.find((x) => x.id === Number(b.dataset.h))); };
+    } else if (sekme === 'telegram') {
+      const t = await api.get('/telegram');
+      const bot = t.bot?.kullanici_adi;
+      k.innerHTML = String(html`<div class="izgara esit">
+        <div class="kart"><div class="kart-ust"><h3>Telegram ile havuza iş ekleme</h3></div><div class="kart-govde">
+          ${!t.yapilandirildi ? html`<div class="uyari-kutu"><b>Bot henüz kurulmamış.</b> Sunucuda <code>.env</code> dosyasına
+              <code>TELEGRAM_TOKEN</code> eklenmeli. Kurulum adımları README dosyasında.</div>`
+            : t.bot?.son_hata ? html`<div class="uyari-kutu">Bot Telegram'a bağlanamıyor: ${t.bot.son_hata}</div>`
+              : html`<div class="basari-kutu">Bot çalışıyor: <b>@${bot || '…'}</b></div>`}
+          <p>Bota yazdığınız her mesaj <b>havuza iş</b> olarak eklenir. Mesajda telefon numarası varsa müşteri otomatik bulunur,
+            <b>acil</b> diye başlayan mesajlar acil öncelikli olur. Rehberden kişi paylaşırsanız ad ve telefonla iş açılır.</p>
+          <p class="soluk">Komutlar: <code>/havuz</code> havuzda bekleyenler · <code>/bugun</code> bugünkü işler</p>
+          ${t.benim ? html`<div class="bilgi-kutu">Telegram hesabınız bağlı: <b>${t.benim.ad}</b></div>
+              <button class="btn tehlike-cizgi" data-tg-kaldir="">Bağlantıyı kaldır</button>`
+            : t.yapilandirildi ? html`<button class="btn birincil" id="tg-kod">Telegram hesabımı bağla</button><div id="tg-kod-alan"></div>` : ''}
+        </div></div>
+        <div class="kart"><div class="kart-ust"><h3>Bağlı hesaplar</h3></div><div class="kart-govde sifir">
+          ${t.bagli_hesaplar.length ? html`<table class="tablo"><tbody>${t.bagli_hesaplar.map((b) => html`<tr><td><b>${b.ad_soyad}</b><div class="alt-satir">${b.telegram_ad || ''}</div></td>
+            <td>${b.rol === 'yonetici' ? 'Yönetici' : 'Teknisyen'}</td><td class="sayi"><button class="btn ikincil kucuk" data-tg-kaldir="${b.id}">Kaldır</button></td></tr>`)}</tbody></table>`
+            : html`<div class="bos-durum">Bağlı hesap yok</div>`}
+          <p class="soluk" style="padding:0 1rem;font-size:.85rem">Sadece bağlı <b>yönetici</b> hesaplarından gelen mesajlar işe çevrilir; diğer kişilerin mesajları reddedilir.</p>
+        </div></div></div>`);
+      const kb = $('#tg-kod', k);
+      if (kb) kb.onclick = async () => {
+        try {
+          const r = await api.post('/telegram/kod');
+          $('#tg-kod-alan', k).innerHTML = String(html`<div class="bilgi-kutu" style="margin-top:1rem">
+            <b>1.</b> Telegram'da ${r.bot ? html`<a href="https://t.me/${r.bot}" target="_blank" rel="noopener"><b>@${r.bot}</b></a>` : 'botunuzu'} açın.<br>
+            <b>2.</b> Şunu gönderin: <code style="font-size:1.15rem;user-select:all">/baglan ${r.kod}</code><br>
+            <small>Kod ${r.gecerlilik_dk} dakika geçerlidir ve tek kullanımlıktır. Bağladıktan sonra bu sayfayı yenileyin.</small></div>`);
+        } catch (err) { bildir(err.message, 'hata'); }
+      };
+      k.onclick = async (e) => {
+        const b = e.target.closest('[data-tg-kaldir]');
+        if (!b || !await onayla('Telegram bağlantısı kaldırılsın mı? Bu hesaptan gelen mesajlar artık kabul edilmez.', { evet: 'Kaldır', tehlike: true })) return;
+        try { await api.post('/telegram/kaldir', b.dataset.tgKaldir ? { kullanici_id: Number(b.dataset.tgKaldir) } : {}); bildir('Bağlantı kaldırıldı.'); ciz(); } catch (err) { bildir(err.message, 'hata'); }
+      };
     } else {
       const d = await api.get('/denetim');
       const TABLO = { isler: 'İş', cariler: 'Cari', cari_hareketler: 'Cari hareket', satis_fisleri: 'Satış fişi', satis_fisi_satirlari: 'Fiş satırı', alis_faturalari: 'Alış faturası',

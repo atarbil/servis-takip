@@ -47,7 +47,7 @@ export default async function (el, [id], ctx) {
             ${is.aciklama ? html`<dt>Açıklama</dt><dd style="white-space:pre-wrap">${is.aciklama}</dd>` : ''}
             ${is.teknisyen_notu ? html`<dt>Teknisyen notu</dt><dd style="white-space:pre-wrap">${is.teknisyen_notu}</dd>` : ''}
             ${is.baslama_zamani ? html`<dt>Sahada</dt><dd>${zaman(is.baslama_zamani)} → ${is.bitis_zamani ? zaman(is.bitis_zamani) : 'devam ediyor'}</dd>` : ''}
-            <dt>Kayıt</dt><dd>${zaman(is.olusturma)} · ${is.olusturan || ''}</dd>
+            <dt>Kayıt</dt><dd>${zaman(is.olusturma)} · ${is.olusturan || ''}${is.kaynak === 'telegram' ? ' · 📱 Telegram\'dan' : ''}</dd>
           </dl>
           ${is.ham_mesaj && is.ham_mesaj !== is.baslik ? html`<div style="margin-top:.8rem"><small>Telefonda yazılan ilk not</small><div class="ham-mesaj">${is.ham_mesaj}</div></div>` : ''}
         </div></div>
