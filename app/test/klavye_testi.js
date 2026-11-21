@@ -89,6 +89,14 @@ const kontrol = (ad, kosul, ek) => { if (kosul) console.log('OK  ', ad); else { 
   await p.uncheck('#maliyet-goster'); await p.waitForTimeout(150);
   kontrol('Maliyet sütunu gizlendi', !(await p.isVisible('th.maliyet')));
   await p.check('#maliyet-goster');
+  // Üst çubuktaki "+ İş ekle" penceresi işi havuza ekler
+  const havuzOnce = (await api('GET', '/havuz')).length;
+  await p.click('#btn-hizli'); await p.waitForSelector('dialog textarea');
+  await p.keyboard.type('acil Hızlı ekleme denemesi 0532 111 22 33');
+  await tus('Control+Enter'); await p.waitForTimeout(700);
+  const havuz = await api('GET', '/havuz');
+  kontrol('+ İş ekle penceresi havuza ekledi', havuz.length === havuzOnce + 1 && havuz.some((x) => x.baslik.includes('Hızlı ekleme denemesi') && x.oncelik === 1), havuz.length);
+  kontrol('+ İş ekle penceresi kapandı', !(await p.isVisible('dialog')));
   // Telefon görünümü
   const m = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'tr-TR' });
   const mp = await m.newPage(); mp.on('pageerror', (e) => hatalar.push('mobil: ' + e.message));

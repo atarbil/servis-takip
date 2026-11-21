@@ -27,13 +27,27 @@ export function hizliKutu(kap, ctx, sonra) {
 
 // Üst çubuktaki "+ Hızlı iş" düğmesi
 export function hizliIs(ctx) {
-  let sonuc = null;
+  // Not: pencere zaten bir form; içine ikinci form konamaz (tarayıcı yok sayar), bu yüzden alanlar doğrudan pencerede.
   pencere({
     baslik: 'Hızlı iş ekle',
-    icerik: html`<div id="hizli-p"></div>`,
-    kaydetMetin: null, iptalMetin: 'Kapat',
-    acildi: (d, kapat) => hizliKutu($('#hizli-p', d), ctx, (r) => { sonuc = r; kapat(r); }),
-  }).then(() => { if (sonuc && /havuz|panel|takvim/.test(location.hash || '#/panel')) ctx.yenile(); });
+    icerik: html`<div class="hizli-kutu">
+      <textarea name="mesaj" rows="4" autofocus placeholder="Örn: Ahmet Bey Kadıköy 4 kamera görüntü yok 0532 111 22 33"></textarea>
+      <div class="btn-grup" style="margin-top:.5rem"><label class="soluk" style="font-size:.85rem">Öncelik</label>
+        <select name="oncelik" style="width:auto"><option value="2">Normal</option><option value="1">Acil</option><option value="3">Düşük</option></select></div>
+      <p class="soluk" style="font-size:.85rem">Telefon numarası yazarsanız müşteri otomatik bulunur. "Acil" ile başlayan mesaj acil olur. Ctrl+Enter ile ekleyin.</p></div>`,
+    kaydetMetin: 'Havuza ekle',
+    acildi: (d) => {
+      const t = $('textarea', d);
+      t.focus();
+      t.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('form', d).requestSubmit(); } });
+    },
+    kaydet: async (v) => {
+      if (!String(v.mesaj || '').trim()) throw new Error('Mesajı yazın.');
+      const r = await api.post('/isler/hizli', { mesaj: v.mesaj, oncelik: Number(v.oncelik) });
+      bildir(r.cari ? `Havuza eklendi · ${r.cari.unvan} ile eşleşti` : 'Havuza eklendi (müşteri eşleşmedi, sonra bağlayabilirsiniz)', 'basari', 4500);
+      return r;
+    },
+  }).then((r) => { if (r && /havuz|panel|takvim/.test(location.hash || '#/panel')) ctx.yenile(); });
 }
 
 export function havuzKarti(i, { surukle = false } = {}) {
