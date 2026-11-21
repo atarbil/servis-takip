@@ -4,7 +4,7 @@ const http = require('node:http');
 const path = require('node:path');
 const fs = require('node:fs');
 const { Havuz } = require('./lib/pg');
-const { semaGuncelle } = require('./lib/sema');
+const { semaGuncelle, uygulamaRolu } = require('./lib/sema');
 const web = require('./lib/web');
 const oturum = require('./lib/oturum');
 
@@ -40,7 +40,7 @@ const telegram = process.env.TELEGRAM_TOKEN
   : null;
 
 const ctx = { db, AYAR, web, oturum, telegram, G: girisGerekli, Y: yonetici };
-for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram', 'teklifler', 'envanter']) {
+for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram', 'teklifler', 'envanter', 'silme']) {
   require(`./routes/${modul}`)(r, ctx);
 }
 
@@ -131,6 +131,10 @@ async function basla() {
     }
   }
   await semaGuncelle(db, AYAR.dbKlasor);
+  await uygulamaRolu(db);
+  // 30 günü dolan silinenler kalıcı olur
+  const temizle = () => db.query('SELECT silinenleri_temizle() AS n').then((x) => { if (x.rows[0].n) console.log(`[silinenler] ${x.rows[0].n} kayıt kalıcı oldu`); }).catch((e) => console.error('[silinenler]', e.message));
+  temizle(); setInterval(temizle, 6 * 3600 * 1000).unref();
   sunucu.listen(AYAR.port, () => console.log(`Servis Takip ${AYAR.port} portunda çalışıyor`));
   if (telegram) telegram.basla();
 }

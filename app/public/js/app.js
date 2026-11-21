@@ -4,10 +4,12 @@ import { html, ham, $, $$, bildir, pencere } from './ui.js';
 
 const YONETICI_MENU = [
   { yol: 'panel', ad: 'Panel', ikon: 'ev' },
-  { yol: 'havuz', ad: 'İş Havuzu', ikon: 'havuz' },
-  { yol: 'takvim', ad: 'Takvim', ikon: 'takvim' },
+  { grup: 'isler', ad: 'İşler', ikon: 'liste', sayac: 'havuz', alt: [
+    { yol: 'havuz', ad: 'İş Havuzu', ikon: 'havuz', sayac: 'havuz' },
+    { yol: 'takvim', ad: 'Takvim', ikon: 'takvim' },
+    { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
+  ] },
   { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
-  { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
   { yol: 'cariler', ad: 'Cariler', ikon: 'kisi' },
   { yol: 'envanter', ad: 'Envanter', ikon: 'cihaz' },
   { yol: 'teklifler', ad: 'Teklif / Proforma', ikon: 'belge' },
@@ -16,9 +18,19 @@ const YONETICI_MENU = [
   { yol: 'urunler', ad: 'Ürünler / Stok', ikon: 'kutu' },
   { yol: 'kasa', ad: 'Kasa / Banka', ikon: 'kasa' },
   { yol: 'raporlar', ad: 'Raporlar', ikon: 'rapor' },
+  { yol: 'silinenler', ad: 'Silinenler', ikon: 'cop' },
   { yol: 'ayarlar', ad: 'Ayarlar', ikon: 'ayar' },
 ];
 const MOBIL_ALT = ['panel', 'havuz', 'takvim', 'cariler'];
+const DUZ_MENU = YONETICI_MENU.flatMap((m) => m.alt || [m]);
+const grupAcik = (g) => { try { return localStorage.getItem('menu-' + g) !== '0'; } catch { return true; } };
+const menuLink = (m, alt = false) => html`<a href="#/${m.yol}" data-yol="${m.yol}" class="${alt ? 'alt-oge' : ''}">${ikon(m.ikon)}<span>${m.ad}</span>${m.sayac ? html`<b class="menu-sayac" data-sayac="${m.sayac}" hidden></b>` : ''}</a>`;
+const menuHtml = () => YONETICI_MENU.map((m) => (m.alt
+  ? html`<div class="menu-grup ${grupAcik(m.grup) ? 'acik' : ''}" data-grup="${m.grup}">
+      <button type="button" class="menu-baslik" aria-expanded="${grupAcik(m.grup) ? 'true' : 'false'}">${ikon(m.ikon)}<span>${m.ad}</span>
+        <b class="menu-sayac grup-sayac" data-sayac="${m.sayac}" hidden></b><span class="menu-ok">${ikon('asagi')}</span></button>
+      <div class="menu-alt"><div>${m.alt.map((a) => menuLink(a, true))}</div></div></div>`
+  : menuLink(m)));
 
 const IKON = {
   ev: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
@@ -33,6 +45,8 @@ const IKON = {
   rapor: 'M4 20V10m6 10V4m6 16v-7m4 7H2',
   ayar: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
   menu: 'M4 6h16M4 12h16M4 18h16',
+  asagi: 'M6 9l6 6 6-6',
+  cop: 'M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3',
   etiket: 'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
   cihaz: 'M4 5h16v10H4zM8 19h8M12 15v4',
   belge: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h6',
@@ -230,7 +244,7 @@ function kabukCiz() {
         <div class="yan-ust">${ctx.ayarlar.firma_logo
           ? html`<a href="#/panel" class="yan-logo" title="${firma}"><img src="/logo?v=${encodeURIComponent(ctx.ayarlar.firma_logo)}" alt="${firma}"></a>`
           : html`<div class="logo">ST</div><div class="yan-firma">${firma}</div>`}</div>
-        <nav>${YONETICI_MENU.map((m) => html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad}</span>${m.sayac ? html`<b class="menu-sayac" data-sayac="${m.sayac}" hidden></b>` : ''}</a>`)}</nav>
+        <nav>${menuHtml()}</nav>
         <div class="yan-alt">
           <div class="yan-kisi"><b>${k.ad_soyad}</b><small>Yönetici</small></div>
           <button class="btn-metin" id="btn-sifre">Şifre değiştir</button>
@@ -245,7 +259,7 @@ function kabukCiz() {
           <button class="btn birincil" id="btn-hizli">+ İş ekle</button></header>
         <main id="sayfa"></main>
       </div>
-      <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = YONETICI_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad.replace('İş ', '')}</span></a>`; })}
+      <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = DUZ_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad.replace('İş ', '')}</span></a>`; })}
         <a href="#" id="alt-daha">${ikon('menu')}<span>Menü</span></a></nav>
     </div>`);
     const yanAc = (a) => { $('#yan').classList.toggle('acik', a); $('#yan-ortu').classList.toggle('acik', a); };
@@ -253,6 +267,12 @@ function kabukCiz() {
     $('#alt-daha').onclick = (e) => { e.preventDefault(); yanAc(true); };
     $('#yan-ortu').onclick = () => yanAc(false);
     $$('#yan nav a').forEach((a) => a.addEventListener('click', () => yanAc(false)));
+    // Alt menülü başlık: aç / kapat (durum hatırlanır)
+    $$('#yan .menu-baslik').forEach((b) => b.addEventListener('click', () => {
+      const g = b.closest('.menu-grup'); const acik = !g.classList.contains('acik');
+      g.classList.toggle('acik', acik); b.setAttribute('aria-expanded', acik ? 'true' : 'false');
+      try { localStorage.setItem('menu-' + g.dataset.grup, acik ? '1' : '0'); } catch { /* */ }
+    }));
     $('#btn-hizli').onclick = async () => {
       const { hizliIs } = await import('./sayfa/havuz.js');
       hizliIs(ctx);
@@ -297,7 +317,7 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 let sonYukleme = 0;
@@ -321,6 +341,12 @@ async function yonlendir() {
   window.scrollTo(0, 0);
   const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', urun: 'urunler', teklif: 'teklifler' }[ad] || ad;
   $$('[data-yol]').forEach((a) => a.classList.toggle('aktif', a.dataset.yol === menuAd));
+  // Bulunulan sayfa bir alt menüdeyse başlık vurgulanır ve kapalıysa açılır
+  $$('#yan .menu-grup').forEach((g) => {
+    const icinde = !!g.querySelector(`[data-yol="${menuAd}"]`);
+    g.classList.toggle('aktif-grup', icinde);
+    if (icinde) g.classList.add('acik');
+  });
   sayacYukle();
   const benim = ++sonYukleme;
   if (!modul) { el.innerHTML = '<div class="bos-durum">Sayfa bulunamadı.</div>'; return; }

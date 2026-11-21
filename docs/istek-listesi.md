@@ -4,24 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Yöneticiye her şeyi silme yetkisi (21.11.2026)
-- Yönetici her kaydı **Sil** düğmesiyle silebilsin: işler (havuz, takvim, tamamlanmış), cariler, ürünler, satış fişleri,
-  alış faturaları, teklif/proforma, kasa/banka hareketleri (tahsilat, ödeme, masraf, virman), envanter, takvim notları, kullanıcılar.
-- Silme etkileri otomatik geri alınır:
-  - Onaylı fiş/fatura silinince cari borç/alacak ve stok hareketleri geri alınır.
-  - Tahsilat/ödeme silinince kasa ve cari bakiyesi düzelir.
-  - İş silinince sahada kullanılan malzemeler stoğa geri döner, fotoğraf ve imza dosyaları da silinir.
-  - Hareketi olan cari/ürün silinirse bağlı kayıtlar listelenir; onaylanırsa hepsiyle birlikte silinir.
-- Her silme önce ne olacağını gösteren bir onay penceresi açar (ör. "cariden 12.500 ₺ borç düşecek, 3 ürün stoğa dönecek").
-- Silinen kayıt **İşlem kayıtları**nda kim, ne zaman, neyi sildi olarak kalır.
-- Teknisyen hiçbir şeyi silemez (şu anki gibi).
-- **Karar:** silinenler 30 gün **Silinenler** kutusunda kalır; bu sürede yönetici geri alabilir (geri alınca etkileri de geri gelir:
-  bakiye, stok, kasa). 30 gün sonra kalıcı olarak temizlenir. Kutudan elle "kalıcı sil" de yapılabilir.
-
-### 2. İş menüsü tek başlık altında (21.11.2026)
-- Sol menüde **İşler** tek başlık; tıklanınca altında açılsın: **İş Havuzu · Takvim · Tüm İşler**. **Karar:** Fiyatlandırma ayrı menü olarak kalır.
-- Alt menü açık/kapalı durumu hatırlansın; bulunulan sayfa vurgulansın; havuz ve fiyatlandırma sayı rozetleri başlıkta da görünsün.
-- Telefonda alt çubuktaki "Havuz" ve "Takvim" kısayolları aynı kalsın.
+_Şu an bekleyen istek yok._
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -30,6 +13,18 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 21.11.2026 — 5. derleme
+- **Silme yetkisi (yönetici):** iş, cari, ürün, satış fişi, alış faturası, teklif/proforma, kasa/banka hareketi, envanter, takvim notu ve
+  kullanıcı ekranlarında **🗑 Sil** düğmesi. Silmeden önce ne olacağı tek tek gösterilir (sunucuda deneme silmesi yapılıp geri sarılır;
+  yazan etki birebir doğrudur). Etkiler otomatik geri alınır: cari borç/alacak, stok, kasa/banka; işte kullanılan malzeme stoğa döner;
+  cari silinince işleri, fişleri, tahsilatları, teklifleri, envanteri ve devir bakiyesi birlikte silinir; virmanın iki bacağı birlikte gider;
+  ürün silinince barkodu boşa çıkar; kullanıcı silinince oturumu kapanır. Kendi hesabınızı ve son yöneticiyi silemezsiniz.
+- **Silinenler:** menüde ayrı bölüm. Silinen kayıtlar 30 gün durur, kalan gün görünür; **Geri al** ile etkileriyle birlikte geri gelir
+  (onaylı fiş/fatura yeniden onaylanır). Carisi silinmiş bir belgeyi geri almak isterseniz önce cariyi geri almanız söylenir.
+  **Kalıcı olarak sil** veya 30 gün dolunca geri alınamaz hale gelir. Silme ve geri almalar İşlem kayıtlarında da görünür.
+- **İşler menüsü:** İş Havuzu · Takvim · Tüm İşler tek başlık altında, açılır/kapanır (durum hatırlanır); kapalıyken havuz sayısı başlıkta.
+  Fiyatlandırma ayrı menüde kaldı.
 
 ### 21.11.2026 — 4. derleme
 - **Fatura tarzı satış fişi:** üstte cari bloğu (unvan, adres, VD/VN, telefon, güncel bakiye) ve belge bloğu (fiş no, tarih, vade, iş, açıklama).

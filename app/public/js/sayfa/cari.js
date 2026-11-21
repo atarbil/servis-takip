@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import { html, $, $$, para, paraSade, tarih, bakiyeHucre, bakiyeAciklama, durumRozet, telLink, csvIndir, pencere, bildir, sayiCoz, bugunStr } from '../ui.js';
-import { cariFormu, finansPenceresi, yeniIsPenceresi } from '../bilesen.js';
+import { cariFormu, finansPenceresi, yeniIsPenceresi, silOnay } from '../bilesen.js';
 import { ekstreYazdir, BELGE } from '../belgeler.js';
 
 export default async function (el, [id], ctx) {
@@ -28,6 +28,7 @@ export default async function (el, [id], ctx) {
       ${c.tip !== 'tedarikci' ? html`<button class="btn ikincil" data-a="teklif">+ Teklif</button><button class="btn ikincil" data-a="proforma">+ Proforma</button>` : ''}
       <button class="btn ikincil" data-a="devir">Devir / düzeltme</button>
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
+      <button class="btn tehlike-cizgi" data-a="sil" title="Cari ve tüm hareketleri silinir (30 gün geri alınabilir)">🗑 Sil</button>
     </div>
     <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
       .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
@@ -114,6 +115,7 @@ export default async function (el, [id], ctx) {
     try {
       if (a === 'tahsilat' || a === 'odeme') { if (await finansPenceresi(a, { cari: c })) ctx.yenile(); }
       else if (a === 'duzenle') { if (await cariFormu(c)) ctx.yenile(); }
+      else if (a === 'sil') { if (await silOnay('cari', c.id)) ctx.git('cariler'); }
       else if (a === 'is') { const r = await yeniIsPenceresi(ctx, { cari: c, havuza: true }); if (r) ctx.git(`is/${r.id}`); }
       else if (a === 'fis') { const r = await api.post('/fisler', { cari_id: c.id }); ctx.git(`fis/${r.id}`); }
       else if (a === 'teklif' || a === 'proforma') { const { yeniBelge } = await import('./teklifler.js'); yeniBelge(ctx, a, c); }

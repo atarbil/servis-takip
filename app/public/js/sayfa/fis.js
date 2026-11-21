@@ -1,7 +1,7 @@
 // Satış fişi düzenleyici
 import { api } from '../api.js';
 import { html, $, $$, para, paraSade, dovizPara, miktar, tarih, zaman, durumRozet, bildir, onayla, sayiCoz, sayiGiris, esc } from '../ui.js';
-import { cariSecici, urunSecici, finansPenceresi, kurAl, kurDegeri, urunFiyati } from '../bilesen.js';
+import { cariSecici, urunSecici, finansPenceresi, kurAl, kurDegeri, urunFiyati, silOnay } from '../bilesen.js';
 import { fisYazdir, tutarYaziyla } from '../belgeler.js';
 import { izgaraBagla, KISAYOL_YARDIM } from '../izgara.js';
 
@@ -59,7 +59,8 @@ export default async function (el, [id], ctx) {
           ${taslak ? html`<button class="btn ikincil" data-a="kaydet" title="Ctrl+S">Kaydet</button><button class="btn basari" data-a="onayla">✓ Onayla ve cariye işle</button>` : ''}
           <button class="btn ikincil" data-a="yazdir">🖨 Yazdır</button>
           ${f.durum === 'onaylandi' ? html`<button class="btn ikincil" data-a="tahsilat">💰 Tahsilat al</button>` : ''}
-          ${f.durum !== 'iptal' ? html`<button class="btn tehlike-cizgi" data-a="iptal">${taslak ? 'Taslağı sil' : 'Fişi iptal et'}</button>` : ''}
+          ${f.durum === 'onaylandi' ? html`<button class="btn tehlike-cizgi" data-a="iptal">Fişi iptal et</button>` : ''}
+          <button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button>
         </div>
       </div>
       ${f.durum === 'iptal' ? html`<div class="uyari-kutu">Bu fiş iptal edilmiştir. Cari ve stok etkileri geri alındı.</div>` : ''}
@@ -304,6 +305,7 @@ export default async function (el, [id], ctx) {
     if (!a) return;
     try {
       if (a === 'kaydet') { await kaydet(); bildir('Fiş kaydedildi.', 'basari'); ciz(); }
+      else if (a === 'sil') { degisti = false; if (await silOnay('satis_fisi', f.id)) ctx.git(f.is_id ? `is/${f.is_id}` : 'fisler'); }
       else if (a === 'kurguncelle') {
         ctx.kur = null;
         kur = await kurAl(ctx);

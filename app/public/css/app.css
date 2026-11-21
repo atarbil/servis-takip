@@ -696,3 +696,29 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
   .giris-sahne *, .giris-sahne { animation: none !important; }
   .gs-kablo { stroke-dashoffset: 0; } .gs-led { fill: #22c55e; } .gs-isik, .gs-veri, .gs-port-led { opacity: 1; } .gs-kivilcim { opacity: 0; }
 }
+.sil-ozet { margin: .3rem 0 .8rem; padding-left: 1.2rem; display: grid; gap: .3rem; }
+.sil-ozet li { line-height: 1.35; }
+.btn.sil { color: var(--kirmizi); }
+
+/* ---------- Alt menülü başlık (İşler) ---------- */
+.menu-grup { margin-bottom: 1px; }
+.menu-baslik { display: flex; align-items: center; gap: .7rem; width: 100%; padding: .58rem .7rem; border: 0; border-radius: 8px; background: none; color: #cbd5e1;
+  font: inherit; font-weight: 500; cursor: pointer; text-align: left; }
+.menu-baslik:hover { background: #1a2a4a; color: #fff; }
+.menu-grup.aktif-grup > .menu-baslik { color: #fff; }
+.menu-ok { display: flex; transition: transform .2s; opacity: .7; }
+.menu-baslik > span:first-of-type { flex: 1; }
+.menu-grup.acik .menu-ok { transform: rotate(180deg); }
+.menu-grup.acik .grup-sayac { display: none; }
+.menu-alt { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .2s ease; }
+.menu-alt > div { overflow: hidden; min-height: 0; }
+.menu-grup.acik .menu-alt { grid-template-rows: 1fr; }
+.yan nav .menu-alt a.alt-oge { padding-left: 2.1rem; font-size: .93rem; position: relative; }
+.yan nav .menu-alt a.alt-oge::before { content: ''; position: absolute; left: 1.05rem; top: 0; bottom: 0; border-left: 1px solid #334155; }
+.yan nav .menu-alt a.alt-oge .ikon { width: 17px; height: 17px; }
+.silinen-liste { display: grid; gap: .6rem; }
+.kart.silinen { padding: .8rem 1rem; margin: 0; }
+.silinen-ust { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.silinen-baslik { font-size: 1rem; }
+.silinen-alt { font-size: .82rem; margin: .25rem 0; }
+.kart.silinen details summary { cursor: pointer; font-size: .86rem; color: var(--ana); }

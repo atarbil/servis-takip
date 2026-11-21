@@ -248,9 +248,18 @@ class Havuz {
     this.bos = [];
     this.toplam = 0;
     this.kuyruk = [];
+    this.rol = null; // ayarlanırsa her bağlantı bu role geçer (satır güvenliği için)
   }
 
   async al() {
+    const b = await this.ham();
+    if (this.rol && b.rol !== this.rol) {
+      try { await b.query(`SET ROLE ${this.rol}`); b.rol = this.rol; } catch (e) { this.birak(b); throw e; }
+    }
+    return b;
+  }
+
+  async ham() {
     while (this.bos.length) {
       const b = this.bos.pop();
       if (!b.kapali) return b;

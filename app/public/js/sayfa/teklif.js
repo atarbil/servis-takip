@@ -2,7 +2,7 @@
 import { api } from '../api.js';
 import { izgaraBagla, KISAYOL_YARDIM } from '../izgara.js';
 import { html, $, $$, para, paraSade, dovizPara, pencere, bildir, onayla, sayiCoz, sayiGiris, bugunStr, zaman, esc } from '../ui.js';
-import { cariSecici, urunSecici, kurAl, kurDegeri, urunFiyati } from '../bilesen.js';
+import { cariSecici, urunSecici, kurAl, kurDegeri, urunFiyati, silOnay } from '../bilesen.js';
 import { teklifYazdir, proformaYazdir } from '../belgeler.js';
 import { TEKLIF_DURUM, teklifRozet, TUR_AD } from './teklifler.js';
 
@@ -116,7 +116,8 @@ export default async function (el, [id], ctx) {
           <button class="btn ikincil kucuk" data-barkod>📷 Barkodla ürün</button>
           <span class="soluk" style="font-size:.84rem">Listeden ürün seçebilir veya stokta olmayan bir kalemi serbest yazabilirsiniz.</span></div><div class="fatura-ipucu">⌨️ ${KISAYOL_YARDIM}</div>` : ''}</div>
       <div class="kart"><div class="kart-govde"><div class="toplam-kutu" id="toplam"></div></div></div>
-      ${t.id && t.durum !== 'iptal' && !t.fis_id ? html`<div style="text-align:right"><button class="btn tehlike-cizgi" data-a="iptal">Belgeyi iptal et</button></div>` : ''}`);
+      ${t.id ? html`<div class="btn-grup" style="justify-content:flex-end">${t.durum !== 'iptal' && !t.fis_id ? html`<button class="btn tehlike-cizgi" data-a="iptal">Belgeyi iptal et</button>` : ''}
+        <button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button></div>` : ''}`);
     toplamCiz();
     if (!ac) return;
     const ci = $('#t-cari', el);
@@ -235,6 +236,7 @@ export default async function (el, [id], ctx) {
     if (!a) return;
     try {
       if (a === 'kaydet') { await kaydet(); bildir('Kaydedildi.', 'basari'); ciz(); }
+      else if (a === 'sil') { degisti = false; if (await silOnay('teklif', t.id)) ctx.git('teklifler'); }
       else if (a === 'yazdir') {
         if (degisti && !kilitli()) { await kaydet(); ciz(); }
         if (!t.id) return;

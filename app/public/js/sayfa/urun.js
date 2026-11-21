@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import { html, $, para, dovizPara, paraSade, miktar, zaman, pencere, bildir, sayiCoz, sayiGiris } from '../ui.js';
-import { urunFormu, urunSecici } from '../bilesen.js';
+import { urunFormu, urunSecici, silOnay } from '../bilesen.js';
 
 const KAYNAK = { alis: 'Alış', is_malzeme: 'İşte kullanıldı', satis: 'Satış', sayim: 'Sayım', duzeltme: 'Düzeltme' };
 
@@ -10,7 +10,7 @@ export default async function (el, [id], ctx) {
   el.innerHTML = String(html`
     <div class="detay-ust"><div style="flex:1;min-width:240px"><a href="#/urunler" class="btn-metin">← Ürünler</a>
       <h2>${u.ad}</h2><div class="soluk">${[u.marka, u.model, [u.ana_grup, u.alt_grup].filter(Boolean).join(' › '), u.kod, u.birim].filter(Boolean).join(' · ')}${!u.aktif ? ' · PASİF' : ''}</div></div>
-      <div class="btn-grup"><button class="btn ikincil" data-a="duzenle">Düzenle</button><button class="btn ikincil" data-a="sayim">Stok sayımı</button></div></div>
+      <div class="btn-grup"><button class="btn ikincil" data-a="duzenle">Düzenle</button><button class="btn ikincil" data-a="sayim">Stok sayımı</button><button class="btn tehlike-cizgi" data-a="sil">🗑 Sil</button></div></div>
     ${u.onay_bekliyor ? html`<div class="uyari-kutu"><b>Bu ürün sahada teknisyen tarafından eklendi ve maliyet onayı bekliyor.</b>
       ${u.sahadan_not ? html`<br>Teknisyen notu: ${u.sahadan_not}` : ''}
       <div class="btn-grup" style="margin-top:.6rem"><button class="btn birincil" data-a="onayla">Maliyet gir ve onayla</button>
@@ -36,6 +36,7 @@ export default async function (el, [id], ctx) {
     if (!a) return;
     try {
       if (a === 'duzenle') { if (await urunFormu(u)) ctx.yenile(); }
+      else if (a === 'sil') { if (await silOnay('urun', u.id)) ctx.git('urunler'); }
       else if (a === 'sayim') {
         const r = await pencere({
           baslik: 'Stok sayımı',

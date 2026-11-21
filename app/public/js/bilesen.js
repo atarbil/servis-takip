@@ -64,6 +64,24 @@ export async function cariFormu(cari, varsayilan = {}) {
   });
 }
 
+// ---------- Silme (sadece yönetici) ----------
+// Önce sunucuda deneme silmesi yapılır (geri sarılır) ve etkiler gösterilir; onaylanırsa silinir.
+export async function silOnay(tur, id) {
+  let o;
+  try { o = await api.post('/sil/onizleme', { tur, id }); } catch (err) { bildir(err.message, 'hata', 6000); return false; }
+  const r = await pencere({
+    baslik: `🗑 Sil: ${o.baslik}`,
+    icerik: html`<p>Şunlar silinecek${o.adet > 1 ? html` <b>(${o.adet} kayıt)</b>` : ''}:</p>
+      <ul class="sil-ozet">${o.ozet.map((m) => html`<li>${m}</li>`)}</ul>
+      <p class="soluk" style="font-size:.88rem">Silinen kayıtlar <b>30 gün</b> boyunca <a href="#/silinenler">Silinenler</a> bölümünde durur ve geri alınabilir;
+        geri alınınca bakiye, stok ve kasa etkileri de geri gelir.</p>`,
+    kaydetMetin: 'Sil', tehlike: true,
+    kaydet: async () => api.post('/sil', { tur, id }),
+  });
+  if (r) bildir(`${o.baslik} silindi. Silinenler'den 30 gün içinde geri alabilirsiniz.`, 'basari', 5000);
+  return !!r;
+}
+
 // ---------- Döviz ----------
 // Kur bilgisi (TCMB satış). Üst çubuk yüklediyse oradan, yoksa sunucudan.
 export async function kurAl(ctx) {

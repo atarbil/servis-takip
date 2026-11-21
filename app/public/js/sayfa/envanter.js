@@ -1,7 +1,7 @@
 // Müşteri envanteri: kurumlardaki cihazlar
 import { api } from '../api.js';
 import { html, $, tarih, debounce, csvIndir, pencere, bildir, zaman } from '../ui.js';
-import { cariSecici, cariYeniYakala } from '../bilesen.js';
+import { cariSecici, cariYeniYakala, silOnay } from '../bilesen.js';
 
 export const ENV_DURUM = { aktif: { ad: 'Aktif', renk: 'yesil' }, arizali: { ad: 'Arızalı', renk: 'turuncu' }, kaldirildi: { ad: 'Kaldırıldı', renk: 'kirmizi' } };
 export const envDurumRozet = (d) => html`<span class="rozet ${ENV_DURUM[d]?.renk}">${ENV_DURUM[d]?.ad || d}</span>`;
@@ -46,7 +46,10 @@ export async function envanterFormu(kayit, { cari, yonetici = true, isId } = {})
       ${kayit && e.isler?.length ? html`<div class="alan"><span>Bu cihazla ilgili işler</span><ul class="mini-liste" style="border:1px solid var(--cizgi);border-radius:8px">
         ${e.isler.map((i) => html`<li><a href="#/is/${i.id}">#${i.id} ${i.baslik}</a><span class="bosluk"></span><small>${tarih(i.plan_baslangic || i.olusturma)}</small></li>`)}</ul></div>` : ''}
       ${kayit ? html`<p class="soluk" style="font-size:.8rem">Kayıt: ${zaman(e.olusturma)}${e.kaynak_is_id ? html` · <a href="#/is/${e.kaynak_is_id}">İş #${e.kaynak_is_id}</a>'de kuruldu` : ''}</p>` : ''}`,
-    acildi: (d) => {
+    altBilgi: kayit && yonetici ? html`<button type="button" class="btn tehlike-cizgi" data-env-sil>🗑 Sil</button>` : '',
+    acildi: (d, kapat) => {
+      const sb = $('[data-env-sil]', d);
+      if (sb) sb.onclick = async () => { if (await silOnay('envanter', kayit.id)) kapat({ silindi: true }); };
       const inp = $('#env-cari', d);
       if (inp && !cari) { const s = (c) => { secilenCari = c; inp.value = c.unvan; }; cariSecici(inp, s); cariYeniYakala(d, s); }
     },

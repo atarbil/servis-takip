@@ -35,7 +35,7 @@ module.exports = (r, { db, web, G, Y }) => {
   });
 
   r.delete('/notlar/:id', Y, async (req) => {
-    await db.islem(req.kullanici.id, (q) => q('DELETE FROM takvim_notlari WHERE id = $1', [req.params.id]));
+    await db.islem(req.kullanici.id, (q) => q("SELECT kayit_sil('takvim_notu', $1)", [req.params.id]));
     return { tamam: true };
   });
 };

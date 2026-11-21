@@ -2,7 +2,7 @@
 import { api } from '../api.js';
 import { izgaraBagla, KISAYOL_YARDIM } from '../izgara.js';
 import { html, $, $$, para, paraSade, dovizPara, durumRozet, bildir, onayla, sayiCoz, sayiGiris, bugunStr, zaman, esc } from '../ui.js';
-import { cariSecici, cariYeniYakala, urunSecici, urunYeniYakala, finansPenceresi, kurAl, kurDegeri } from '../bilesen.js';
+import { cariSecici, cariYeniYakala, urunSecici, urunYeniYakala, finansPenceresi, kurAl, kurDegeri, silOnay } from '../bilesen.js';
 
 const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 const r4 = (n) => Math.round((n + Number.EPSILON) * 10000) / 10000;
@@ -57,7 +57,7 @@ export default async function (el, [id], ctx) {
         ${a.onay_zamani ? html`<div class="soluk">Onay: ${zaman(a.onay_zamani)}</div>` : ''}</div>
         <div class="btn-grup">${taslak ? html`<button class="btn ikincil" data-a="kaydet">Kaydet</button><button class="btn basari" data-a="onayla">✓ Onayla (stoğa ve cariye işle)</button>` : ''}
           ${a.durum === 'onaylandi' ? html`<button class="btn ikincil" data-a="odeme">Ödeme yap</button><button class="btn tehlike-cizgi" data-a="iptal">Faturayı iptal et</button>` : ''}
-          ${taslak && a.id ? html`<button class="btn tehlike-cizgi" data-a="iptal">Taslağı sil</button>` : ''}</div></div>
+          ${a.id ? html`<button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button>` : ''}</div></div>
       ${a.durum === 'iptal' ? html`<div class="uyari-kutu">Bu fatura iptal edildi; stok ve cari etkileri geri alındı.</div>` : ''}
       <div class="kart"><div class="kart-govde"><div class="satir2">
         <label class="alan"><span>Tedarikçi *</span><input id="a-cari" value="${cari?.unvan || ''}" placeholder="Ara…" ${taslak ? '' : 'readonly'}></label>
@@ -190,6 +190,7 @@ export default async function (el, [id], ctx) {
     if (!act) return;
     try {
       if (act === 'kaydet') { await kaydet(); bildir('Kaydedildi.', 'basari'); ciz(); }
+      else if (act === 'sil') { if (await silOnay('alis_faturasi', a.id)) ctx.git('alislar'); }
       else if (act === 'onayla') {
         await kaydet(); ciz();
         if (!satirlar.length) throw new Error('Faturada ürün yok.');

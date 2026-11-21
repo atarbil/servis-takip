@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 async function semaGuncelle(havuz, klasor) {
-  const b = await havuz.al();
+  const b = await havuz.ham();
   try {
     // Aynı anda iki sunucu başlarsa çakışmasın
     await b.query('SELECT pg_advisory_lock(424242)');
@@ -30,4 +30,32 @@ async function semaGuncelle(havuz, klasor) {
   }
 }
 
-module.exports = { semaGuncelle };
+// Uygulama sorgularının çalıştığı rol: süper kullanıcı ve tablo sahibi değildir, bu yüzden
+// satır güvenliği (silinmiş kayıtları gizleme) ona uygulanır. Her açılışta hazırlanır;
+// yedekten dönüşte de eksik kalmaz. Hazırlanamazsa uygulama sahip rolle çalışmaya devam eder.
+const UYG_ROL = 'servis_uyg';
+async function uygulamaRolu(havuz) {
+  const b = await havuz.ham();
+  try {
+    await b.exec(`DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${UYG_ROL}') THEN
+          CREATE ROLE ${UYG_ROL} NOLOGIN NOSUPERUSER NOBYPASSRLS;
+        END IF;
+      END $$;
+      GRANT USAGE ON SCHEMA public TO ${UYG_ROL};
+      GRANT ALL ON ALL TABLES IN SCHEMA public TO ${UYG_ROL};
+      GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO ${UYG_ROL};
+      GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${UYG_ROL};`);
+    const s = await b.query(`SELECT rolsuper OR pg_has_role(current_user, '${UYG_ROL}', 'MEMBER') AS olur FROM pg_roles WHERE rolname = current_user`);
+    if (!s.rows[0]?.olur) await b.exec(`GRANT ${UYG_ROL} TO CURRENT_USER`);
+    havuz.rol = UYG_ROL;
+    return true;
+  } catch (e) {
+    console.error(`[şema] uygulama rolü hazırlanamadı (silinen kayıtlar listelerde görünebilir): ${e.message}`);
+    return false;
+  } finally {
+    havuz.birak(b);
+  }
+}
+
+module.exports = { semaGuncelle, uygulamaRolu };

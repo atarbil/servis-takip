@@ -1,7 +1,7 @@
 // Yönetici iş detayı
 import { api } from '../api.js';
 import { html, $, bildir, pencere, sor, onayla, para, saat, tarih, zaman, durumRozet, telLink, haritaLink, ONCELIK, DURUM } from '../ui.js';
-import { planlaPenceresi, cariSecici, cariYeniYakala, cariFormu } from '../bilesen.js';
+import { planlaPenceresi, cariSecici, cariYeniYakala, cariFormu, silOnay } from '../bilesen.js';
 import { malzemeListesi, listedenAkisi, barkodAkisi, tanimsizAkisi, fotoAkisi } from './saha.js';
 import { teslimFormuYazdir } from '../belgeler.js';
 
@@ -30,7 +30,7 @@ export default async function (el, [id], ctx) {
         ${is.ekip_ad ? html`<span><span class="nokta" style="background:${is.ekip_renk}"></span>${is.ekip_ad}</span>` : ''}
         ${is.plan_baslangic ? html`<span class="soluk">📅 ${tarih(is.plan_baslangic)} ${saat(is.plan_baslangic)}–${saat(is.plan_bitis)}</span>` : ''}</div>
         <h2 style="margin-top:.35rem">${is.baslik}</h2></div>
-      <div class="btn-grup">${aksiyon}</div>
+      <div class="btn-grup">${aksiyon}${ctx.yonetici ? html`<button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button>` : ''}</div>
     </div>
     ${is.durum === 'iptal' ? html`<div class="uyari-kutu">İptal nedeni: ${is.iptal_nedeni || '-'}</div>` : ''}
     ${is.durum === 'tamamlandi' && !is.cari_id ? html`<div class="uyari-kutu">Fiş kesmek için önce bu işe bir cari bağlayın.</div>` : ''}
@@ -127,6 +127,7 @@ export default async function (el, [id], ctx) {
       } else if (a === 'form') teslimFormuYazdir(ctx, is);
       else if (a === 'cari') cariBagla();
       else if (a === 'duzenle') duzenle();
+      else if (a === 'sil') { if (await silOnay('is', is.id)) ctx.git('isler'); }
       else if (a === 'cihaz') cihazSec();
     } catch (err) { bildir(err.message, 'hata'); }
   });

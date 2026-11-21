@@ -1,4 +1,5 @@
 import { api } from '../api.js';
+import { silOnay } from '../bilesen.js';
 
 // Görseli tarayıcıda hazırlar: PNG ise saydamlık korunur, en büyük kenar sınırlanır
 function gorselHazirla(dosya, enBuyuk) {
@@ -108,6 +109,8 @@ export default async function (el, [secili], ctx) {
           <label class="alan"><span>Telefon</span><input name="telefon" value="${u?.telefon || ''}"></label>
           <label class="alan"><span>${u ? 'Yeni şifre (değiştirmek için)' : 'Şifre *'}</span><input name="sifre" type="password" autocomplete="new-password" placeholder="en az 8 karakter"></label></div>
           ${u ? html`<label class="kutu-sec"><input type="checkbox" name="aktif" ${u.aktif ? 'checked' : ''}> Aktif (pasif kullanıcı giriş yapamaz)</label>` : ''}`,
+        altBilgi: u && u.id !== ctx.kullanici.id ? html`<button type="button" class="btn tehlike-cizgi" data-k-sil>🗑 Sil</button>` : '',
+        acildi: (d, kapat) => { const sb = $('[data-k-sil]', d); if (sb) sb.onclick = async () => { if (await silOnay('kullanici', u.id)) kapat({ silindi: true }); }; },
         kaydet: async (v) => {
           const g = { ...v, ekip_id: v.ekip_id ? Number(v.ekip_id) : null };
           if (u) { if (!g.sifre) delete g.sifre; await api.put(`/kullanicilar/${u.id}`, g); } else await api.post('/kullanicilar', g);
