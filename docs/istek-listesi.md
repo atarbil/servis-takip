@@ -4,7 +4,27 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. Satış fişi: profesyonel fatura ekranı + Excel gibi klavye ile gezinme (21.11.2026)
+- **Görünüm:** muhasebe programlarındaki fatura ekranı gibi. Üstte iki blok olacak: solda cari (unvan, adres, VD/VN, güncel bakiye),
+  sağda belge (fiş no, tarih, vade, durum). Ortada sabit başlıklı, ince çizgili, sıkı satırlı bir kalem tablosu olacak.
+  Altta KDV oranlarına göre döküm (%20 / %10 / %1), ara toplam, iskonto, KDV ve genel toplam bulunacak; ayrıca "yazıyla" tutar yazacak.
+  Toplam alanı ekranın altında sabit duracak.
+- **Excel gibi kullanım:**
+  - Hücreler arasında **yön tuşlarıyla** gezilecek (↑ ↓ ← →).
+  - **Enter** ve **Tab** bir sonraki hücreye geçirecek. Son hücrede basılınca yeni satır açılacak.
+  - Hücreye girince içerik seçili gelecek; yazmaya başlayınca eski değerin yerine yazılacak. **F2** ile düzenlemeye geçilecek, **Esc** ile vazgeçilecek.
+  - Ürün hücresinde öneri listesi açılacak; liste ↑ ↓ ile gezilecek, Enter ile seçilecek. Seçince imleç miktara geçecek.
+  - Kısayollar:
+    - **Ctrl+Delete:** satır sil
+    - **Ctrl+Insert:** araya satır ekle
+    - **F4:** stok listesi
+    - **Ctrl+B:** barkod
+    - **Ctrl+S:** kaydet
+    - **F9:** kurları güncelle
+  - Yön tuşları satır numarası, aktif satır vurgusu ve aktif hücre çerçevesiyle görünür olacak.
+- Satır sütunları: Sıra · Kod · Ürün / açıklama · Miktar · Birim · Birim fiyat · İsk.% · KDV% · Tutar (· Maliyet / kâr, sadece yöneticiye, gizlenebilir).
+- Telefonda mevcut kart görünümü kalacak; klavye düzeni masaüstü içindir.
+- Derlemede karar: aynı ekran **alış faturası** ve **teklif / proforma** için de kullanılsın mı? (Öneri: evet, üçü aynı düzende.)
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
