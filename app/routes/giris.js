@@ -54,6 +54,17 @@ module.exports = (r, { db, web, oturum, AYAR, G }) => {
 
   r.get('/ben', G, async (req) => req.kullanici);
 
+  // Panel kart düzeni: { sutunlar: [[kart, …], [..], [..]], gizli: [kart, …] } — kullanıcıya özel
+  r.get('/ben/panel', G, async (req) => (await db.query('SELECT panel_duzeni AS d FROM kullanicilar WHERE id = $1', [req.kullanici.id])).rows[0].d || null);
+  r.put('/ben/panel', G, async (req) => {
+    const ad = (x) => (typeof x === 'string' && /^[a-z_]{2,30}$/.test(x) ? x : null);
+    const liste = (l) => (Array.isArray(l) ? [...new Set(l.map(ad).filter(Boolean))].slice(0, 40) : []);
+    const b = req.body || {};
+    const d = b.sifirla ? null : { sutunlar: (Array.isArray(b.sutunlar) ? b.sutunlar : []).slice(0, 3).map(liste), gizli: liste(b.gizli) };
+    await db.query('UPDATE kullanicilar SET panel_duzeni = $2 WHERE id = $1', [req.kullanici.id, d]);
+    return d;
+  });
+
   r.post('/sifre-degistir', G, async (req, res) => {
     const { eski, yeni } = req.body;
     if (String(yeni || '').length < 8) throw web.hata(400, 'Yeni şifre en az 8 karakter olmalı.');

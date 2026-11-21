@@ -4,6 +4,18 @@ const { zorunlu, metin, gorselKaydet } = require('../lib/yardim');
 const GORSEL = { logo: 'firma_logo', kase: 'kase_imza', serit: 'teklif_serit' };
 const GIZLI_ANAHTAR = new Set(['telegram_offset']);
 
+// Menü adları: { "cariler": "Müşteriler", "grup:isler": "Servis" } — sadece bilinen biçimde kısa metinler
+function menuAdlariTemizle(v) {
+  let o = v;
+  if (typeof v === 'string') { try { o = JSON.parse(v || '{}'); } catch { o = {}; } }
+  const temiz = {};
+  for (const [a, d] of Object.entries(o && typeof o === 'object' ? o : {})) {
+    const ad = String(d ?? '').replace(/\s+/g, ' ').trim().slice(0, 30);
+    if (/^(grup:)?[a-z-]{2,30}$/.test(a) && ad) temiz[a] = ad;
+  }
+  return JSON.stringify(temiz);
+}
+
 module.exports = (r, { db, web, oturum, G, Y, AYAR }) => {
   // Logo, kaşe/imza ve teklif başlık şeridi yükleme
   r.post('/ayarlar/gorsel', Y, async (req) => {
@@ -26,8 +38,9 @@ module.exports = (r, { db, web, oturum, G, Y, AYAR }) => {
 
   r.put('/ayarlar', Y, async (req) => {
     await db.islem(req.kullanici.id, async (q) => {
-      for (const [k, v] of Object.entries(req.body)) {
+      for (let [k, v] of Object.entries(req.body)) {
         if (!/^[a-z_]{2,40}$/.test(k) || GIZLI_ANAHTAR.has(k) || Object.values(GORSEL).includes(k)) continue;
+        if (k === 'menu_adlari') v = menuAdlariTemizle(v);
         await q('INSERT INTO ayarlar (anahtar, deger) VALUES ($1, $2) ON CONFLICT (anahtar) DO UPDATE SET deger = excluded.deger', [k, v == null ? '' : String(v)]);
       }
     });

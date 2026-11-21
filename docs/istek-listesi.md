@@ -4,42 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Menü üstte, açılır ve gruplu (22.11.2026)
-- Sol kenar çubuğu kalkar; menü ekranın **üstünde yatay çubuk** olur, gruplar tıklayınca/üzerine gelince **aşağı açılır**.
-  Sayfa alanı genişler. Logo solda, döviz kuru ve "+ İş ekle" sağda kalır.
-- Önerilen gruplar:
-  - **Panel**
-  - **İşler ▾** İş Havuzu · Takvim · Tüm İşler · Dış Servis
-  - **Satış ▾** Fiyatlandırma · Satış Fişleri · Teklif / Proforma
-  - **Cariler ▾** Cariler · Envanter
-  - **Stok ▾** Ürünler / Stok · Alış Faturaları
-  - **Finans ▾** Kasa / Banka · Raporlar
-  - Sağda kullanıcı adı **▾** Ayarlar · Silinenler · Şifre değiştir · Çıkış
-- Sayaçlar (havuz, fiyatlandırma, dış servis) hem grup başlığında hem alt satırda görünür.
-- Klavye ile de açılır (Tab, Enter, ↓, Esc). Bulunulan sayfanın grubu vurgulu.
-- Telefonda yer olmadığı için: üstte ☰ ile açılan aynı gruplu menü + alttaki kısayol çubuğu kalır.
-
-### 2. Menü adlarını değiştirme (22.11.2026)
-- Ayarlar → **Menü** sekmesi: her grup başlığının ve sayfanın görünen adı değiştirilebilir (ör. "Cariler" → "Müşteriler").
-  "Varsayılana dön" düğmesi. Adlar tüm kullanıcılar için ortaktır; sayfa başlıkları da yeni adı kullanır.
-- (1. maddeyle birlikte yapılacak: gruplar üst menüde.)
-
-### 3. Panelde widget düzeni (22.11.2026)
-- Panelde **"Düzenle"** düğmesi: kartlar (Bugünkü işler, Havuz, Dış servis, Döviz çevirici, Kasa/Banka, Son tahsilatlar,
-  Fiyatlandırma bekleyen, Vadesi geçen, üstteki sayı kutuları…) **sürüklenip yer değiştirir**, her kartta **✕ Kaldır** olur.
-- Kaldırılan kartlar "Gizlenen kartlar" listesinden geri eklenir; "Varsayılan düzene dön" de olur.
-- Düzen **kullanıcıya özeldir** ve sunucuda saklanır: bilgisayarda yapılan düzen telefonda da geçerli
-  (telefonda tek sütun, sırası aynı). Telefonda sürükleme yerine ↑ ↓ düğmeleri.
-
-### 4. "+ İş ekle"de cari bağlama ve işten cariye kayıt (22.11.2026)
-- "+ İş ekle" penceresinde **Cari** alanı: aranıp seçilir veya oradan yeni cari açılır (telefondan otomatik eşleşme de kalır).
-- İki kullanım:
-  - **Havuza at (bugünkü gibi):** iş cariye bağlı olarak havuza düşer; teknisyen sahada hizmet/malzeme ekler, iş bitince
-    fiyatlandırmaya gelir ve fiş onaylanınca cariye borç yazılır.
-  - **İşi ben yaptım / hemen kaydet:** aynı pencerede verilen hizmet (işçilik/hizmet satırı) ve kullanılan malzemeler
-    (ürün ara veya barkod) girilir. Kaydedince iş "tamamlandı" olur ve o cariye **taslak satış fişi** açılır; fiyatları orada
-    yazıp **Onayla** deyince müşteri borçlanır. Fiyat girilen satırlarla doğrudan da onaylanabilir.
-- İş detayında ve cari kartında bu kayıt görünür; malzemeler stoktan düşer (mevcut kurallarla).
+_Şu an bekleyen istek yok._
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -48,6 +13,21 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 22.11.2026 — 7. derleme
+- **Üst menü:** sol kenar çubuğu kalktı; ekranın üstünde koyu çubukta gruplu açılır menü:
+  Panel · İşler (İş Havuzu, Takvim, Tüm İşler, Dış Servis) · Satış (Fiyatlandırma, Satış Fişleri, Teklif/Proforma) ·
+  Cariler (Cariler, Envanter) · Stok (Ürünler/Stok, Alış Faturaları) · Finans (Kasa/Banka, Raporlar) · sağda kullanıcı
+  (Ayarlar, Silinenler, Şifre değiştir, Çıkış). Biri açıkken diğerinin üzerine gelince ona geçer; dışarı tıklama ve Esc kapatır;
+  ← → ↓ ile klavyeden kullanılır. Sayaçlar grup başlığında da. Dar ekranda simgeler ve kur kutusu gizlenir;
+  telefonda ☰ ile soldan çekmece (gruplar akordeon), alt kısayol çubuğu yerinde.
+- **Menü adları:** Ayarlar → Menü sekmesinden grup ve sayfa adları değiştirilir (ör. Cariler → Müşteriler); sayfa başlıkları da
+  yeni adı kullanır; "Varsayılana dön". Tüm kullanıcılar için ortak.
+- **Panel düzeni:** "⚙ Paneli düzenle" → kartlar başlığından sürüklenip sütunlar arasında taşınır (telefonda ↑ ↓), ✕ ile kaldırılır,
+  "Gizlenen kartlar"dan geri eklenir, "Varsayılan düzen". Düzen kullanıcıya özel, sunucuda saklanır (her cihazda aynı).
+- **+ İş ekle:** Cari alanı (ara/seç/yeni cari; boşsa telefondan bulunur). "İşi ben yaptım" işaretlenince hizmet, işçilik ve
+  malzeme satırları (ürün arama, barkod, isteğe bağlı fiyat) girilir; kaydedince iş tamamlanmış olarak açılır, o cariye taslak
+  satış fişi kesilir ve fiş ekranı açılır. Fiş onaylanınca müşteri borçlanır, malzeme stoktan düşer.
 
 ### 22.11.2026 — 6. derleme
 - **Dış servis:** müşteriden alınıp tamire gönderilen cihazlar. Menüde "Dış Servis" (sayaçlı), cari kartında "Dış servis" sekmesi.

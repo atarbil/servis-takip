@@ -19,7 +19,7 @@ const veriUrl = (dosya, tur) => `data:image/${tur};base64,${fs.readFileSync(dosy
   p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) hatalar.push(m.text()); });
   await p.goto(T);
   await p.fill('[name=kullanici_adi]', 'ali'); await p.fill('[name=sifre]', 'Sifre1234'); await p.click('button');
-  await p.waitForSelector('#ust-baslik');
+  await p.waitForSelector('#sayfa');
 
   const api = (yontem, yol, govde) => p.evaluate(async ([y, u, g]) => {
     const r = await fetch('/api' + u, { method: y, headers: { 'content-type': 'application/json', 'x-istek': '1' }, body: g ? JSON.stringify(g) : undefined });
@@ -48,7 +48,7 @@ const veriUrl = (dosya, tur) => `data:image/${tur};base64,${fs.readFileSync(dosy
 
   // Yazdırma görüntüsü: window.print yerine yazdırma ortamına geçip ekran görüntüsü alınır
   await p.addInitScript(() => { window.print = () => { window.__yazdirildi = true; }; });
-  await p.reload(); await p.waitForSelector('#ust-baslik');
+  await p.reload(); await p.waitForSelector('#sayfa');
   async function yazdirGoruntusu(ad) {
     await p.waitForFunction(() => window.__yazdirildi === true, null, { timeout: 8000 });
     await p.emulateMedia({ media: 'print' });

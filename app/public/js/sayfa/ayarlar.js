@@ -1,5 +1,6 @@
 import { api } from '../api.js';
 import { silOnay } from '../bilesen.js';
+import { YONETICI_MENU, KULLANICI_MENU, menuAdlariYukle } from '../app.js';
 
 // Görseli tarayıcıda hazırlar: PNG ise saydamlık korunur, en büyük kenar sınırlanır
 function gorselHazirla(dosya, enBuyuk) {
@@ -22,12 +23,41 @@ import { html, $, $$, zaman, pencere, bildir, para, onayla } from '../ui.js';
 export default async function (el, [secili], ctx) {
   ctx.baslik('Ayarlar');
   let sekme = secili || 'firma';
-  el.innerHTML = String(html`<div class="sekmeler">${[['firma', 'Firma bilgileri'], ['kullanicilar', 'Kullanıcılar'], ['ekipler', 'Ekipler'], ['hesaplar', 'Kasa / banka hesapları'], ['telegram', 'Telegram'], ['denetim', 'İşlem kayıtları']]
+  el.innerHTML = String(html`<div class="sekmeler">${[['firma', 'Firma bilgileri'], ['kullanicilar', 'Kullanıcılar'], ['ekipler', 'Ekipler'], ['hesaplar', 'Kasa / banka hesapları'], ['telegram', 'Telegram'], ['menu', 'Menü'], ['denetim', 'İşlem kayıtları']]
     .map(([k, a]) => html`<button data-s="${k}">${a}</button>`)}</div><div id="s"></div>`);
 
   async function ciz() {
     $$('[data-s]', el).forEach((b) => b.classList.toggle('aktif', b.dataset.s === sekme));
     const k = $('#s', el);
+    if (sekme === 'menu') {
+      // Menü adları: tüm kullanıcılar için ortak
+      const adlar = ctx.menuAdlari || {};
+      const satir = (anahtar, varsayilan, girinti, etiket = varsayilan) => html`<label class="menu-ad-satir ${girinti ? 'girinti' : ''}">
+        <span class="soluk">${etiket}</span><input data-menu="${anahtar}" value="${adlar[anahtar] || ''}" placeholder="${varsayilan}" maxlength="30"></label>`;
+      k.innerHTML = String(html`<div class="kart"><div class="kart-ust"><h3>Menü adları</h3><span class="soluk">Boş bırakılan varsayılan adla görünür · tüm kullanıcılar için</span></div>
+        <form class="kart-govde" id="menu-form"><div class="menu-ad-liste">
+          ${YONETICI_MENU.map((m) => (m.alt
+            ? html`<div class="menu-ad-grup">${satir('grup:' + m.grup, m.ad, false, m.ad + ' (üst menü)')}${m.alt.map((a) => satir(a.yol, a.ad, true))}</div>`
+            : html`<div class="menu-ad-grup">${satir(m.yol, m.ad, false)}</div>`))}
+          <div class="menu-ad-grup">${KULLANICI_MENU.map((a) => satir(a.yol, a.ad, false))}</div>
+        </div>
+        <div class="btn-grup" style="margin-top:1rem"><button class="btn birincil">Kaydet</button>
+          <button type="button" class="btn ikincil" id="menu-varsayilan">Varsayılana dön</button></div></form></div>`);
+      const kaydet = async (o) => {
+        await api.put('/ayarlar', { menu_adlari: JSON.stringify(o) });
+        ctx.ayarlar = await api.get('/ayarlar'); menuAdlariYukle();
+        bildir('Menü adları kaydedildi; menü yenileniyor.', 'basari');
+        setTimeout(() => location.reload(), 600);
+      };
+      $('#menu-form', k).onsubmit = async (e) => {
+        e.preventDefault();
+        const o = {};
+        $$('[data-menu]', k).forEach((i) => { const v = i.value.trim(); if (v && v !== i.placeholder) o[i.dataset.menu] = v; });
+        try { await kaydet(o); } catch (err) { bildir(err.message, 'hata'); }
+      };
+      $('#menu-varsayilan', k).onclick = async () => { if (await onayla('Tüm menü adları varsayılana dönsün mü?', { evet: 'Varsayılana dön' })) kaydet({}); };
+      return;
+    }
     if (sekme === 'firma') {
       const a = await api.get('/ayarlar');
       const GORSEL = [

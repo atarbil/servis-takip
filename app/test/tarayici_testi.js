@@ -40,7 +40,7 @@ async function sec(p, inputSec, metin, secim) {
   await y.fill('[name=kullanici_adi]', 'ali');
   await y.fill('[name=sifre]', 'Sifre1234');
   await y.click('button');
-  await y.waitForSelector('#ust-baslik');
+  await y.waitForSelector('#sayfa');
   ok('İlk kurulum ve giriş');
 
   // 2) Ayarlar: firma + teknisyen

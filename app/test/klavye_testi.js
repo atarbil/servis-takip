@@ -15,7 +15,7 @@ const kontrol = (ad, kosul, ek) => { if (kosul) console.log('OK  ', ad); else { 
   p.on('pageerror', (e) => hatalar.push(e.message));
   await p.goto(T);
   await p.fill('[name=kullanici_adi]', 'ali'); await p.fill('[name=sifre]', 'Sifre1234'); await p.click('button');
-  await p.waitForSelector('#ust-baslik');
+  await p.waitForSelector('#sayfa');
   const api = (y, u, g) => p.evaluate(async ([y, u, g]) => (await fetch('/api' + u, { method: y, headers: { 'content-type': 'application/json', 'x-istek': '1' }, body: g ? JSON.stringify(g) : undefined })).json(), [y, u, g]);
   const cari = (await api('GET', '/cariler'))[0];
   await api('POST', '/urunler', { ad: 'Klavye Test Kamerası', kod: 'KLV-1', onerilen_satis: 1000 });
@@ -100,7 +100,7 @@ const kontrol = (ad, kosul, ek) => { if (kosul) console.log('OK  ', ad); else { 
   // Telefon görünümü
   const m = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'tr-TR' });
   const mp = await m.newPage(); mp.on('pageerror', (e) => hatalar.push('mobil: ' + e.message));
-  await mp.goto(T); await mp.fill('[name=kullanici_adi]', 'ali'); await mp.fill('[name=sifre]', 'Sifre1234'); await mp.click('button'); await mp.waitForSelector('#ust-baslik');
+  await mp.goto(T); await mp.fill('[name=kullanici_adi]', 'ali'); await mp.fill('[name=sifre]', 'Sifre1234'); await mp.click('button'); await mp.waitForSelector('#sayfa');
   await mp.goto(`${T}/#/fis/${f.id}`); await mp.waitForSelector('.fatura'); await mp.waitForTimeout(400);
   await mp.screenshot({ path: `${EKRAN}/klavye_fis_mobil.png`, fullPage: true });
   kontrol('Telefonda yatay taşma yok', await mp.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));

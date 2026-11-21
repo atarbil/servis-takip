@@ -316,6 +316,49 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Bildirim tercihleri okunuyor', x.veri.bildirimler.is_tamamlandi === false && x.veri.bildirimler.urun_onay === true && x.veri.sabah_saat === '07:45', x.veri);
   kontrol('Geçersiz saat reddedildi', (await y('PUT', '/telegram/bildirimler', { bildirimler: {}, sabah_saat: '25:00' })).durum === 400);
 
+  {
+  // ---------- Hızlı iş: cari seçimi ve "işi ben yaptım" ----------
+  x = await y('POST', '/isler/hizli', { mesaj: 'Yazıcı bakımı istendi', cari_id: musteri.id });
+  kontrol('Hızlı işte elle seçilen cari bağlandı', x.durum === 200 && x.veri.cari?.id === musteri.id, x.veri);
+  kontrol('Hızlı işte olmayan cari reddedilir', (await y('POST', '/isler/hizli', { mesaj: 'x', cari_id: 999999 })).durum === 400);
+  const ofKam = (await y('GET', `/urunler/${kablo.id}`)).veri;
+  const stokOnce = Number((await y('GET', `/urunler/${ofKam.id}`)).veri.stok_miktari);
+  const bakOnce = Number((await y('GET', `/cariler/${musteri.id}`)).veri.bakiye);
+  x = await y('POST', '/isler/ofis', { mesaj: 'Ofiste ofKam değişimi', cari_id: musteri.id, satirlar: [
+    { tip: 'hizmet', aciklama: 'Kamera montaj hizmeti', miktar: 1, birim_fiyat: '750' },
+    { tip: 'urun', urun_id: ofKam.id, miktar: 2 },
+    { tip: 'iscilik', aciklama: 'İşçilik', miktar: 1.5 }] });
+  kontrol('İşi ben yaptım: iş + taslak fiş', x.durum === 200 && x.veri.is_id && x.veri.fis_id, x.veri);
+  const ofIs = (await y('GET', `/isler/${x.veri.is_id}`)).veri;
+  kontrol('İş tamamlandı, cariye bağlı', ofIs.durum === 'tamamlandi' && ofIs.cari_id === musteri.id, ofIs.durum);
+  let of = (await y('GET', `/fisler/${x.veri.fis_id}`)).veri;
+  kontrol('Fiş satırları: hizmet 750, ürün adı stoktan, işçilik saat', of.satirlar.length === 3 && Number(of.satirlar[0].birim_fiyat) === 750
+    && of.satirlar[1].aciklama === ofKam.ad && Number(of.satirlar[1].miktar) === 2 && of.satirlar[2].birim === 'saat', of.satirlar);
+  kontrol('Fiyatlandırma listesinde', (await y('GET', '/fiyatlandirma')).veri.some((f) => f.id === x.veri.is_id));
+  await y('PUT', `/fisler/${of.id}`, { cari_id: musteri.id, satirlar: of.satirlar.map((r, i) => ({ ...r, birim_fiyat: [750, 1000, 400][i] })) });
+  x = await y('POST', `/fisler/${of.id}/onayla`);
+  of = (await y('GET', `/fisler/${of.id}`)).veri;
+  kontrol('Onaylanınca cari borçlandı (750+2000+600 +KDV)', x.durum === 200 && Number((await y('GET', `/cariler/${musteri.id}`)).veri.bakiye) === bakOnce + 4020, Number(of.genel_toplam));
+  kontrol('Malzeme stoktan düştü', Number((await y('GET', `/urunler/${ofKam.id}`)).veri.stok_miktari) === stokOnce - 2);
+  kontrol('İş fiş kesildi oldu', (await y('GET', `/isler/${ofIs.id}`)).veri.durum === 'fis_kesildi');
+  kontrol('Satırsız reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [] })).durum === 400);
+  kontrol('Carisiz reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', satirlar: [{ tip: 'hizmet', aciklama: 'a' }] })).durum === 400);
+  kontrol('Teknisyen kullanamaz', (await t('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'hizmet', aciklama: 'a' }] })).durum === 403);
+
+  // ---------- Panel düzeni ve menü adları ----------
+  kontrol('Panel düzeni başta boş', (await y('GET', '/ben/panel')).veri === null);
+  x = await y('PUT', '/ben/panel', { sutunlar: [['havuz', 'bugun'], ['doviz', '<script>'], []], gizli: ['kasa', 'kasa'] });
+  kontrol('Panel düzeni kaydedildi, geçersizler ayıklandı', JSON.stringify(x.veri) === JSON.stringify({ sutunlar: [['havuz', 'bugun'], ['doviz'], []], gizli: ['kasa'] }), x.veri);
+  kontrol('Düzen kullanıcıya özel', (await t('GET', '/ben/panel')).veri === null);
+  await y('PUT', '/ben/panel', { sifirla: true });
+  kontrol('Varsayılana dön', (await y('GET', '/ben/panel')).veri === null);
+  await y('PUT', '/ayarlar', { menu_adlari: JSON.stringify({ cariler: '  Müşteriler  ', 'grup:isler': 'Servis', 'kötü anahtar': 'x', urunler: '' }) });
+  x = await y('GET', '/ayarlar');
+  kontrol('Menü adları temizlenip kaydedildi', x.veri.menu_adlari === JSON.stringify({ cariler: 'Müşteriler', 'grup:isler': 'Servis' }), x.veri.menu_adlari);
+  await y('PUT', '/ayarlar', { menu_adlari: '{}' });
+
+  }
+
   // Görsel yükleme ve herkese açık logo
   kontrol('Logo yokken /logo 404', (await fetch(TABAN + '/logo')).status === 404);
   x = await y('POST', '/ayarlar/gorsel', { tur: 'logo', veri: PNG });

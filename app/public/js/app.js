@@ -2,36 +2,53 @@
 import { api } from './api.js';
 import { html, ham, $, $$, bildir, pencere } from './ui.js';
 
-const YONETICI_MENU = [
+// Menü: üstte gruplu açılır menü. Adlar Ayarlar → Menü'den değiştirilebilir (ayarlar.menu_adlari).
+export const YONETICI_MENU = [
   { yol: 'panel', ad: 'Panel', ikon: 'ev' },
-  { grup: 'isler', ad: 'İşler', ikon: 'liste', sayac: 'havuz', alt: [
+  { grup: 'isler', ad: 'İşler', ikon: 'liste', alt: [
     { yol: 'havuz', ad: 'İş Havuzu', ikon: 'havuz', sayac: 'havuz' },
     { yol: 'takvim', ad: 'Takvim', ikon: 'takvim' },
     { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
+    { yol: 'dis-servis', ad: 'Dış Servis', ikon: 'anahtar', sayac: 'dis_servis' },
   ] },
-  { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
-  { yol: 'dis-servis', ad: 'Dış Servis', ikon: 'anahtar', sayac: 'dis_servis' },
-  { yol: 'cariler', ad: 'Cariler', ikon: 'kisi' },
-  { yol: 'envanter', ad: 'Envanter', ikon: 'cihaz' },
-  { yol: 'teklifler', ad: 'Teklif / Proforma', ikon: 'belge' },
-  { yol: 'fisler', ad: 'Satış Fişleri', ikon: 'fis' },
-  { yol: 'alislar', ad: 'Alış Faturaları', ikon: 'alis' },
-  { yol: 'urunler', ad: 'Ürünler / Stok', ikon: 'kutu' },
-  { yol: 'kasa', ad: 'Kasa / Banka', ikon: 'kasa' },
-  { yol: 'raporlar', ad: 'Raporlar', ikon: 'rapor' },
-  { yol: 'silinenler', ad: 'Silinenler', ikon: 'cop' },
+  { grup: 'satis', ad: 'Satış', ikon: 'fis', alt: [
+    { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
+    { yol: 'fisler', ad: 'Satış Fişleri', ikon: 'fis' },
+    { yol: 'teklifler', ad: 'Teklif / Proforma', ikon: 'belge' },
+  ] },
+  { grup: 'cari', ad: 'Cariler', ikon: 'kisi', alt: [
+    { yol: 'cariler', ad: 'Cariler', ikon: 'kisi' },
+    { yol: 'envanter', ad: 'Envanter', ikon: 'cihaz' },
+  ] },
+  { grup: 'stok', ad: 'Stok', ikon: 'kutu', alt: [
+    { yol: 'urunler', ad: 'Ürünler / Stok', ikon: 'kutu' },
+    { yol: 'alislar', ad: 'Alış Faturaları', ikon: 'alis' },
+  ] },
+  { grup: 'finans', ad: 'Finans', ikon: 'kasa', alt: [
+    { yol: 'kasa', ad: 'Kasa / Banka', ikon: 'kasa' },
+    { yol: 'raporlar', ad: 'Raporlar', ikon: 'rapor' },
+  ] },
+];
+export const KULLANICI_MENU = [
   { yol: 'ayarlar', ad: 'Ayarlar', ikon: 'ayar' },
+  { yol: 'silinenler', ad: 'Silinenler', ikon: 'cop' },
 ];
 const MOBIL_ALT = ['panel', 'havuz', 'takvim', 'cariler'];
-const DUZ_MENU = YONETICI_MENU.flatMap((m) => m.alt || [m]);
-const grupAcik = (g) => { try { return localStorage.getItem('menu-' + g) !== '0'; } catch { return true; } };
-const menuLink = (m, alt = false) => html`<a href="#/${m.yol}" data-yol="${m.yol}" class="${alt ? 'alt-oge' : ''}">${ikon(m.ikon)}<span>${m.ad}</span>${m.sayac ? html`<b class="menu-sayac" data-sayac="${m.sayac}" hidden></b>` : ''}</a>`;
-const menuHtml = () => YONETICI_MENU.map((m) => (m.alt
-  ? html`<div class="menu-grup ${grupAcik(m.grup) ? 'acik' : ''}" data-grup="${m.grup}">
-      <button type="button" class="menu-baslik" aria-expanded="${grupAcik(m.grup) ? 'true' : 'false'}">${ikon(m.ikon)}<span>${m.ad}</span>
-        <b class="menu-sayac grup-sayac" data-sayac="${m.sayac}" hidden></b><span class="menu-ok">${ikon('asagi')}</span></button>
-      <div class="menu-alt"><div>${m.alt.map((a) => menuLink(a, true))}</div></div></div>`
-  : menuLink(m)));
+const DUZ_MENU = [...YONETICI_MENU.flatMap((m) => m.alt || [m]), ...KULLANICI_MENU];
+const menuAdi = (m) => ctx.menuAdlari?.[m.yol || 'grup:' + m.grup] || m.ad;
+const sayacHtml = (anahtarlar) => (anahtarlar.length ? html`<b class="menu-sayac" data-sayac="${anahtarlar.join(',')}" hidden></b>` : '');
+const menuLink = (m) => html`<a href="#/${m.yol}" data-yol="${m.yol}" role="menuitem">${ikon(m.ikon)}<span>${menuAdi(m)}</span>${m.sayac ? sayacHtml([m.sayac]) : ''}</a>`;
+const grupHtml = (m, ek = '') => html`<div class="um-grup ${ek}" data-grup="${m.grup}">
+    <button type="button" class="um-baslik" aria-haspopup="true" aria-expanded="false">${ikon(m.ikon)}<span>${menuAdi(m)}</span>
+      ${sayacHtml(m.alt.filter((a) => a.sayac).map((a) => a.sayac))}<span class="um-ok">${ikon('asagi', 16)}</span></button>
+    <div class="um-acilir" role="menu">${m.alt.map(menuLink)}</div></div>`;
+const kullaniciGrup = (ek) => html`<div class="um-grup um-kullanici ${ek}" data-grup="kullanici">
+    <button type="button" class="um-baslik" aria-haspopup="true" aria-expanded="false"><span class="avatar">${(ctx.kullanici.ad_soyad || '?').split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>
+      <span class="um-ad">${ctx.kullanici.ad_soyad}</span><span class="um-ok">${ikon('asagi', 16)}</span></button>
+    <div class="um-acilir sag" role="menu">${KULLANICI_MENU.map(menuLink)}
+      <hr><button type="button" role="menuitem" data-sifre>${ikon('anahtar')}<span>Şifre değiştir</span></button>
+      <button type="button" role="menuitem" data-cikis>${ikon('cikis')}<span>Çıkış</span></button></div></div>`;
+const menuHtml = () => html`${YONETICI_MENU.map((m) => (m.alt ? grupHtml(m) : menuLink(m)))}${kullaniciGrup('yalniz-mobil')}`;
 
 const IKON = {
   ev: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
@@ -62,7 +79,12 @@ const ctx = {
   _ekipler: null,
   get yonetici() { return this.kullanici?.rol === 'yonetici'; },
   git(yol) { location.hash = '#/' + yol.replace(/^#?\//, ''); },
-  baslik(metin) { document.title = `${metin} · ${this.ayarlar.firma_adi || 'Servis Takip'}`; const b = $('#ust-baslik'); if (b) b.textContent = metin; },
+  // Sayfa başlığı: menüde adı değiştirilmiş sayfalar yeni adla görünür
+  baslik(metin) {
+    const m = DUZ_MENU.find((x) => x.ad === metin);
+    const ad = (m && this.menuAdlari?.[m.yol]) || metin;
+    document.title = `${ad} · ${this.ayarlar.firma_adi || 'Servis Takip'}`; const b = $('#ust-baslik'); if (b) b.textContent = ad;
+  },
   async ekipler(yenile = false) {
     if (!this._ekipler || yenile) this._ekipler = await api.get('/ekipler');
     return this._ekipler;
@@ -80,6 +102,7 @@ async function basla() {
   if (!durum.kullanici) return girisEkrani();
   ctx.kullanici = durum.kullanici;
   try { ctx.ayarlar = await api.get('/ayarlar'); } catch { /* */ }
+  menuAdlariYukle();
   kabukCiz();
   window.addEventListener('hashchange', yonlendir);
   yonlendir();
@@ -229,6 +252,56 @@ async function sifreDegistir() {
   });
 }
 
+export function menuAdlariYukle() {
+  try { ctx.menuAdlari = JSON.parse(ctx.ayarlar?.menu_adlari || '{}') || {}; } catch { ctx.menuAdlari = {}; }
+}
+
+// ---------- Üst menü davranışı ----------
+// Masaüstü: başlığa tıklayınca açılır; biri açıkken diğerinin üzerine gelince ona geçer; dışarı tıklama / Esc kapatır.
+// Telefon (≤1024 px): ☰ ile soldan çekmece; gruplar akordeon.
+const cekmeceMi = () => matchMedia('(max-width: 1024px)').matches;
+function menuKapat(haric) {
+  $$('.um-grup.acik').forEach((g) => { if (g !== haric) { g.classList.remove('acik'); $('.um-baslik', g).setAttribute('aria-expanded', 'false'); } });
+}
+function cekmece(ac) { $('#ust-menu')?.classList.toggle('acik', ac); $('#yan-ortu')?.classList.toggle('acik', ac); if (!ac) menuKapat(); }
+function grupAc(g, ac, odak = false) {
+  if (!cekmeceMi()) menuKapat(g);
+  g.classList.toggle('acik', ac);
+  $('.um-baslik', g).setAttribute('aria-expanded', ac ? 'true' : 'false');
+  if (ac && odak) $('.um-acilir [role=menuitem]', g)?.focus();
+}
+function menuBagla() {
+  const basliklar = () => $$('.ust-cubuk .um-baslik').filter((b) => b.offsetParent !== null);
+  $$('.um-baslik').forEach((b) => {
+    const g = b.closest('.um-grup');
+    b.addEventListener('click', (e) => { e.stopPropagation(); grupAc(g, !g.classList.contains('acik')); });
+    b.addEventListener('mouseenter', () => { if (!cekmeceMi() && $('.ust-cubuk .um-grup.acik') && !g.classList.contains('acik')) grupAc(g, true); });
+    b.addEventListener('keydown', (e) => {
+      const l = basliklar(); const i = l.indexOf(b);
+      if (e.key === 'ArrowDown') { e.preventDefault(); grupAc(g, true, true); }
+      else if (!cekmeceMi() && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+        e.preventDefault(); const h = l[(i + (e.key === 'ArrowRight' ? 1 : -1) + l.length) % l.length]; h?.focus();
+        if (g.classList.contains('acik')) grupAc(h.closest('.um-grup'), true);
+      }
+    });
+  });
+  $$('.um-acilir').forEach((m) => m.addEventListener('keydown', (e) => {
+    const ogeler = $$('[role=menuitem]', m); const i = ogeler.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); ogeler[(i + (e.key === 'ArrowDown' ? 1 : -1) + ogeler.length) % ogeler.length]?.focus(); }
+  }));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const acik = $('.um-grup.acik');
+    if (acik) { menuKapat(); $('.um-baslik', acik).focus(); } else if ($('#ust-menu.acik')) cekmece(false);
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.um-grup')) menuKapat(); });
+  $$('.ust-cubuk a[data-yol], .ust-cubuk .ust-logo').forEach((a) => a.addEventListener('click', () => { menuKapat(); cekmece(false); }));
+  $('#btn-menu').onclick = () => cekmece(true);
+  $('#btn-menu-kapat').onclick = () => cekmece(false);
+  $('#alt-daha').onclick = (e) => { e.preventDefault(); cekmece(true); };
+  $('#yan-ortu').onclick = () => cekmece(false);
+}
+
 // ---------- Kabuk ----------
 function kabukCiz() {
   const k = ctx.kullanici;
@@ -241,47 +314,35 @@ function kabukCiz() {
         <button class="btn-ikon" id="btn-cikis" title="Çıkış">${ikon('cikis')}</button></header>
       <main id="sayfa"></main></div>`);
   } else {
-    document.body.innerHTML = String(html`<div class="kabuk">
-      <aside class="yan" id="yan">
-        <div class="yan-ust">${ctx.ayarlar.firma_logo
-          ? html`<a href="#/panel" class="yan-logo" title="${firma}"><img src="/logo?v=${encodeURIComponent(ctx.ayarlar.firma_logo)}" alt="${firma}"></a>`
-          : html`<div class="logo">ST</div><div class="yan-firma">${firma}</div>`}</div>
-        <nav>${menuHtml()}</nav>
-        <div class="yan-alt">
-          <div class="yan-kisi"><b>${k.ad_soyad}</b><small>Yönetici</small></div>
-          <button class="btn-metin" id="btn-sifre">Şifre değiştir</button>
-          <button class="btn-metin" id="btn-cikis">${ikon('cikis', 16)} Çıkış</button>
-        </div>
-      </aside>
+    document.body.innerHTML = String(html`<div class="kabuk ust-duzen">
+      <header class="ust-cubuk">
+        <button class="btn-ikon mobil-menu" id="btn-menu" aria-label="Menü">${ikon('menu')}</button>
+        <a href="#/panel" class="ust-logo" title="${firma}">${ctx.ayarlar.firma_logo
+          ? html`<img src="/logo?v=${encodeURIComponent(ctx.ayarlar.firma_logo)}" alt="${firma}">`
+          : html`<span class="logo">ST</span><b>${firma}</b>`}</a>
+        <h1 id="ust-baslik" class="mobil-baslik"></h1>
+        <nav class="ust-menu" id="ust-menu" aria-label="Ana menü">
+          <div class="um-cekmece-ust"><b>${firma}</b><button type="button" class="btn-ikon" id="btn-menu-kapat" aria-label="Kapat">✕</button></div>
+          ${menuHtml()}
+        </nav>
+        <span class="bosluk"></span>
+        <div class="kur-kutu" id="kur" hidden></div>
+        <button class="btn birincil" id="btn-hizli">+ İş ekle</button>
+        ${kullaniciGrup('yalniz-masa')}
+      </header>
       <div class="yan-ortu" id="yan-ortu"></div>
-      <div class="ana">
-        <header class="ust"><button class="btn-ikon mobil-menu" id="btn-menu" aria-label="Menü">${ikon('menu')}</button>
-          <h1 id="ust-baslik"></h1><span class="bosluk"></span>
-          <div class="kur-kutu" id="kur" hidden></div>
-          <button class="btn birincil" id="btn-hizli">+ İş ekle</button></header>
-        <main id="sayfa"></main>
-      </div>
-      <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = DUZ_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${m.ad.replace('İş ', '')}</span></a>`; })}
+      <main id="sayfa"></main>
+      <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = DUZ_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${menuAdi(m).replace('İş ', '')}</span></a>`; })}
         <a href="#" id="alt-daha">${ikon('menu')}<span>Menü</span></a></nav>
     </div>`);
-    const yanAc = (a) => { $('#yan').classList.toggle('acik', a); $('#yan-ortu').classList.toggle('acik', a); };
-    $('#btn-menu').onclick = () => yanAc(true);
-    $('#alt-daha').onclick = (e) => { e.preventDefault(); yanAc(true); };
-    $('#yan-ortu').onclick = () => yanAc(false);
-    $$('#yan nav a').forEach((a) => a.addEventListener('click', () => yanAc(false)));
-    // Alt menülü başlık: aç / kapat (durum hatırlanır)
-    $$('#yan .menu-baslik').forEach((b) => b.addEventListener('click', () => {
-      const g = b.closest('.menu-grup'); const acik = !g.classList.contains('acik');
-      g.classList.toggle('acik', acik); b.setAttribute('aria-expanded', acik ? 'true' : 'false');
-      try { localStorage.setItem('menu-' + g.dataset.grup, acik ? '1' : '0'); } catch { /* */ }
-    }));
+    menuBagla();
     $('#btn-hizli').onclick = async () => {
       const { hizliIs } = await import('./sayfa/havuz.js');
       hizliIs(ctx);
     };
   }
-  $('#btn-cikis').onclick = cikis;
-  $('#btn-sifre').onclick = sifreDegistir;
+  $$('#btn-cikis, [data-cikis]').forEach((b) => { b.onclick = cikis; });
+  $$('#btn-sifre, [data-sifre]').forEach((b) => { b.onclick = () => { menuKapat(); sifreDegistir(); }; });
   if (ctx.yonetici) { kurYukle(); setInterval(kurYukle, 30 * 60 * 1000); }
 }
 
@@ -309,7 +370,7 @@ async function sayacYukle(zorla = false) {
   sonSayac = Date.now();
   try {
     const s = await api.get('/sayaclar');
-    $$('[data-sayac]').forEach((b) => { const n = s[b.dataset.sayac] || 0; b.textContent = n; b.hidden = !n; });
+    $$('[data-sayac]').forEach((b) => { const n = b.dataset.sayac.split(',').reduce((t, k) => t + (s[k] || 0), 0); b.textContent = n; b.hidden = !n; });
   } catch { /* */ }
 }
 ctx.sayacYenile = () => sayacYukle(true);
@@ -345,12 +406,9 @@ async function yonlendir() {
   window.scrollTo(0, 0);
   const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', urun: 'urunler', teklif: 'teklifler' }[ad] || ad;
   $$('[data-yol]').forEach((a) => a.classList.toggle('aktif', a.dataset.yol === menuAd));
-  // Bulunulan sayfa bir alt menüdeyse başlık vurgulanır ve kapalıysa açılır
-  $$('#yan .menu-grup').forEach((g) => {
-    const icinde = !!g.querySelector(`[data-yol="${menuAd}"]`);
-    g.classList.toggle('aktif-grup', icinde);
-    if (icinde) g.classList.add('acik');
-  });
+  // Bulunulan sayfanın grubu vurgulanır; açık menüler kapanır
+  $$('.um-grup').forEach((g) => g.classList.toggle('aktif-grup', !!g.querySelector(`[data-yol="${menuAd}"]`)));
+  menuKapat(); cekmece(false);
   sayacYukle();
   const benim = ++sonYukleme;
   if (!modul) { el.innerHTML = '<div class="bos-durum">Sayfa bulunamadı.</div>'; return; }
