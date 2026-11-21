@@ -7,10 +7,11 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 ### 1. Giriş ekranı daha canlı olsun (21.11.2026)
 - İlk açılan kullanıcı giriş ekranı donuk görünüyor; efekt verilsin (hareketli arka plan, logo, yumuşak geçişler).
 
-### 2. Belgelerde "Stoktan ekle" düğmesi (21.11.2026)
-- Teklif, proforma, satış fişi (ve alış faturası) ekranlarında **"+ Kalem" düğmesinin yanına "Stoktan ekle"** düğmesi.
-- Basınca **stok listesi ve filtre ekranı** açılsın: **marka**, **ürün grubu** gibi filtrelerle; ürünler işaretlenip miktarlarıyla topluca eklensin.
-- Bunun için stok kartına **marka** (ve **model**) alanı eklenmeli; "ürün grubu" mevcut kategori alanı olarak kullanılabilir.
+### 2. Belgelerde "Stok listesi" düğmesi (21.11.2026)
+- Teklif, proforma, satış fişi (ve alış faturası) ekranlarında **"+ Kalem" düğmesinin yanına "Stok listesi"** yazan düğme.
+- Basınca **stok listesi ve filtre ekranı** açılsın: **marka**, **ana grup**, **alt grup** filtreleriyle; ürünler işaretlenip miktarlarıyla topluca eklensin.
+- Stok kartına eklenecek alanlar: **marka**, **model**, **ana grup**, **alt grup** (iki seviyeli ürün grubu; mevcut tek "kategori" alanının yerine geçer, mevcut kategoriler ana gruba taşınır).
+- Ürünler listesinde de aynı filtreler (marka, ana grup, alt grup) olsun.
 
 ### 3. Kalem açıklamasına yazınca ürün önerisi (21.11.2026)
 - "+ Kalem" ile açılan satırda açıklamaya ürün adı yazılınca, stok kartında **adı veya modeli** geçen ürünler kendiliğinden filtrelenip listelensin.
