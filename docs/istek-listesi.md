@@ -4,7 +4,20 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an yok)_
+### 1. Giriş ekranı daha canlı olsun (21.11.2026)
+- İlk açılan kullanıcı giriş ekranı donuk görünüyor; efekt verilsin (hareketli arka plan, logo, yumuşak geçişler).
+
+### 2. Belgelerde "Stoktan ekle" düğmesi (21.11.2026)
+- Teklif, proforma, satış fişi (ve alış faturası) ekranlarında **"+ Kalem" düğmesinin yanına "Stoktan ekle"** düğmesi.
+- Basınca **stok listesi ve filtre ekranı** açılsın: **marka**, **ürün grubu** gibi filtrelerle; ürünler işaretlenip miktarlarıyla topluca eklensin.
+- Bunun için stok kartına **marka** (ve **model**) alanı eklenmeli; "ürün grubu" mevcut kategori alanı olarak kullanılabilir.
+
+### 3. Kalem açıklamasına yazınca ürün önerisi (21.11.2026)
+- "+ Kalem" ile açılan satırda açıklamaya ürün adı yazılınca, stok kartında **adı veya modeli** geçen ürünler kendiliğinden filtrelenip listelensin.
+- Not: Şu an ad, kod ve barkodda arıyor; **marka ve model** alanlarında da arayacak, öneri listesi daha belirgin (stok, fiyat bilgisiyle) olacak.
+
+### 4. Teklif giriş/kapanış metinleri yan yana (21.11.2026)
+- Teklif ekranında giriş ve kapanış metni kutuları çok yer kaplıyor; **yan yana, yatay dikdörtgen** şeklinde daha kompakt olsun.
 
 ## İsteğe bağlı fikirler
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
