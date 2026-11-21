@@ -722,3 +722,11 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
 .silinen-baslik { font-size: 1rem; }
 .silinen-alt { font-size: .82rem; margin: .25rem 0; }
 .kart.silinen details summary { cursor: pointer; font-size: .86rem; color: var(--ana); }
+
+/* ---------- Dış servis ---------- */
+.ds-durum-serit { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; margin-bottom: .8rem; }
+.ds-adim { border: 1px solid var(--cizgi); border-radius: 10px; padding: .45rem .6rem; display: grid; font-size: .84rem; color: var(--soluk); }
+.ds-adim small { font-size: .78rem; }
+.ds-adim.gecti { border-color: #86efac; background: #f0fdf4; color: #166534; }
+.ds-adim.aktif { border-color: var(--ana); background: #eff6ff; color: var(--ana); box-shadow: 0 0 0 1px var(--ana); }
+.sekme-sayi { font-weight: 800; color: var(--turuncu); }

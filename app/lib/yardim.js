@@ -32,6 +32,10 @@ function pozitif(v, ad) {
   if (n === null || n <= 0) throw hata(400, `${ad} sıfırdan büyük olmalı.`, 'GECERSIZ');
   return n;
 }
+// İşletmenin yerel günü (sunucu saati UTC olsa da gece 00:00-03:00 arası doğru gün)
+const GUN_FMT = new Intl.DateTimeFormat('sv-SE', { timeZone: process.env.YEREL_SAAT_DILIMI || 'Europe/Istanbul' });
+const bugun = () => GUN_FMT.format(new Date());
+
 function tarih(v) {
   if (bos(v)) return null;
   if (!/^\d{4}-\d{2}-\d{2}/.test(String(v))) throw hata(400, 'Tarih geçersiz.', 'GECERSIZ');
@@ -85,4 +89,4 @@ function setIfadesi(alanlar, baslangic = 1) {
 const DOVIZLER = ['TRY', 'USD', 'EUR'];
 const doviz = (d, varsayilan = 'TRY') => (DOVIZLER.includes(d) ? d : varsayilan);
 
-module.exports = { doviz, DOVIZLER, zorunlu, bos, metin, sayi, sayiCoz, pozitif, tarih, gorselKaydet, mesajCoz, sec, setIfadesi };
+module.exports = { bugun, doviz, DOVIZLER, zorunlu, bos, metin, sayi, sayiCoz, pozitif, tarih, gorselKaydet, mesajCoz, sec, setIfadesi };

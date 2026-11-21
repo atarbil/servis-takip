@@ -10,6 +10,7 @@ const YONETICI_MENU = [
     { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
   ] },
   { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
+  { yol: 'dis-servis', ad: 'Dış Servis', ikon: 'anahtar', sayac: 'dis_servis' },
   { yol: 'cariler', ad: 'Cariler', ikon: 'kisi' },
   { yol: 'envanter', ad: 'Envanter', ikon: 'cihaz' },
   { yol: 'teklifler', ad: 'Teklif / Proforma', ikon: 'belge' },
@@ -46,6 +47,7 @@ const IKON = {
   ayar: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
   menu: 'M4 6h16M4 12h16M4 18h16',
   asagi: 'M6 9l6 6 6-6',
+  anahtar: 'M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8V21h3.2l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.6-.6-.6-2.6z',
   cop: 'M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3',
   etiket: 'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
   cihaz: 'M4 5h16v10H4zM8 19h8M12 15v4',
@@ -317,7 +319,7 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 let sonYukleme = 0;
@@ -333,6 +335,8 @@ async function yonlendir() {
   const modul = SAYFALAR[ad];
   const eski = $('#sayfa');
   if (!eski) return;
+  // Sayfa değişince açık pencereler kapanır (geri tuşu, menü, panel bağlantısı)
+  document.querySelectorAll('dialog[open]').forEach((d) => { try { d.close(); } catch { /* */ } });
   // Eski sayfanın olay dinleyicilerini temizlemek için yeni eleman
   const el = document.createElement('main');
   el.id = 'sayfa';

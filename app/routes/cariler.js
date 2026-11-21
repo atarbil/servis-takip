@@ -1,5 +1,5 @@
 'use strict';
-const { zorunlu, metin, sayi, tarih, sec, setIfadesi } = require('../lib/yardim');
+const { bugun, zorunlu, metin, sayi, tarih, sec, setIfadesi } = require('../lib/yardim');
 
 const ALANLAR = ['kod', 'tip', 'unvan', 'yetkili', 'telefon', 'telefon2', 'eposta', 'adres', 'il', 'ilce',
   'vergi_dairesi', 'vergi_no', 'notlar', 'aktif'];
@@ -48,7 +48,7 @@ module.exports = (r, { db, web, Y }) => {
       const c = await q.bir(`INSERT INTO cariler (${anahtarlar.join(', ')}, olusturan_id)
         VALUES (${anahtarlar.map((_, i) => '$' + (i + 1)).join(', ')}, $${anahtarlar.length + 1}) RETURNING id, unvan`,
       [...anahtarlar.map((k) => a[k]), req.kullanici.id]);
-      if (devir) await q('SELECT cari_devir_ekle($1, $2, $3)', [c.id, devir, tarih(req.body.devir_tarih) || new Date().toISOString().slice(0, 10)]);
+      if (devir) await q('SELECT cari_devir_ekle($1, $2, $3)', [c.id, devir, tarih(req.body.devir_tarih) || bugun()]);
       return c;
     });
   });
@@ -79,7 +79,7 @@ module.exports = (r, { db, web, Y }) => {
     const tutar = sayi(req.body.tutar, 'Tutar');
     if (!tutar) throw web.hata(400, 'Tutar sıfır olamaz.');
     await db.islem(req.kullanici.id, (q) => q('SELECT cari_devir_ekle($1, $2, $3, $4)',
-      [req.params.id, tutar, tarih(req.body.tarih) || new Date().toISOString().slice(0, 10), metin(req.body.aciklama) || 'Devir bakiyesi']));
+      [req.params.id, tutar, tarih(req.body.tarih) || bugun(), metin(req.body.aciklama) || 'Devir bakiyesi']));
     return { tamam: true };
   });
 

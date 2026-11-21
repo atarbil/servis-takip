@@ -1,6 +1,6 @@
 'use strict';
 // Müşteri envanteri: kurumda hangi cihaz var. Erişim bilgisi (şifre vb.) sadece yöneticiye.
-const { zorunlu, metin, tarih, sec, setIfadesi } = require('../lib/yardim');
+const { bugun, zorunlu, metin, tarih, sec, setIfadesi } = require('../lib/yardim');
 
 const ALANLAR = ['cari_id', 'tur', 'marka', 'model', 'seri_no', 'konum', 'ip_adresi', 'kurulum_tarihi', 'garanti_bitis',
   'notlar', 'erisim_bilgisi', 'durum', 'urun_id', 'kaynak_is_id'];
@@ -95,7 +95,7 @@ module.exports = (r, { db, web, G, Y }) => {
     zorunlu(req.body, { tur: 'Cihaz türü' });
     const izinli = req.kullanici.rol === 'yonetici' ? ALANLAR : TEKNISYEN_ALANLAR;
     const a = temizle(sec(req.body, izinli));
-    Object.assign(a, { cari_id: is.cari_id, kaynak_is_id: is.id, kurulum_tarihi: a.kurulum_tarihi || new Date().toISOString().slice(0, 10) });
+    Object.assign(a, { cari_id: is.cari_id, kaynak_is_id: is.id, kurulum_tarihi: a.kurulum_tarihi || bugun() });
     return db.islem(req.kullanici.id, async (q) => {
       const anahtarlar = Object.keys(a);
       const e = await q.bir(`INSERT INTO envanter (${anahtarlar.join(', ')}, olusturan_id) VALUES (${anahtarlar.map((_, i) => '$' + (i + 1)).join(', ')}, $${anahtarlar.length + 1}) RETURNING id`,

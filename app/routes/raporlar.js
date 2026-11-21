@@ -9,7 +9,8 @@ module.exports = (r, { db, G, Y }) => {
   // Menüdeki rozetler
   r.get('/sayaclar', Y, async () => (await db.query(`SELECT
       (SELECT count(*)::int FROM isler WHERE durum = 'tamamlandi') AS fiyatlandirma,
-      (SELECT count(*)::int FROM isler WHERE durum = 'havuz') AS havuz`)).rows[0]);
+      (SELECT count(*)::int FROM isler WHERE durum = 'havuz') AS havuz,
+      (SELECT count(*)::int FROM dis_servis WHERE durum = 'dis_serviste') AS dis_servis`)).rows[0]);
 
   r.get('/fiyatlandirma', Y, async () => (await db.query(`
     SELECT *, extract(epoch FROM bekleme)::int AS bekleme_sn FROM v_fiyatlandirma_bekleyen ORDER BY bitis_zamani`)).rows);

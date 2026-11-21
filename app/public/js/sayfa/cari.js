@@ -30,7 +30,7 @@ export default async function (el, [id], ctx) {
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
       <button class="btn tehlike-cizgi" data-a="sil" title="Cari ve tüm hareketleri silinir (30 gün geri alınabilir)">🗑 Sil</button>
     </div>
-    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
+    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
       .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
     <div id="icerik"></div>`);
 
@@ -83,6 +83,14 @@ export default async function (el, [id], ctx) {
         <div class="kart"><div class="tablo-kap">${envanterTablosu(liste, { bosMetin: 'Bu kurum için kayıtlı cihaz yok.' })}</div></div>`);
       $('#env-yeni', k).onclick = async () => { if (await envanterFormu(null, { cari: c })) { bildir('Cihaz eklendi.', 'basari'); ciz(); } };
       k.onclick = async (ev) => { const t = ev.target.closest('[data-env]'); if (t && await envanterFormu({ id: Number(t.dataset.env) }, { cari: c })) ciz(); };
+    } else if (sekme === 'disservis') {
+      const { disServisTablosu, disServisFormu } = await import('./disservis.js');
+      const liste = await api.get('/dis-servis', { cari_id: c.id });
+      k.innerHTML = String(html`<div class="sayfa-ust"><span class="soluk">${liste.length} kayıt</span><span class="bosluk"></span>
+        <button class="btn birincil" id="ds-yeni">+ Dış servise gönder</button></div>
+        <div class="kart"><div class="tablo-kap">${disServisTablosu(liste)}</div></div>`);
+      $('#ds-yeni', k).onclick = async () => { if (await disServisFormu(null, { cari: c, ctx })) ciz(); };
+      k.onclick = async (ev) => { const t = ev.target.closest('[data-ds]'); if (t && await disServisFormu({ id: Number(t.dataset.ds) }, { cari: c, ctx })) ciz(); };
     } else if (sekme === 'fisler') {
       const fl = await api.get(`/cariler/${c.id}/fisler`);
       k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Fiş no</th><th>Tarih</th><th>Durum</th><th class="sayi">Tutar</th><th class="sayi">Kâr</th></tr></thead><tbody>

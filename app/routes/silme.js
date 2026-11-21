@@ -2,7 +2,7 @@
 // Yöneticinin silme yetkisi ve Silinenler kutusu.
 // Silme önizlemesi gerçek silmeyi çalıştırıp geri sarar: penceredeki etkiler birebir doğrudur.
 
-const TURLER = ['satis_fisi', 'alis_faturasi', 'teklif', 'finans', 'is', 'cari', 'urun', 'envanter', 'takvim_notu', 'kullanici'];
+const TURLER = ['satis_fisi', 'alis_faturasi', 'teklif', 'finans', 'is', 'cari', 'urun', 'envanter', 'takvim_notu', 'kullanici', 'dis_servis'];
 
 module.exports = (r, { db, web, Y }) => {
   const dogrula = (b) => {

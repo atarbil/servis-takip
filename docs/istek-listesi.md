@@ -4,14 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Dış servis takibi — sade (21.11.2026)
-Amaç: **müşteriden alınıp dış servise (tamirci / yetkili servis) gönderilen cihazların** nerede olduğunu bilmek. Basit tutulacak.
-- Kayıt alanları: müşteri (cari), cihaz (tür, marka/model), seri no, arıza, yanında verilenler (adaptör, çanta…),
-  gönderilen dış servis (serbest yazı veya cari), gönderim tarihi, servis ücreti (bilgi amaçlı, isteğe bağlı), not.
-- Durum sadece 3 adım: **Dış serviste → Geldi (bizde) → Müşteriye teslim edildi**. Her adımın tarihi tutulur.
-- Menüde "Dış Servis" listesi: kaç gündür dışarıda; durum filtresi; arama (müşteri, seri no, cihaz). Cari kartında da görünür.
-- İsteğe bağlı: müşteriye verilecek basit "cihaz teslim alındı" fişi yazdırma.
-- **Yok:** Telegram bildirimi, cari borç/fatura, stok etkisi, karmaşık durum akışı.
+_Şu an bekleyen istek yok._
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -20,6 +13,17 @@ Amaç: **müşteriden alınıp dış servise (tamirci / yetkili servis) gönderi
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 22.11.2026 — 6. derleme
+- **Dış servis:** müşteriden alınıp tamire gönderilen cihazlar. Menüde "Dış Servis" (sayaçlı), cari kartında "Dış servis" sekmesi.
+  Alanlar: müşteri, cihaz, marka/model, seri no, arıza, yanında verilenler, gönderilen servis, gönderim tarihi, ücret (bilgi), not.
+  Durum: Dış serviste → Geldi (bizde) → Müşteriye teslim edildi; tarihler kendiliğinden yazılır, geri adım alınabilir.
+  Kaç gündür dışarıda / kaç gündür bizde bekliyor; 14 günü geçen kırmızı. Arama, durum sekmeleri, Excel.
+  İki nüsha "cihaz teslim alındı" fişi (müşteri + firma). Silinenler'e gider, cari silinince birlikte silinir.
+- **Ana panoda "Dış servis" kartı:** en uzun süredir açık olan 5 kayıt, toplam sayı ve "+ Gönder" düğmesi.
+- **Düzeltme:** gece 00:00–03:00 arası girilen tahsilat/ödeme/devir/envanter tarihleri bir önceki güne yazılabiliyordu
+  (sunucu UTC saatine bakıyordu); artık İstanbul saatine göre.
+- **Düzeltme:** pencere açıkken başka sayfaya geçince pencere kapanıyor.
 
 ### 21.11.2026 — 5. derleme
 - **Silme yetkisi (yönetici):** iş, cari, ürün, satış fişi, alış faturası, teklif/proforma, kasa/banka hareketi, envanter, takvim notu ve

@@ -1,5 +1,5 @@
 'use strict';
-const { zorunlu, metin, pozitif, tarih } = require('../lib/yardim');
+const { bugun, zorunlu, metin, pozitif, tarih } = require('../lib/yardim');
 
 module.exports = (r, { db, web, Y }) => {
   r.get('/hesaplar', Y, async () => (await db.query(`
@@ -32,7 +32,7 @@ module.exports = (r, { db, web, Y }) => {
       ${k.length ? 'WHERE ' + k.join(' AND ') : ''} ORDER BY f.tarih DESC, f.id DESC LIMIT 1000`, p)).rows;
   });
 
-  const ortak = (b) => [pozitif(b.tutar, 'Tutar'), tarih(b.tarih) || new Date().toISOString().slice(0, 10), metin(b.aciklama)];
+  const ortak = (b) => [pozitif(b.tutar, 'Tutar'), tarih(b.tarih) || bugun(), metin(b.aciklama)];
 
   r.post('/finans/tahsilat', Y, async (req) => {
     zorunlu(req.body, { cari_id: 'Cari', hesap_id: 'Kasa/Banka' });

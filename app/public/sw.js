@@ -1,5 +1,5 @@
 // Basit hizmet çalışanı: uygulama kabuğunu önbelleğe alır, veriler her zaman sunucudan gelir.
-const SURUM = 'st-v7';
+const SURUM = 'st-v8';
 const KABUK = ['/', '/css/app.css', '/js/app.js', '/js/ui.js', '/js/api.js', '/manifest.webmanifest', '/ikon/ikon-192.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(SURUM).then((c) => c.addAll(KABUK)).then(() => self.skipWaiting()));

@@ -186,3 +186,24 @@ export function makbuzYazdir(ctx, m, { kaseImza = true, ikiNusha = false } = {})
   </div>`;
   yazdir(html`<div class="belge belge2">${ikiNusha ? html`${nusha('ASIL')}<div class="kesme-cizgisi"></div>${nusha('SURET')}` : nusha('')}</div>`);
 }
+
+// Dış servis: müşteriye verilen "cihaz teslim alındı" fişi (A4'e 2 nüsha: müşteri + firma)
+export function disServisFisYazdir(ctx, d) {
+  const nusha = (etiket) => html`<div class="makbuz">
+    <div class="nusha">${etiket}</div>
+    <div class="makbuz-ust">${firmaBlok(ctx)}
+      <div class="makbuz-bilgi"><div class="belge-baslik" style="margin:0 0 .4rem">CİHAZ TESLİM ALINDI</div>
+        <div><b>No:</b> DS-${String(d.id).padStart(6, '0')}</div><div><b>Tarih:</b> ${tarih(d.olusturma)}</div></div></div>
+    <div class="makbuz-kutu"><div><b>Müşteri:</b> ${d.unvan}</div>${d.cari_telefon ? html`<div>Tel: ${d.cari_telefon}</div>` : ''}</div>
+    <table class="belge-tablo"><tbody>
+      <tr><th style="width:28%">Cihaz</th><td>${[d.cihaz, d.marka_model].filter(Boolean).join(' · ')}</td></tr>
+      <tr><th>Seri no</th><td>${d.seri_no || '—'}</td></tr>
+      <tr><th>Arıza / şikâyet</th><td>${d.ariza || '—'}</td></tr>
+      <tr><th>Yanında teslim alınanlar</th><td>${d.aksesuar || '—'}</td></tr>
+    </tbody></table>
+    <p style="font-size:.85em">Yukarıda bilgileri yazılı cihaz onarım için teslim alınmıştır. Cihaz gerekirse yetkili / dış servise gönderilebilir.
+      Teslim alırken bu fişin ibrazı rica olunur.</p>
+    <div class="imza-kutular"><div><b>Teslim eden</b><br>${d.unvan}</div><div><b>Teslim alan</b><br>${ctx.ayarlar.firma_adi || ''}</div></div>
+  </div>`;
+  yazdir(html`<div class="belge belge2">${nusha('MÜŞTERİ NÜSHASI')}<div class="kesme-cizgisi"></div>${nusha('FİRMA NÜSHASI')}</div>`);
+}

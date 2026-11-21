@@ -19,7 +19,8 @@ function isListesi(liste, bosMetin) {
 
 export default async function (el, _p, ctx) {
   ctx.baslik('Panel');
-  const o = await api.get('/ozet');
+  const [o, ds, dsSay] = await Promise.all([api.get('/ozet'), api.get('/dis-servis', { durum: 'acik', limit: 5 }), api.get('/dis-servis/sayilar')]);
+  const dsAcik = dsSay.dis_serviste + dsSay.geldi;
   const gun = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const k = await kurAl(ctx);
 
@@ -55,6 +56,13 @@ export default async function (el, _p, ctx) {
             <button class="btn ikincil kucuk" data-planla="${i.id}">📅 Planla</button></li>`)}</ul>
             ${o.havuz > o.havuz_isler.length ? html`<div class="mini-bos"><a href="#/havuz">Tümünü gör (${o.havuz}) →</a></div>` : ''}` : bos('Havuz boş. 👍'),
           { sayi: o.havuz, sag: html`<a href="#/havuz" class="btn ikincil kucuk">Havuz</a>` })}
+        ${kart('🔧 Dış servis', ds.length ? html`<ul class="mini-liste">${ds.map((d) => html`<li class="tikla" data-git="dis-servis/${d.id}">
+            <div class="ana-metin"><b>${d.cihaz}${d.marka_model ? ' · ' + d.marka_model : ''}</b><small>${d.unvan} → ${d.servis_yeri}</small></div>
+            <div class="sag-deger">${d.durum === 'geldi'
+              ? html`<span class="rozet yesil" title="Dış servisten geldi, müşteriye teslim bekliyor">Geldi</span><br><small>${d.bekleyen_gun} gündür bizde</small>`
+              : html`<b class="${d.dis_gun > 14 ? 'negatif' : ''}">${d.dis_gun} gün</b><br><small>dışarıda</small>`}</div></li>`)}</ul>
+            ${dsAcik > ds.length ? html`<div class="mini-bos"><a href="#/dis-servis">Tümünü gör (${dsAcik}) →</a></div>` : ''}` : bos('Dış serviste cihaz yok.'),
+          { sayi: dsAcik, sag: html`<a href="#/dis-servis?yeni=1" class="btn ikincil kucuk">+ Gönder</a>` })}
         ${kart('Fiyatlandırma bekleyen işler', o.fiyat_bekleyen.length ? html`<ul class="mini-liste">${o.fiyat_bekleyen.map((i) => html`<li class="tikla" data-fiyat="${i.id}" data-fis="${i.taslak_fis_id || ''}">
             <div class="ana-metin"><b>${i.baslik}</b><small>${i.unvan || 'Cari bağlı değil'} · bitti ${tarih(i.bitis_zamani)}</small></div>
             <div class="sag-deger"><small>maliyet</small><br><b>${para(i.malzeme_maliyeti)}</b></div></li>`)}</ul>

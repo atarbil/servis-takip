@@ -146,6 +146,39 @@ function istemci() {
   kontrol('Zaten silinmiş kayıt tekrar silinemez', (await y('POST', '/sil', { tur: 'teklif', id: tk.id })).durum >= 400);
   kontrol('Raporlar çalışıyor', (await y('GET', '/ozet')).durum === 200);
 
+  // ---------- Dış servis ----------
+  const yerelGun = (ms) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Istanbul' }).format(new Date(ms));
+  const gecen = yerelGun(Date.now() - 20 * 86400000);
+  x = await y('POST', '/dis-servis', { cari_id: cari.id, cihaz: 'Dizüstü', marka_model: 'Lenovo ThinkPad E14', seri_no: 'PF-ABC123', ariza: 'Ekran yok', aksesuar: 'Adaptör', servis_yeri: 'Lenovo Yetkili Servis', gonderim_tarihi: gecen, ucret: '1.250' });
+  kontrol('Dış servis kaydı açıldı', x.durum === 200 && x.veri.id, x.veri);
+  const ds = x.veri.id;
+  kontrol('Zorunlu alanlar', (await y('POST', '/dis-servis', { cari_id: cari.id, cihaz: 'X' })).durum === 400);
+  kontrol('Teknisyen dış servise erişemez', (await t('GET', '/dis-servis')).durum === 403);
+  x = await y('GET', `/dis-servis/${ds}`);
+  kontrol('Kayıt: 20 gündür dışarıda, ücret 1250', x.veri.dis_gun === 20 && Number(x.veri.ucret) === 1250 && x.veri.durum === 'dis_serviste', x.veri);
+  x = await y('GET', '/dis-servis?durum=acik&q=thinkpad%20silinecek');
+  kontrol('Arama ve açık filtre', x.veri.length === 1 && x.veri[0].id === ds, x.veri.length);
+  kontrol('Sayılar: 1 dışarıda, 1 geciken', (await y('GET', '/dis-servis/sayilar')).veri.geciken === 1);
+  kontrol('Menü sayacı', (await y('GET', '/sayaclar')).veri.dis_servis >= 1);
+  await y('POST', `/dis-servis/${ds}/durum`, { durum: 'geldi' });
+  x = await y('GET', `/dis-servis/${ds}`);
+  kontrol('Geldi: geliş tarihi bugün, gün sayısı durdu', x.veri.durum === 'geldi' && x.veri.gelis_tarihi === yerelGun(Date.now()) && x.veri.dis_gun === 20, x.veri);
+  kontrol('Geçmiş tarihli geliş reddedilir', (await y('POST', `/dis-servis/${ds}/durum`, { durum: 'geldi', tarih: '2000-01-01' })).durum === 400);
+  await y('POST', `/dis-servis/${ds}/durum`, { durum: 'teslim_edildi' });
+  x = await y('GET', `/dis-servis/${ds}`);
+  kontrol('Müşteriye teslim edildi', x.veri.durum === 'teslim_edildi' && x.veri.teslim_tarihi, x.veri);
+  kontrol('Teslim edilen açık listede yok', !(await y('GET', '/dis-servis?durum=acik')).veri.some((d) => d.id === ds));
+  await y('POST', `/dis-servis/${ds}/durum`, { durum: 'dis_serviste' });
+  kontrol('Geri adım tarihleri temizler', (await y('GET', `/dis-servis/${ds}`)).veri.gelis_tarihi === null);
+  await y('PUT', `/dis-servis/${ds}`, { servis_yeri: 'Başka servis', notlar: 'Anakart değişecek' });
+  kontrol('Düzenlendi', (await y('GET', `/dis-servis/${ds}`)).veri.servis_yeri === 'Başka servis');
+  x = await y('POST', '/sil', { tur: 'dis_servis', id: ds });
+  kontrol('Dış servis kaydı silindi', x.durum === 200 && (await y('GET', `/dis-servis/${ds}`)).durum === 404, x.veri);
+  await y('POST', `/silinenler/${x.veri.silinen_id}/geri-al`);
+  kontrol('Dış servis kaydı geri alındı', (await y('GET', `/dis-servis/${ds}`)).durum === 200);
+  x = await y('POST', '/sil/onizleme', { tur: 'cari', id: cari.id });
+  kontrol('Cari silinirken dış servis kaydı da listede', x.veri.ozet.some((m) => /Dış servis: Dizüstü/.test(m)), x.veri.ozet);
+
   console.log(basarisiz ? `\n${basarisiz} KONTROL BAŞARISIZ` : '\nSİLME TESTLERİ BAŞARILI');
   process.exit(basarisiz ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
