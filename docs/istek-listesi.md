@@ -4,7 +4,20 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. Menü üstte, açılır ve gruplu (22.11.2026)
+- Sol kenar çubuğu kalkar; menü ekranın **üstünde yatay çubuk** olur, gruplar tıklayınca/üzerine gelince **aşağı açılır**.
+  Sayfa alanı genişler. Logo solda, döviz kuru ve "+ İş ekle" sağda kalır.
+- Önerilen gruplar:
+  - **Panel**
+  - **İşler ▾** İş Havuzu · Takvim · Tüm İşler · Dış Servis
+  - **Satış ▾** Fiyatlandırma · Satış Fişleri · Teklif / Proforma
+  - **Cariler ▾** Cariler · Envanter
+  - **Stok ▾** Ürünler / Stok · Alış Faturaları
+  - **Finans ▾** Kasa / Banka · Raporlar
+  - Sağda kullanıcı adı **▾** Ayarlar · Silinenler · Şifre değiştir · Çıkış
+- Sayaçlar (havuz, fiyatlandırma, dış servis) hem grup başlığında hem alt satırda görünür.
+- Klavye ile de açılır (Tab, Enter, ↓, Esc). Bulunulan sayfanın grubu vurgulu.
+- Telefonda yer olmadığı için: üstte ☰ ile açılan aynı gruplu menü + alttaki kısayol çubuğu kalır.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
