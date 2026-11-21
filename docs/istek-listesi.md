@@ -4,9 +4,23 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an yok)_
+### 1. Müşteri envanteri (21.11.2026)
+- Menüde ayrı bölüm + cari kartında "Envanter" sekmesi: kurumda hangi cihaz var, kayıt eklenebilsin.
+- Alanlar: tür (kamera, DVR/NVR, bilgisayar, yazıcı, POS…), marka, model, seri no, konum, IP adresi, kurulum tarihi, garanti bitiş, notlar.
+- Hassas bilgiler (kullanıcı adı/şifre) ayrı alanda, sadece yönetici görür.
+- Teknisyen saha ekranında müşterinin envanterini görür; iş bir cihaza bağlanabilir.
+- Arama/filtre, "garantisi bu ay bitenler", Excel'e aktarma.
+
+### 2. Telegram bildirimleri (21.11.2026)
+- Bağlı yöneticilere: iş tamamlandı (fiyatlandırma bekliyor), sahada tanımsız ürün eklendi.
+- Sabah 08:30 günün planı; akşam 19:00 günün özeti (tamamlanan işler, tahsilatlar, fiyatlandırma bekleyenler).
+- Hangi bildirimlerin alınacağı Ayarlar'dan açılıp kapatılır.
 
 ## İsteğe bağlı fikirler
+- Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
+- Dolar bazlı ürün fiyatı (TCMB kuruyla TL'ye çevrim).
+- Seri no ve garanti takibi (envanterle birleştirilebilir).
+- Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
