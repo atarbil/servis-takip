@@ -19,6 +19,18 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Klavye ile de açılır (Tab, Enter, ↓, Esc). Bulunulan sayfanın grubu vurgulu.
 - Telefonda yer olmadığı için: üstte ☰ ile açılan aynı gruplu menü + alttaki kısayol çubuğu kalır.
 
+### 2. Menü adlarını değiştirme (22.11.2026)
+- Ayarlar → **Menü** sekmesi: her grup başlığının ve sayfanın görünen adı değiştirilebilir (ör. "Cariler" → "Müşteriler").
+  "Varsayılana dön" düğmesi. Adlar tüm kullanıcılar için ortaktır; sayfa başlıkları da yeni adı kullanır.
+- (1. maddeyle birlikte yapılacak: gruplar üst menüde.)
+
+### 3. Panelde widget düzeni (22.11.2026)
+- Panelde **"Düzenle"** düğmesi: kartlar (Bugünkü işler, Havuz, Dış servis, Döviz çevirici, Kasa/Banka, Son tahsilatlar,
+  Fiyatlandırma bekleyen, Vadesi geçen, üstteki sayı kutuları…) **sürüklenip yer değiştirir**, her kartta **✕ Kaldır** olur.
+- Kaldırılan kartlar "Gizlenen kartlar" listesinden geri eklenir; "Varsayılan düzene dön" de olur.
+- Düzen **kullanıcıya özeldir** ve sunucuda saklanır: bilgisayarda yapılan düzen telefonda da geçerli
+  (telefonda tek sütun, sırası aynı). Telefonda sürükleme yerine ↑ ↓ düğmeleri.
+
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
 - Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
