@@ -4,7 +4,12 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. "+ İş ekle" penceresi geniş ve kaydırmasız (22.11.2026)
+- Pencere ekranın büyük kısmını kaplar (genişlik ~1150 px / ekranın %94'ü, yükseklik ekrana sığar); sayfa aşağı yukarı kaydırılmaz.
+- İki sütun: **solda** mesaj, cari, öncelik ve "İşi ben yaptım" seçimi; **sağda** hizmet/malzeme satırları ve ekleme düğmeleri.
+  Satırlar çoğalırsa sadece sağdaki liste kendi içinde kayar; Kaydet/Vazgeç her zaman görünür kalır.
+- "İşi ben yaptım" seçili değilken pencere daha kısa olur (sağ sütun boş durmaz).
+- Telefonda tam ekran açılır, düğmeler altta sabit.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
