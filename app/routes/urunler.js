@@ -1,7 +1,8 @@
 'use strict';
-const { zorunlu, metin, sayi, sec, setIfadesi } = require('../lib/yardim');
+const { zorunlu, metin, sayi, sec, setIfadesi, doviz } = require('../lib/yardim');
+const { kurGetir } = require('../lib/kur');
 
-const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'kdv_orani', 'kritik_stok', 'aktif'];
+const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'satis_doviz', 'kdv_orani', 'kritik_stok', 'aktif'];
 
 module.exports = (r, { db, web, G, Y }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';
@@ -44,7 +45,7 @@ module.exports = (r, { db, web, G, Y }) => {
   });
 
   r.get('/urunler/barkod/:barkod', G, async (req) => {
-    const u = (await db.query(`SELECT u.id, u.kod, u.ad, u.birim, u.onay_bekliyor ${yon(req) ? ', u.ort_maliyet, u.onerilen_satis, u.kdv_orani, u.stok_miktari' : ''}
+    const u = (await db.query(`SELECT u.id, u.kod, u.ad, u.birim, u.onay_bekliyor ${yon(req) ? ', u.ort_maliyet, u.onerilen_satis, u.satis_doviz, u.kdv_orani, u.stok_miktari' : ''}
       FROM urunler u WHERE u.id = barkod_bul($1)`, [req.params.barkod])).rows[0];
     if (!u) throw web.hata(404, 'Bu barkod tanımlı değil.', 'BARKOD_TANIMSIZ');
     return u;
@@ -79,6 +80,7 @@ module.exports = (r, { db, web, G, Y }) => {
   r.post('/urunler', Y, async (req) => {
     zorunlu(req.body, { ad: 'Ürün adı' });
     const a = sec(req.body, ALANLAR);
+    if ('satis_doviz' in a) a.satis_doviz = doviz(a.satis_doviz);
     for (const s of ['onerilen_satis', 'kdv_orani', 'kritik_stok']) if (s in a) a[s] = sayi(a[s]);
     if (a.kdv_orani === null) delete a.kdv_orani;
     if (!a.birim) delete a.birim;
@@ -97,6 +99,7 @@ module.exports = (r, { db, web, G, Y }) => {
 
   r.put('/urunler/:id', Y, async (req) => {
     const a = sec(req.body, ALANLAR);
+    if ('satis_doviz' in a) a.satis_doviz = doviz(a.satis_doviz);
     for (const s of ['onerilen_satis', 'kdv_orani', 'kritik_stok']) if (s in a) a[s] = sayi(a[s]);
     if ('ad' in a && !metin(a.ad)) throw web.hata(400, 'Ürün adı boş olamaz.');
     if (a.kdv_orani === null) delete a.kdv_orani;
@@ -114,9 +117,13 @@ module.exports = (r, { db, web, G, Y }) => {
   r.post('/urunler/:id/onayla', Y, async (req) => {
     const maliyet = sayi(req.body.birim_maliyet, 'Maliyet');
     if (maliyet === null || maliyet < 0) throw web.hata(400, 'Birim maliyet girin.');
+    const kur = await kurGetir().catch(() => null);
     await db.islem(req.kullanici.id, async (q) => {
+      if (req.body.satis_doviz) await q('UPDATE urunler SET satis_doviz = $2 WHERE id = $1', [req.params.id, doviz(req.body.satis_doviz)]);
       await q('SELECT urun_onayla($1, $2, $3, $4, $5)', [req.params.id, maliyet, metin(req.body.ad), metin(req.body.kod), sayi(req.body.onerilen_satis)]);
       if (Array.isArray(req.body.barkodlar)) await barkodlariYaz(q, req.params.id, req.body.barkodlar);
+      // Dövizli fiyat girildiyse taslak fişlerdeki satırlar güncel kurla TL'ye çevrilir
+      await q('SELECT fis_doviz_uygula(NULL, $1, $2, $3)', [kur?.usd?.satis || null, kur?.eur?.satis || null, req.params.id]);
     });
     return { tamam: true };
   });

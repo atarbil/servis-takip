@@ -1,5 +1,12 @@
 'use strict';
-const { zorunlu, metin, sayi, tarih } = require('../lib/yardim');
+const { zorunlu, metin, sayi, tarih, doviz } = require('../lib/yardim');
+
+// Satırın döviz kaynağı (bilgi amaçlı; fiş her zaman TL)
+function dovizSatir(s) {
+  const d = doviz(s.doviz, null);
+  if (!d || d === 'TRY') return [null, null, null];
+  return [d, sayi(s.doviz_fiyat, 'Döviz fiyatı'), sayi(s.kur, 'Kur')];
+}
 
 module.exports = (r, { db, web, Y }) => {
   r.get('/fisler', Y, async (req) => {
@@ -67,11 +74,12 @@ module.exports = (r, { db, web, Y }) => {
           const onceki = s.id ? eski.get(Number(s.id)) : null;
           const ayniUrun = onceki && onceki.urun_id === (urunId ? Number(urunId) : null);
           await q(`INSERT INTO satis_fisi_satirlari (fis_id, sira, tip, urun_id, aciklama, miktar, birim, birim_fiyat, iskonto_orani,
-                     kdv_orani, birim_maliyet, stoktan_dus, notu)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                     kdv_orani, birim_maliyet, stoktan_dus, notu, doviz, doviz_fiyat, kur)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
           [f.id, sira++, tip, urunId, aciklama, sayi(s.miktar, 'Miktar') || 1, metin(s.birim) || 'adet',
             sayi(s.birim_fiyat, 'Fiyat') || 0, sayi(s.iskonto_orani, 'İskonto') || 0, sayi(s.kdv_orani, 'KDV') ?? 20,
-            ayniUrun ? onceki.birim_maliyet : 0, ayniUrun ? onceki.stoktan_dus : true, metin(s.notu)]);
+            ayniUrun ? onceki.birim_maliyet : 0, ayniUrun ? onceki.stoktan_dus : true, metin(s.notu),
+            ...dovizSatir(s)]);
         }
       }
     });

@@ -1,5 +1,5 @@
 // Yazdırılabilir belgeler (tarayıcıdan "PDF olarak kaydet" de yapılabilir)
-import { html, para, paraSade, miktar, tarih, zaman, yazdir } from './ui.js';
+import { html, para, paraSade, dovizPara, miktar, tarih, zaman, yazdir } from './ui.js';
 import { belgeUst, firmaBlok } from './bilesen.js';
 
 export function teslimFormuYazdir(ctx, is) {
@@ -106,7 +106,8 @@ export function tutarYaziyla(tutar) {
   return `${yaz(tl)} Türk Lirası${kr ? ` ${yaz(kr)} Kuruş` : ''}`;
 }
 
-function kalemTablosu(satirlar) {
+function kalemTablosu(satirlar, d = 'TRY') {
+  const para = (n) => dovizPara(n, d);
   const iskontoVar = satirlar.some((s) => Number(s.iskonto_orani));
   return html`<table class="belge-tablo"><thead><tr><th class="no"></th><th>Açıklama</th><th class="sayi">Miktar</th><th class="sayi">Fiyat</th>
     ${iskontoVar ? html`<th class="sayi">İsk.</th>` : ''}<th class="sayi">KDV (%)</th><th class="sayi">Tutar (KDV Hariç)</th></tr></thead>
@@ -117,11 +118,16 @@ function kalemTablosu(satirlar) {
 }
 
 function toplamBlok(b) {
+  const d = b.doviz || 'TRY';
+  const para = (n) => dovizPara(n, d);
   const oranlar = [...new Set(b.satirlar.map((s) => Number(s.kdv_orani)))];
+  const kur = Number(b.kur);
+  const tlSatir = d !== 'TRY' && b.tl_karsilik_goster && kur > 0
+    ? html`<tr class="tl-karsilik"><td>TL karşılığı<small>1 ${d} = ${kur.toLocaleString('tr-TR', { maximumFractionDigits: 4 })} ₺</small></td><td>${dovizPara(Math.round(b.genel_toplam * kur * 100) / 100)}</td></tr>` : '';
   return html`<table class="belge-toplam"><tbody>
     <tr><td>Net</td><td>${para(b.ara_toplam)}</td></tr>
     <tr><td>KDV${oranlar.length === 1 ? ` (%${oranlar[0]})` : ''}</td><td>${para(b.kdv_toplam)}</td></tr>
-    <tr class="genel"><td>Toplam</td><td>${para(b.genel_toplam)}</td></tr></tbody></table>`;
+    <tr class="genel"><td>Toplam</td><td>${para(b.genel_toplam)}</td></tr>${tlSatir}</tbody></table>`;
 }
 
 export function proformaYazdir(ctx, t, { kaseImza = t.kase_imza } = {}) {
@@ -131,7 +137,7 @@ export function proformaYazdir(ctx, t, { kaseImza = t.kase_imza } = {}) {
     <div class="belge-musteri"><div><b class="musteri-unvan">${t.unvan}</b>
       ${t.vergi_no ? html`<div class="musteri-vn">${t.vergi_dairesi ? `VD:${t.vergi_dairesi} ` : ''}VN:${t.vergi_no}</div>` : ''}</div>
       <div class="tarih"><b>Tarih:</b> ${tarih(t.tarih)}</div></div>
-    ${kalemTablosu(t.satirlar)}
+    ${kalemTablosu(t.satirlar, t.doviz)}
     ${toplamBlok(t)}
     ${kaseImza ? html`<div class="kase-alan">${kase(ctx)}</div>` : ''}
   </div>`);
@@ -147,7 +153,7 @@ export function teklifYazdir(ctx, t, { kaseImza = t.kase_imza } = {}) {
       ${t.vergi_dairesi || t.vergi_no ? html`<div>${t.vergi_dairesi ? `VD:${t.vergi_dairesi}` : ''} ${t.vergi_no ? `VN:${t.vergi_no}` : ''}</div>` : ''}</div>
       <div class="tarih"><b>Tarih:</b> ${tarih(t.tarih)}${t.gecerlilik ? html`<div class="gecerlilik">Geçerlilik: ${tarih(t.gecerlilik)}</div>` : ''}</div></div>
     ${t.giris_metni ? html`<p class="belge-metin">${t.giris_metni}</p>` : ''}
-    ${kalemTablosu(t.satirlar)}
+    ${kalemTablosu(t.satirlar, t.doviz)}
     ${toplamBlok(t)}
     ${t.kapanis_metni ? html`<p class="belge-metin kapanis">${t.kapanis_metni}</p>` : ''}
     <p class="belge-metin">Saygılarımızla,</p>

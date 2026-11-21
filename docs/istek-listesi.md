@@ -4,41 +4,28 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Müşteri envanteri (21.11.2026)
-- Menüde ayrı bölüm + cari kartında "Envanter" sekmesi: kurumda hangi cihaz var, kayıt eklenebilsin.
-- Alanlar: tür (kamera, DVR/NVR, bilgisayar, yazıcı, POS…), marka, model, seri no, konum, IP adresi, kurulum tarihi, garanti bitiş, notlar.
-- Hassas bilgiler (kullanıcı adı/şifre) ayrı alanda, sadece yönetici görür.
-- Teknisyen saha ekranında müşterinin envanterini görür; iş bir cihaza bağlanabilir.
-- Arama/filtre, "garantisi bu ay bitenler", Excel'e aktarma.
-
-### 2. Telegram bildirimleri (21.11.2026)
-- Bağlı yöneticilere: iş tamamlandı (fiyatlandırma bekliyor), sahada tanımsız ürün eklendi.
-- Sabah 08:30 günün planı; akşam 19:00 günün özeti (tamamlanan işler, tahsilatlar, fiyatlandırma bekleyenler).
-- Hangi bildirimlerin alınacağı Ayarlar'dan açılıp kapatılır.
-
-### 3. Dolar bazlı fiyat (21.11.2026)
-- Stok kartında satış fiyatı (ve son alış fiyatı) için para birimi: TL / USD / EUR.
-- Fiş, teklif ve proformaya eklenirken günün TCMB döviz satış kuruyla TL'ye çevrilir; satırda kaynak fiyat ve kullanılan kur görünür ("120 USD × 41,9578").
-- Belgede kur elle değiştirilebilir ve "kurları güncelle" ile tüm dövizli satırlar yeniden hesaplanır.
-- Alış faturası dövizli girilebilir (fatura kuru ile TL maliyete çevrilir).
-- Ürünler listesinde dövizli fiyat ve güncel TL karşılığı birlikte görünür.
-- **Belge para birimi seçimi (kullanıcıya bırakılır):** teklif ve proforma her belgede ayrı ayrı **TL, USD veya EUR** olarak hazırlanabilir;
-  dövizli belgede fiyatlar, toplamlar ve çıktı o para biriminde olur (çıktıda bilgi amaçlı TL karşılığı ve kur gösterilebilir).
-- Satış fişi ve cari hesap **TL** kalır: dövizli teklif/proforma satış fişine dönüştürülürken seçilen kurla (varsayılan günün TCMB kuru) TL'ye çevrilir.
-
-### 4. Ana ekranda döviz çevirici (21.11.2026)
-- Panelde küçük bir çevirici kart: tutar yaz, USD ⇄ TL ve EUR ⇄ TL anında hesaplansın (TCMB günlük kuru).
-- Kuru elle değiştirme imkânı (piyasa kuru ile hesaplamak için); KDV dahil/hariç hesap kolaylığı.
-- Üst çubuktaki kur kutusuna tıklayınca da açılabilsin (her sayfadan erişim).
+_Şu an bekleyen istek yok._
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
-- Seri no ve garanti takibi (envanterle birleştirilebilir).
 - Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 21.11.2026 — 3. derleme
+- **Müşteri envanteri:** menüde "Envanter" ve cari kartında "Envanter" sekmesi. Tür, marka, model, seri no, konum, IP, kurulum tarihi,
+  garanti bitişi, durum (aktif/arızalı/kaldırıldı), notlar. 🔒 Erişim bilgisi (kullanıcı adı/şifre) sadece yöneticiye görünür.
+  Arama, tür/durum/garanti filtreleri ("30 gün içinde bitecek", "bitmiş"), Excel. İş detayında "İlgili cihaz" seçilir;
+  teknisyen saha ekranında müşterideki cihazları görür ve kurduğu cihazı envantere ekleyebilir (şifre giremez/göremez).
+- **Telegram bildirimleri:** iş tamamlandı (fiyatlandırma bekliyor), sahada tanımsız ürün, sabah planı (varsayılan 08:30),
+  akşam özeti (varsayılan 19:00). Ayarlar → Telegram'dan aç/kapat, saatleri değiştir, "şimdi gönder" ile dene.
+- **Dolar / Euro fiyat (seçimli):** stok kartında satış fiyatının para birimi TL/USD/EUR. Fişe eklenince günün TCMB satış kuruyla TL'ye
+  çevrilir, satırda "285,00 USD × 41,9578" görünür; "Kurları güncelle" düğmesi. Alış faturası dövizli girilebilir (kur ile TL maliyet).
+  Teklif/proforma her belgede TL, USD veya EUR; çıktı o para biriminde, istenirse TL karşılığı da yazılır. Fişe dönüştürürken kur sorulur.
+  Fiş ve cari her zaman TL.
+- **Döviz çevirici:** panelde kart + üst çubuktaki kura tıklayınca pencere. Tutar ⇄ TL/USD/EUR, KDV dahil/hariç, kur elle değiştirilebilir.
 
 ### 21.11.2026 — 2. derleme
 - **Canlı giriş ekranı:** hareketli renk geçişli arka plan, süzülen ışık efektleri ve parçacıklar, logo, kutunun ve alanların sırayla belirmesi,

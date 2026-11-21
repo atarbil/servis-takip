@@ -1,6 +1,6 @@
 import { api } from '../api.js';
-import { html, para, saat, tarih, durumRozet, sureMetni, bildir } from '../ui.js';
-import { planlaPenceresi } from '../bilesen.js';
+import { html, $, para, saat, tarih, durumRozet, sureMetni, bildir } from '../ui.js';
+import { planlaPenceresi, kurAl, dovizCeviriciHtml, dovizCeviriciBagla } from '../bilesen.js';
 
 const selam = () => { const s = new Date().getHours(); return s < 6 ? 'İyi geceler' : s < 12 ? 'Günaydın' : s < 18 ? 'İyi günler' : 'İyi akşamlar'; };
 const kurFmt = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
@@ -21,13 +21,10 @@ export default async function (el, _p, ctx) {
   ctx.baslik('Panel');
   const o = await api.get('/ozet');
   const gun = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const k = ctx.kur;
+  const k = await kurAl(ctx);
 
   el.innerHTML = String(html`
     <div class="sayfa-ust"><h2>${selam()}, ${ctx.kullanici.ad_soyad.split(' ')[0]}</h2><span class="alt">${gun}</span></div>
-    ${k && (k.usd || k.eur) ? html`<div class="kart kur-kart"><div class="kart-govde" style="display:flex;gap:1.2rem;align-items:baseline;padding:.6rem 1rem">
-      ${k.usd ? html`<span><small>USD</small> <b>${kurFmt.format(k.usd.satis)}</b></span>` : ''}${k.eur ? html`<span><small>EUR</small> <b>${kurFmt.format(k.eur.satis)}</b></span>` : ''}
-      <small class="soluk">TCMB ${k.tarih || ''}</small></div></div>` : ''}
 
     <div class="istatistik genis">
       <a class="ist vurgu" href="#/havuz"><small>Havuzda bekleyen</small><b>${o.havuz}</b></a>
@@ -65,6 +62,9 @@ export default async function (el, _p, ctx) {
           { sayi: o.fis_bekleyen, sag: html`<a href="#/fiyatlandirma" class="btn ikincil kucuk">Tümü</a>` })}
       </div>
       <div>
+    ${k && (k.usd || k.eur) ? html`<div class="kart kur-kart"><div class="kart-ust"><h3>💱 Döviz</h3><span class="bosluk"></span>
+        ${k.usd ? html`<span class="kur-cip"><small>USD</small> <b>${kurFmt.format(k.usd.satis)}</b></span>` : ''}${k.eur ? html`<span class="kur-cip"><small>EUR</small> <b>${kurFmt.format(k.eur.satis)}</b></span>` : ''}</div>
+      <div class="kart-govde">${dovizCeviriciHtml(k)}</div></div>` : ''}
         ${kart('Kasa / Banka', html`<ul class="mini-liste">${o.hesaplar.map((h) => html`<li class="tikla" data-git="kasa"><div class="ana-metin"><span>${h.ad}</span></div>
             <b class="sag-deger ${h.bakiye < 0 ? 'negatif' : ''}">${para(h.bakiye)}</b></li>`)}
             <li><div class="ana-metin"><small>Tedarikçilere borç</small></div><b class="sag-deger">${para(o.toplam_borc)}</b></li></ul>`,
@@ -76,6 +76,7 @@ export default async function (el, _p, ctx) {
       </div>
     </div>`);
 
+  if ($('[data-cevirici]', el)) dovizCeviriciBagla(el);
   el.addEventListener('click', async (e) => {
     const p = e.target.closest('[data-planla]');
     if (p) {

@@ -40,6 +40,9 @@ export default async function (el, [id], ctx) {
           <dl class="bilgi-liste">
             <dt>Cari</dt><dd>${is.cari_id ? html`<a href="#/cari/${is.cari_id}"><b>${is.cari_unvan}</b></a> · ` : html`<span style="color:var(--turuncu)">Bağlı değil</span> · `}
               ${is.durum !== 'fis_kesildi' ? html`<button class="btn-metin" style="color:var(--ana)" data-a="cari">${is.cari_id ? 'değiştir' : 'cari bağla'}</button>` : ''}</dd>
+            ${is.cari_id ? html`<dt>İlgili cihaz</dt><dd>${is.cihaz ? html`<b>${[is.cihaz.tur, is.cihaz.marka, is.cihaz.model].filter(Boolean).join(' ')}</b>
+                ${is.cihaz.konum ? html` · ${is.cihaz.konum}` : ''}${is.cihaz.seri_no ? html` · SN ${is.cihaz.seri_no}` : ''}${is.cihaz.ip_adresi ? html` · ${is.cihaz.ip_adresi}` : ''} · ` : ''}
+              <button class="btn-metin" style="color:var(--ana)" data-a="cihaz">${is.cihaz ? 'değiştir' : 'cihaz seç'}</button></dd>` : ''}
             ${is.iletisim_ad ? html`<dt>İletişim</dt><dd>${is.iletisim_ad}</dd>` : ''}
             <dt>Telefon</dt><dd>${telLink(is.iletisim_tel || is.cari_telefon) || '-'}</dd>
             <dt>Adres</dt><dd>${is.adres || is.cari_adres ? html`${is.adres || is.cari_adres} · <a href="${haritaLink(is.adres || is.cari_adres)}" target="_blank" rel="noopener">haritada aç</a>` : '-'}</dd>
@@ -124,6 +127,7 @@ export default async function (el, [id], ctx) {
       } else if (a === 'form') teslimFormuYazdir(ctx, is);
       else if (a === 'cari') cariBagla();
       else if (a === 'duzenle') duzenle();
+      else if (a === 'cihaz') cihazSec();
     } catch (err) { bildir(err.message, 'hata'); }
   });
 
@@ -151,6 +155,27 @@ export default async function (el, [id], ctx) {
       },
     });
     if (r) { bildir('Cari bağlandı.', 'basari'); yenile(); }
+  }
+
+  async function cihazSec() {
+    const { envanterTablosu, envanterFormu, cihazAdi } = await import('./envanter.js');
+    const liste = await api.get(`/isler/${is.id}/envanter`);
+    const r = await pencere({
+      baslik: `${is.cari_unvan} · cihazlar`, genis: true, kaydetMetin: null, iptalMetin: 'Kapat',
+      icerik: html`<p class="soluk" style="margin-top:0">Bu işin ilgili olduğu cihazı seçin.</p>
+        <div class="tablo-kap">${envanterTablosu(liste, { bosMetin: 'Bu kurum için kayıtlı cihaz yok.' })}</div>
+        <div class="btn-grup" style="margin-top:.8rem"><button type="button" class="btn ikincil" data-yeni-cihaz>+ Yeni cihaz ekle</button>
+          ${is.cihaz ? html`<button type="button" class="btn tehlike-cizgi" data-cihaz-kaldir>Bağlantıyı kaldır</button>` : ''}</div>`,
+      acildi: (d, kapat) => d.addEventListener('click', async (e) => {
+        const t = e.target.closest('[data-env]'); if (t) return kapat({ id: Number(t.dataset.env) });
+        if (e.target.closest('[data-cihaz-kaldir]')) return kapat({ id: null });
+        if (e.target.closest('[data-yeni-cihaz]')) { const y = await envanterFormu(null, { cari: { id: is.cari_id, unvan: is.cari_unvan } }); if (y) kapat({ id: y.id }); }
+      }),
+    });
+    if (!r) return;
+    await api.put(`/isler/${is.id}`, { envanter_id: r.id });
+    bildir(r.id ? 'Cihaz işe bağlandı.' : 'Bağlantı kaldırıldı.', 'basari');
+    void cihazAdi; yenile();
   }
 
   async function duzenle() {

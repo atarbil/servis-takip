@@ -119,6 +119,30 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   x = await t('GET', '/islerim');
   kontrol('İşlerim listesi', x.veri.length === 1 && x.veri[0].id === isId, x.veri);
   kontrol('Teknisyen başlattı', (await t('POST', `/isler/${isId}/baslat`)).durum === 200);
+  // Envanter: yönetici kayıt, teknisyen sahada görür ve ekler; erişim bilgisi sadece yöneticide
+  x = await y('POST', '/envanter', { cari_id: musteri.id, tur: 'NVR', marka: 'Hikvision', model: 'DS-7608', seri_no: 'SN123', konum: 'Kasa arkası', ip_adresi: '192.168.1.10', erisim_bilgisi: 'admin / Gizli123', garanti_bitis: '2020-01-01' });
+  kontrol('Envanter kaydı eklendi', x.durum === 200 && x.veri.id, x.veri);
+  const nvrId = x.veri.id;
+  x = await y('GET', `/envanter/${nvrId}`);
+  kontrol('Yönetici erişim bilgisini görür', x.veri.erisim_bilgisi === 'admin / Gizli123' && x.veri.garanti_kalan_gun < 0, x.veri);
+  x = await y('GET', '/envanter?q=kasa%20hikvision');
+  kontrol('Envanter araması', x.veri.length === 1 && x.veri[0].erisim_var === true && !('erisim_bilgisi' in x.veri[0]), x.veri);
+  kontrol('Garanti bitmiş filtresi', (await y('GET', '/envanter?garanti=bitmis')).veri.length === 1);
+  kontrol('Teknisyen envanter listesine erişemez', (await t('GET', '/envanter')).durum === 403);
+  x = await t('GET', `/isler/${isId}/envanter`);
+  kontrol('Teknisyen işin müşterisindeki cihazları görür, şifre yok', x.durum === 200 && x.veri.length === 1 && !('erisim_bilgisi' in x.veri[0]), x.veri);
+  x = await t('POST', `/isler/${isId}/envanter`, { tur: 'IP Kamera', marka: 'Dahua', konum: 'Depo', erisim_bilgisi: 'sızma', bu_ise_bagla: true });
+  kontrol('Teknisyen kurduğu cihazı envantere ekledi', x.durum === 200, x.veri);
+  x = await y('GET', `/envanter/${x.veri.id}`);
+  kontrol('Teknisyen erişim bilgisi yazamaz, kaynak iş işlendi', !x.veri.erisim_bilgisi && x.veri.kaynak_is_id === isId && x.veri.cari_id === musteri.id, x.veri);
+  kontrol('İş cihaza bağlandı', (await t('GET', `/isler/${isId}`)).veri.cihaz?.tur === 'IP Kamera');
+  x = await y('PUT', `/isler/${isId}`, { envanter_id: nvrId });
+  kontrol('Yönetici işin cihazını değiştirdi', (await y('GET', `/isler/${isId}`)).veri.cihaz?.id === nvrId);
+  await y('PUT', `/envanter/${nvrId}`, { durum: 'arizali', notlar: 'HDD değişecek' });
+  kontrol('Envanter güncellendi', (await y('GET', `/envanter/${nvrId}`)).veri.durum === 'arizali');
+  x = await y('GET', '/envanter-turleri');
+  kontrol('Cihaz türleri listesi', x.veri.includes('NVR') && x.veri.includes('Yazıcı'));
+
   x = await t('POST', `/isler/${isId}/malzeme`, { barkod: '8690000000011', miktar: 4 });
   kontrol('Barkodla malzeme', x.durum === 200, x.veri);
   x = await t('POST', `/isler/${isId}/malzeme`, { urun_id: kablo.id, miktar: '30' });
@@ -247,6 +271,50 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   await y('POST', `/fisler/${donFis.id}/iptal`);
   kontrol('Teklif listesi', (await y('GET', '/teklifler?tur=teklif')).veri.length === 1);
   kontrol('Teknisyen teklif göremez', (await t('GET', '/teklifler')).durum === 403);
+
+  // Döviz: USD fiyatlı ürün, dövizli alış, dövizli teklif -> fiş
+  const usdUrun = (await y('POST', '/urunler', { ad: 'Sunucu Diski 4TB', onerilen_satis: 100, satis_doviz: 'USD', kdv_orani: 20 })).veri;
+  x = await y('GET', `/urunler/${usdUrun.id}`);
+  kontrol('Ürün USD fiyatlı', x.veri.satis_doviz === 'USD' && Number(x.veri.onerilen_satis) === 100, x.veri);
+  x = await y('POST', '/urunler', { ad: 'Garip', satis_doviz: 'GBP' });
+  kontrol('Geçersiz para birimi TL olur', (await y('GET', `/urunler/${x.veri.id}`)).veri.satis_doviz === 'TRY');
+  x = await y('POST', '/alislar', { cari_id: tedarikci.id, belge_no: 'USD-1', doviz: 'USD', kur: 40, satirlar: [{ urun_id: usdUrun.id, miktar: 2, doviz_fiyat: 60 }] });
+  kontrol('Dövizli alış TL\'ye çevrildi', x.durum === 200 && x.veri.doviz === 'USD' && Number(x.veri.satirlar[0].birim_fiyat) === 2400 && Number(x.veri.ara_toplam) === 4800, x.veri);
+  x = await y('POST', '/alislar', { cari_id: tedarikci.id, belge_no: 'USD-2', doviz: 'USD', satirlar: [{ urun_id: usdUrun.id, miktar: 1, doviz_fiyat: 60 }] });
+  kontrol('Kursuz dövizli alış reddedildi', x.durum === 400 && x.veri.kod === 'KUR_YOK', x.veri);
+  // İşten fiş: dövizli ürün TCMB kuruyla (41,9578) çevrilir
+  x = await y('POST', '/isler', { baslik: 'Disk değişimi', cari_id: musteri.id });
+  const dIs = x.veri.id;
+  await y('POST', `/isler/${dIs}/planla`, { ekip_id: ekipler[0].id, baslangic: new Date().toISOString() });
+  await t('POST', `/isler/${dIs}/baslat`);
+  await t('POST', `/isler/${dIs}/malzeme`, { urun_id: usdUrun.id, miktar: 1 });
+  await t('POST', `/isler/${dIs}/teslim`, { teslim_alan_ad: 'Ahmet', imza: PNG });
+  await t('POST', `/isler/${dIs}/tamamla`);
+  x = await y('POST', `/isler/${dIs}/fis`);
+  const dFis = (await y('GET', `/fisler/${x.veri.id}`)).veri;
+  const ds = dFis.satirlar.find((r) => r.urun_id === usdUrun.id);
+  kontrol('İşten fişte USD ürün kurla TL', Number(ds.birim_fiyat) === 4195.78 && ds.doviz === 'USD' && Number(ds.doviz_fiyat) === 100 && Number(ds.kur) === 41.9578, ds);
+  x = await y('PUT', `/fisler/${dFis.id}`, { cari_id: musteri.id, satirlar: dFis.satirlar.map((r) => ({ ...r, birim_fiyat: 4000, kur: 40 })) });
+  kontrol('Fiş kaydında döviz bilgisi korunur', Number(x.veri.satirlar[0].kur) === 40 && x.veri.satirlar[0].doviz === 'USD', x.veri.satirlar[0]);
+  // Dövizli teklif
+  x = await y('POST', '/teklifler', { tur: 'proforma', cari_id: musteri.id, doviz: 'USD', kur: 41, tl_karsilik_goster: true,
+    satirlar: [{ urun_id: usdUrun.id, aciklama: 'x', miktar: 3, birim_fiyat: 100, kdv_orani: 20 }] });
+  kontrol('USD proforma', x.durum === 200 && x.veri.doviz === 'USD' && Number(x.veri.genel_toplam) === 360 && x.veri.tl_karsilik_goster === true, x.veri);
+  const usdTk = x.veri.id;
+  x = await y('PUT', `/teklifler/${usdTk}`, { doviz: 'TRY' });
+  kontrol('TL\'ye dönünce kur ve TL karşılığı temizlenir', x.veri.doviz === 'TRY' && x.veri.kur === null && x.veri.tl_karsilik_goster === false, x.veri);
+  await y('PUT', `/teklifler/${usdTk}`, { doviz: 'USD', kur: 41 });
+  x = await y('POST', `/teklifler/${usdTk}/fise-donustur`, { kur: 42.5 });
+  const tFis = (await y('GET', `/fisler/${x.veri.id}`)).veri;
+  kontrol('USD proforma fişe girilen kurla döndü', Number(tFis.satirlar[0].birim_fiyat) === 4250 && Number(tFis.genel_toplam) === 15300, tFis);
+  await y('POST', `/fisler/${tFis.id}/iptal`);
+
+  // Telegram bildirim tercihleri (bot kurulu değilken de kaydedilir)
+  x = await y('PUT', '/telegram/bildirimler', { bildirimler: { is_tamamlandi: false, sabah: true }, sabah_saat: '07:45', aksam_saat: '18:30' });
+  kontrol('Bildirim tercihleri kaydedildi', x.durum === 200, x.veri);
+  x = await y('GET', '/telegram');
+  kontrol('Bildirim tercihleri okunuyor', x.veri.bildirimler.is_tamamlandi === false && x.veri.bildirimler.urun_onay === true && x.veri.sabah_saat === '07:45', x.veri);
+  kontrol('Geçersiz saat reddedildi', (await y('PUT', '/telegram/bildirimler', { bildirimler: {}, sabah_saat: '25:00' })).durum === 400);
 
   // Görsel yükleme ve herkese açık logo
   kontrol('Logo yokken /logo 404', (await fetch(TABAN + '/logo')).status === 404);

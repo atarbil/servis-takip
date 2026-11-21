@@ -1,6 +1,6 @@
 // Sayfalar arası ortak parçalar
 import { api } from './api.js';
-import { html, $, pencere, secici, bildir, para, miktar, sayiCoz, sayiGiris, yerelDT, bugunStr, bakiyeHucre, esc, debounce } from './ui.js';
+import { html, $, pencere, secici, bildir, para, dovizPara, miktar, sayiCoz, sayiGiris, yerelDT, bugunStr, bakiyeHucre, esc, debounce } from './ui.js';
 
 // ---------- Cari seçici ----------
 // input'a bağlanır, seçilen cari {id, unvan, ...} sec() ile döner. yeniIzin: listede "Yeni cari oluştur" seçeneği
@@ -64,6 +64,67 @@ export async function cariFormu(cari, varsayilan = {}) {
   });
 }
 
+// ---------- Döviz ----------
+// Kur bilgisi (TCMB satış). Üst çubuk yüklediyse oradan, yoksa sunucudan.
+export async function kurAl(ctx) {
+  if (ctx?.kur?.usd || ctx?.kur?.eur) return ctx.kur;
+  try { const k = await api.get('/kur'); if (ctx) ctx.kur = k; return k; } catch { return null; }
+}
+export const kurDegeri = (kur, d) => (d === 'USD' ? kur?.usd?.satis : d === 'EUR' ? kur?.eur?.satis : 1) || null;
+const r2 = (n) => Math.round(n * 100) / 100;
+
+// Ürünün satış fiyatını hedef para birimine çevirir. hedef TRY ise (fiş) döviz kaynağı da döner.
+export function urunFiyati(u, kur, hedef = 'TRY') {
+  const kaynak = u.satis_doviz || 'TRY';
+  const v = u.onerilen_satis == null ? null : Number(u.onerilen_satis);
+  if (v === null) return { birim_fiyat: 0, doviz: null, doviz_fiyat: null, kur: null };
+  if (kaynak === hedef) return { birim_fiyat: v, doviz: null, doviz_fiyat: null, kur: null };
+  const kk = kurDegeri(kur, kaynak); const kh = kurDegeri(kur, hedef);
+  if (!kk || !kh) return { birim_fiyat: 0, doviz: kaynak !== 'TRY' ? kaynak : null, doviz_fiyat: kaynak !== 'TRY' ? v : null, kur: null, kur_yok: true };
+  const tl = v * kk;
+  return hedef === 'TRY' ? { birim_fiyat: r2(tl), doviz: kaynak, doviz_fiyat: v, kur: kk } : { birim_fiyat: r2(tl / kh), doviz: null, doviz_fiyat: null, kur: null };
+}
+
+// ---------- Döviz çevirici (panel kartı ve üst çubuktan açılan pencere) ----------
+export function dovizCeviriciHtml(kur) {
+  return html`<div class="cevirici" data-cevirici>
+    <div class="cev-giris"><input class="cev-tutar sayi" inputmode="decimal" placeholder="Tutar" value="1.000" aria-label="Tutar">
+      <select class="cev-doviz" aria-label="Para birimi"><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="TRY">₺ TL</option></select></div>
+    <div class="cev-sonuc"></div>
+    <div class="cev-ayar">
+      <label>USD <input class="cev-kur sayi" data-d="USD" inputmode="decimal" value="${kur?.usd ? sayiGiris(kur.usd.satis) : ''}"></label>
+      <label>EUR <input class="cev-kur sayi" data-d="EUR" inputmode="decimal" value="${kur?.eur ? sayiGiris(kur.eur.satis) : ''}"></label>
+      <label>KDV % <select class="cev-kdv"><option>20</option><option>10</option><option>1</option><option>0</option></select></label>
+    </div>
+    <small class="soluk">TCMB döviz satış kuru${kur?.tarih ? ` · ${kur.tarih}` : ''} · kurları değiştirebilirsiniz</small>
+  </div>`;
+}
+export function dovizCeviriciBagla(kok) {
+  const c = $('[data-cevirici]', kok) || kok;
+  const fmt = (n, d) => dovizPara(Math.round(n * 100) / 100, d);
+  const hesapla = () => {
+    const tutar = sayiCoz($('.cev-tutar', c).value) || 0;
+    const d = $('.cev-doviz', c).value;
+    const kdv = Number($('.cev-kdv', c).value) / 100;
+    const k = { TRY: 1 };
+    c.querySelectorAll('.cev-kur').forEach((i) => { k[i.dataset.d] = sayiCoz(i.value) || 0; });
+    const tl = tutar * (k[d] || 0);
+    const satir = (et, deger, vurgu) => html`<div class="${vurgu ? 'vurgu' : ''}"><span>${et}</span><b>${deger}</b></div>`;
+    const hedefler = ['TRY', 'USD', 'EUR'].filter((x) => x !== d && k[x]);
+    $('.cev-sonuc', c).innerHTML = String(html`${hedefler.map((x, i) => satir(x === 'TRY' ? 'TL karşılığı' : `${x} karşılığı`, fmt(tl / k[x], x), i === 0))}
+      ${kdv ? html`${satir(`+ KDV %${kdv * 100} dahil`, html`${fmt(tutar * (1 + kdv), d)}${d !== 'TRY' && k[d] ? html`<small>${fmt(tl * (1 + kdv), 'TRY')}</small>` : ''}`)}
+        ${satir(`KDV hariç (içinden)`, html`${fmt(tutar / (1 + kdv), d)}${d !== 'TRY' && k[d] ? html`<small>${fmt(tl / (1 + kdv), 'TRY')}</small>` : ''}`)}` : ''}`);
+  };
+  c.addEventListener('input', hesapla);
+  c.addEventListener('change', hesapla);
+  $('.cev-tutar', c).addEventListener('focus', (e) => e.target.select());
+  hesapla();
+}
+export async function dovizCeviriciPencere(ctx) {
+  const kur = await kurAl(ctx);
+  return pencere({ baslik: '💱 Döviz çevirici', icerik: dovizCeviriciHtml(kur), kaydetMetin: null, iptalMetin: 'Kapat', acildi: (d) => { dovizCeviriciBagla(d); $('.cev-tutar', d).focus(); } });
+}
+
 // ---------- Ürün seçici ----------
 export const urunAltBilgi = (u) => [u.marka, u.model, [u.ana_grup, u.alt_grup].filter(Boolean).join(' › '), u.kod].filter(Boolean).join(' · ');
 
@@ -73,7 +134,7 @@ export function urunSecici(input, sec, { yonetici = true, yeniIzin = false } = {
     goster: (u) => html`<div class="urun-oneri"><div class="ad"><b>${u.ad}</b>${u.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
         <small>${urunAltBilgi(u)}</small></div>
       ${yonetici && u.stok_miktari !== undefined ? html`<div class="deger"><span class="${u.stok_miktari > 0 ? 'stokta' : 'stok-yok'}">${miktar(u.stok_miktari)} ${u.birim}</span>
-        ${u.onerilen_satis != null ? html`<small>${para(u.onerilen_satis)}</small>` : ''}</div>` : ''}</div>`,
+        ${u.onerilen_satis != null ? html`<small>${dovizPara(u.onerilen_satis, u.satis_doviz)}</small>` : ''}</div>` : ''}</div>`,
     sec,
     bosMetin: 'Ürün bulunamadı',
     ekstra: yeniIzin ? (q) => html`<span class="secici-ekstra" data-yeni-urun="${q}">+ "${q || 'Yeni ürün'}" oluştur</span>` : null,
@@ -108,7 +169,7 @@ export async function stokListesi({ fiyat = 'satis', baslik = 'Stok listesi' } =
             <td><b>${u.ad}</b><div class="alt-satir">${[u.marka, u.model, u.kod].filter(Boolean).join(' · ')}</div></td>
             <td class="alt-satir">${[u.ana_grup, u.alt_grup].filter(Boolean).join(' › ')}</td>
             <td class="sayi ${u.stok_miktari > 0 ? '' : 'negatif'}">${miktar(u.stok_miktari)} ${u.birim}</td>
-            <td class="sayi">${fiyat === 'satis' ? (u.onerilen_satis != null ? para(u.onerilen_satis) : '—') : para(u.ort_maliyet)}</td>
+            <td class="sayi">${fiyat === 'satis' ? (u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : '—') : para(u.ort_maliyet)}</td>
             <td class="sayi"><input class="sayi" data-mik="${u.id}" inputmode="decimal" value="${s ? sayiGiris(s.miktar) : ''}" placeholder="1" style="width:90px;min-height:34px;padding:.3rem .5rem"></td></tr>`; })}</tbody></table>`
           : html`<div class="bos-durum">Bu filtrelere uygun ürün yok.</div>`);
       };
@@ -180,7 +241,9 @@ export async function urunFormu(urun, varsayilan = {}) {
           <datalist id="alt-liste">${altlar.map((k) => html`<option value="${k}">`)}</datalist></label>
         <label class="alan"><span>Birim</span><input name="birim" value="${u.birim || 'adet'}" list="birim-liste">
           <datalist id="birim-liste"><option value="adet"><option value="metre"><option value="paket"><option value="kutu"><option value="takım"><option value="saat"></datalist></label>
-        <label class="alan"><span>Önerilen satış fiyatı (KDV hariç)</span><input name="onerilen_satis" inputmode="decimal" value="${u.onerilen_satis ?? ''}"></label>
+        <label class="alan"><span>Satış fiyatı (KDV hariç)</span><div class="fiyat-doviz"><input name="onerilen_satis" inputmode="decimal" value="${u.onerilen_satis ?? ''}">
+          <select name="satis_doviz" title="Fiyatın para birimi">${['TRY', 'USD', 'EUR'].map((d) => html`<option value="${d}" ${(u.satis_doviz || 'TRY') === d ? 'selected' : ''}>${d === 'TRY' ? '₺ TL' : d}</option>`)}</select></div>
+          <small>Dolar/Euro seçilirse fişte günün kuruyla TL'ye çevrilir</small></label>
         <label class="alan"><span>KDV %</span><input name="kdv_orani" inputmode="decimal" value="${u.kdv_orani ?? 20}"></label>
         <label class="alan"><span>Kritik stok seviyesi</span><input name="kritik_stok" inputmode="decimal" value="${u.kritik_stok ?? ''}"></label>
         ${!urun ? html`<label class="alan"><span>Açılış stoğu</span><input name="acilis_stok" inputmode="decimal" placeholder="0"></label>

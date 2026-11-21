@@ -21,6 +21,8 @@ export const $$ = (sec, kok = document) => [...kok.querySelectorAll(sec)];
 const paraFmt = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const sayiFmt = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 3 });
 export const para = (n) => (n === null || n === undefined || n === '' ? '' : paraFmt.format(Number(n)) + ' ₺');
+// Dövizli tutar: TRY ise ₺, değilse "1.250,00 USD"
+export const dovizPara = (n, d = 'TRY') => (n === null || n === undefined || n === '' ? '' : (!d || d === 'TRY' ? para(n) : paraFmt.format(Number(n)) + ' ' + d));
 export const paraSade = (n) => (n === null || n === undefined || n === '' ? '' : paraFmt.format(Number(n)));
 export const miktar = (n) => (n === null || n === undefined ? '' : sayiFmt.format(Number(n)));
 export function tarih(t) {

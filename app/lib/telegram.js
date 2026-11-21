@@ -7,6 +7,7 @@ const { hizliIsEkle } = require('./hizliis');
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const saat = (t) => new Date(t).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
 const ONCELIK = { 1: '🔴 Acil', 2: 'Normal', 3: 'Düşük' };
+const tl = (n) => `${Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
 const KOD_HARFLER = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // karışan harfler (0/O, 1/I) yok
 
 class TelegramBot {
@@ -46,9 +47,114 @@ class TelegramBot {
   async basla() {
     this.calisiyor = true;
     this.dongu().catch((e) => this.log.error('[telegram] döngü durdu:', e));
+    // Sabah planı ve akşam özeti zamanlayıcısı
+    this.zamanlayici = setInterval(() => this.zamanKontrol().catch((e) => this.log.error('[telegram] zamanlayıcı:', e.message)),
+      Number(process.env.TELEGRAM_ZAMANLAYICI_MS) || 60000);
   }
 
-  durdur() { this.calisiyor = false; }
+  durdur() { this.calisiyor = false; clearInterval(this.zamanlayici); }
+
+  // ---------- Bildirimler ----------
+  // tur: is_tamamlandi | urun_onay | sabah | aksam — tercihi açık olan bağlı yöneticilere gönderilir
+  async bildir(tur, metin) {
+    const alicilar = (await this.db.query(`SELECT telegram_id FROM kullanicilar
+      WHERE aktif AND rol = 'yonetici' AND telegram_id IS NOT NULL AND coalesce((bildirimler ->> $1)::boolean, true)`, [tur])).rows;
+    for (const a of alicilar) await this.gonder(a.telegram_id, metin);
+    return alicilar.length;
+  }
+
+  // Arka planda gönder, hatası işlemi bozmasın
+  bildirArkada(tur, metinFn) {
+    Promise.resolve().then(metinFn).then((m) => (m ? this.bildir(tur, m) : 0))
+      .catch((e) => this.log.error(`[telegram] ${tur} bildirimi:`, e.message));
+  }
+
+  link(yol, metin) { return this.uygulamaUrl ? `<a href="${this.uygulamaUrl}/#/${yol}">${esc(metin)}</a>` : esc(metin); }
+
+  async isTamamlandiMetni(isId) {
+    const i = (await this.db.query(`SELECT i.id, i.baslik, c.unvan, e.ad AS ekip, t.teslim_alan_ad,
+        (SELECT count(*) FROM is_malzemeleri m WHERE m.is_id = i.id)::int AS malzeme,
+        (SELECT round(sum(m.miktar * m.birim_maliyet), 2) FROM is_malzemeleri m WHERE m.is_id = i.id) AS maliyet,
+        (SELECT count(*)::int FROM isler WHERE durum = 'tamamlandi') AS bekleyen
+      FROM isler i LEFT JOIN cariler c ON c.id = i.cari_id LEFT JOIN ekipler e ON e.id = i.ekip_id LEFT JOIN teslim_onaylari t ON t.is_id = i.id
+      WHERE i.id = $1`, [isId])).rows[0];
+    if (!i) return null;
+    return [`✅ <b>İş tamamlandı</b> · #${i.id}`, `<b>${esc(i.baslik)}</b>`,
+      i.unvan ? `👤 ${esc(i.unvan)}` : null, i.ekip ? `👷 ${esc(i.ekip)}${i.teslim_alan_ad ? ` · teslim alan: ${esc(i.teslim_alan_ad)}` : ''}` : null,
+      `📦 ${i.malzeme} kalem malzeme${i.maliyet ? ` · maliyet ${tl(i.maliyet)}` : ''}`,
+      `\n💰 Fiyatlandırma bekliyor (toplam ${i.bekleyen} iş) · ${this.link(`is/${i.id}`, 'İşi aç')}`].filter(Boolean).join('\n');
+  }
+
+  async urunOnayMetni(urunId, isId) {
+    const u = (await this.db.query(`SELECT u.id, u.ad, u.sahadan_not, k.ad_soyad FROM urunler u LEFT JOIN kullanicilar k ON k.id = u.olusturan_id WHERE u.id = $1`, [urunId])).rows[0];
+    if (!u) return null;
+    return [`🟠 <b>Sahada tanımsız ürün eklendi</b>`, `<b>${esc(u.ad)}</b>`, u.sahadan_not ? `Not: ${esc(u.sahadan_not)}` : null,
+      `${esc(u.ad_soyad || '')} · İş #${isId}`, `\nMaliyet onayı bekliyor · ${this.link(`urun/${u.id}`, 'Ürünü aç')}`].filter(Boolean).join('\n');
+  }
+
+  async sabahMetni() {
+    const l = (await this.db.query(`SELECT i.id, i.baslik, i.plan_baslangic, e.ad AS ekip, c.unvan
+      FROM isler i LEFT JOIN ekipler e ON e.id = i.ekip_id LEFT JOIN cariler c ON c.id = i.cari_id
+      WHERE i.plan_baslangic::date = current_date AND i.durum IN ('planlandi', 'sahada') ORDER BY e.ad NULLS LAST, i.plan_baslangic`)).rows;
+    const s = (await this.db.query(`SELECT (SELECT count(*)::int FROM isler WHERE durum = 'havuz') AS havuz,
+      (SELECT count(*)::int FROM isler WHERE durum = 'tamamlandi') AS fiyat,
+      (SELECT count(*)::int FROM isler WHERE durum = 'planlandi' AND plan_baslangic < current_date) AS geciken`)).rows[0];
+    const gun = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Istanbul' });
+    const parca = [`☀️ <b>Günaydın! ${gun}</b>`, ''];
+    if (!l.length) parca.push('Bugün için planlanmış iş yok.');
+    else {
+      parca.push(`<b>Bugünün planı (${l.length} iş)</b>`);
+      let ekip = null;
+      for (const i of l) {
+        if (i.ekip !== ekip) { ekip = i.ekip; parca.push(`\n👷 <b>${esc(ekip || 'Ekip atanmamış')}</b>`); }
+        parca.push(`  ${saat(i.plan_baslangic)} · #${i.id} ${esc(i.baslik)}${i.unvan ? ` — <i>${esc(i.unvan)}</i>` : ''}`);
+      }
+    }
+    parca.push('', `📥 Havuzda: <b>${s.havuz}</b>  ·  💰 Fiyatlandırma bekleyen: <b>${s.fiyat}</b>${s.geciken ? `  ·  ⚠️ Tarihi geçmiş plan: <b>${s.geciken}</b>` : ''}`);
+    return parca.join('\n');
+  }
+
+  async aksamMetni() {
+    const [biten, tahsilat, fis, s] = await Promise.all([
+      this.db.query(`SELECT i.id, i.baslik, e.ad AS ekip, c.unvan FROM isler i LEFT JOIN ekipler e ON e.id = i.ekip_id LEFT JOIN cariler c ON c.id = i.cari_id
+        WHERE i.bitis_zamani::date = current_date ORDER BY i.bitis_zamani`),
+      this.db.query(`SELECT c.unvan, f.tutar, h.ad AS hesap FROM finans_hareketleri f JOIN cariler c ON c.id = f.cari_id JOIN hesaplar h ON h.id = f.hesap_id
+        WHERE f.tip = 'tahsilat' AND NOT f.iptal AND f.tarih = current_date ORDER BY f.id`),
+      this.db.query(`SELECT count(*)::int AS adet, coalesce(sum(genel_toplam), 0) AS toplam FROM satis_fisleri WHERE durum = 'onaylandi' AND onay_zamani::date = current_date`),
+      this.db.query(`SELECT (SELECT count(*)::int FROM isler WHERE durum = 'tamamlandi') AS fiyat,
+        (SELECT count(*)::int FROM isler WHERE durum = 'havuz') AS havuz,
+        (SELECT count(*)::int FROM isler WHERE plan_baslangic::date = current_date + 1 AND durum = 'planlandi') AS yarin`),
+    ]);
+    const b = biten.rows; const t = tahsilat.rows; const ff = fis.rows[0]; const x = s.rows[0];
+    const tToplam = t.reduce((a, r) => a + Number(r.tutar), 0);
+    const parca = ['🌙 <b>Günün özeti</b>', ''];
+    parca.push(`✅ <b>Tamamlanan iş: ${b.length}</b>`);
+    for (const i of b.slice(0, 15)) parca.push(`  #${i.id} ${esc(i.baslik)}${i.unvan ? ` — <i>${esc(i.unvan)}</i>` : ''}${i.ekip ? ` (${esc(i.ekip)})` : ''}`);
+    parca.push('', `💵 <b>Tahsilat: ${tl(tToplam)}</b>${t.length ? ` (${t.length} adet)` : ''}`);
+    for (const r of t.slice(0, 15)) parca.push(`  ${esc(r.unvan)} · ${tl(r.tutar)} · ${esc(r.hesap)}`);
+    parca.push('', `🧾 Kesilen fiş: <b>${ff.adet}</b>${ff.adet ? ` · ${tl(ff.toplam)}` : ''}`);
+    parca.push(`💰 Fiyatlandırma bekleyen: <b>${x.fiyat}</b>  ·  📥 Havuzda: <b>${x.havuz}</b>  ·  📅 Yarın planlı: <b>${x.yarin}</b>`);
+    if (x.fiyat && this.uygulamaUrl) parca.push(`\n${this.link('fiyatlandirma', 'Fiyatlandırma ekranını aç')}`);
+    return parca.join('\n');
+  }
+
+  // Her dakika: ayarlanan saat geldiyse ve bugün gönderilmediyse sabah/akşam mesajını gönderir
+  async zamanKontrol(simdi = new Date()) {
+    if (!this.calisiyor || !this.ben) return;
+    const yerel = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(simdi);
+    const [gun, hm] = yerel.split(' ');
+    const a = Object.fromEntries((await this.db.query(`SELECT anahtar, deger FROM ayarlar WHERE anahtar IN
+      ('bildirim_sabah_saat', 'bildirim_aksam_saat', 'telegram_sabah_son', 'telegram_aksam_son')`)).rows.map((x) => [x.anahtar, x.deger]));
+    for (const [tur, saatAnahtar, sonAnahtar] of [['sabah', 'bildirim_sabah_saat', 'telegram_sabah_son'], ['aksam', 'bildirim_aksam_saat', 'telegram_aksam_son']]) {
+      const hedef = a[saatAnahtar];
+      if (!hedef || hm < hedef || a[sonAnahtar] === gun) continue;
+      // Saat çok geçtiyse (ör. sunucu o saatte kapalıydı) 2 saatten eskiyse gönderme
+      const [hh, mm] = hedef.split(':').map(Number); const [sh, sm] = hm.split(':').map(Number);
+      await this.db.query("UPDATE ayarlar SET deger = $2 WHERE anahtar = $1", [sonAnahtar, gun]);
+      if ((sh * 60 + sm) - (hh * 60 + mm) > 120) continue;
+      await this.bildir(tur, tur === 'sabah' ? await this.sabahMetni() : await this.aksamMetni());
+    }
+  }
 
   async dongu() {
     let bekleme = 0;

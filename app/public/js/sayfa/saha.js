@@ -155,6 +155,8 @@ export default async function (el, [id], ctx) {
       ${tel ? html`<a class="btn ikincil buyuk" href="tel:${String(tel).replace(/[^\d+]/g, '')}">📞 Ara</a>` : html`<span></span>`}
       ${adres ? html`<a class="btn ikincil buyuk" href="${haritaLink(adres)}" target="_blank" rel="noopener">🧭 Yol tarifi</a>` : html`<span></span>`}
     </div>
+    ${is.cihaz ? html`<div class="bilgi-kutu">🔧 İlgili cihaz: <b>${[is.cihaz.tur, is.cihaz.marka, is.cihaz.model].filter(Boolean).join(' ')}</b>
+      ${is.cihaz.konum ? html` · ${is.cihaz.konum}` : ''}${is.cihaz.seri_no ? html` · SN ${is.cihaz.seri_no}` : ''}${is.cihaz.ip_adresi ? html` · IP ${is.cihaz.ip_adresi}` : ''}</div>` : ''}
     ${is.durum === 'planlandi' ? html`<button class="btn birincil buyuk tam" id="basla" style="margin-bottom:1rem">▶ İşe başla</button>` : ''}
 
     ${sahada || is.malzemeler.length ? html`<div class="kart">
@@ -184,10 +186,25 @@ export default async function (el, [id], ctx) {
         <button class="btn basari buyuk tam" id="tamamla" ${is.teslim ? '' : 'disabled'}>✓ İşi tamamla</button>
         ${!is.teslim ? html`<small style="display:block;text-align:center;margin-top:.4rem">Önce müşteri imzası alınmalı</small>` : ''}</div></div>` : ''}
 
+    ${is.cari_id ? html`<details class="kart envanter-kart" id="envanter-kart"><summary class="kart-ust"><h3>Müşterideki cihazlar</h3><span class="soluk" id="env-sayi"></span></summary>
+      <div class="tablo-kap" id="env-liste"><div class="yukleniyor"><span></span></div></div>
+      ${islemde ? html`<div class="kart-govde" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil tam" data-akis="envanter">+ Kurulan cihazı envantere ekle</button></div>` : ''}
+    </details>` : ''}
+
     ${['tamamlandi', 'fis_kesildi'].includes(is.durum) ? html`<div class="basari-kutu">Bu iş ${zaman(is.bitis_zamani)} tarihinde tamamlandı.</div>
       <button class="btn ikincil tam" id="form-yazdir">🖨 Teslim formunu göster / yazdır</button>` : ''}`);
 
   const yenile = () => ctx.yenile();
+  // Müşterideki cihazlar (açılınca yüklenir)
+  const envKart = $('#envanter-kart', el);
+  if (envKart) {
+    api.get(`/isler/${is.id}/envanter`).then(async (liste) => {
+      const { envanterTablosu } = await import('./envanter.js');
+      $('#env-sayi', el).textContent = `${liste.length} cihaz`;
+      $('#env-liste', el).innerHTML = String(envanterTablosu(liste, { yonetici: false, bosMetin: 'Bu müşteri için kayıtlı cihaz yok.' }));
+      if (liste.length && liste.length <= 6) envKart.open = true;
+    }).catch(() => { $('#env-liste', el).innerHTML = ''; });
+  }
   el.addEventListener('click', async (e) => {
     const a = e.target.closest('[data-akis]');
     if (a) {
@@ -196,7 +213,8 @@ export default async function (el, [id], ctx) {
         : t === 'liste' ? await listedenAkisi(is.id, ctx)
           : t === 'tanimsiz' ? await tanimsizAkisi(is.id)
             : t === 'foto' ? await fotoAkisi(is.id)
-              : t === 'imza' ? await imzaAkisi(ctx, is) : false;
+              : t === 'imza' ? await imzaAkisi(ctx, is)
+                : t === 'envanter' ? await (await import('./envanter.js')).envanterFormu(null, { isId: is.id, yonetici: false }) : false;
       if (sonuc) yenile();
       return;
     }

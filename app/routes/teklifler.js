@@ -1,5 +1,6 @@
 'use strict';
 const { zorunlu, metin, sayi, tarih } = require('../lib/yardim');
+const { doviz } = require('../lib/yardim');
 
 const DURUMLAR = ['taslak', 'gonderildi', 'kabul', 'red', 'iptal'];
 
@@ -57,11 +58,12 @@ module.exports = (r, { db, web, Y }) => {
     const id = await db.islem(req.kullanici.id, async (q) => {
       const a = await q.bir('SELECT deger FROM ayarlar WHERE anahtar = $1', ['teklif_giris']);
       const kp = await q.bir('SELECT deger FROM ayarlar WHERE anahtar = $1', ['teklif_kapanis']);
-      const t = await q.bir(`INSERT INTO teklifler (tur, cari_id, tarih, gecerlilik, giris_metni, kapanis_metni, aciklama, olusturan_id)
-        VALUES ($1, $2, coalesce($3::date, current_date), $4, $5, $6, $7, $8) RETURNING id`,
+      const d = doviz(b.doviz);
+      const t = await q.bir(`INSERT INTO teklifler (tur, cari_id, tarih, gecerlilik, giris_metni, kapanis_metni, aciklama, olusturan_id, doviz, kur, tl_karsilik_goster)
+        VALUES ($1, $2, coalesce($3::date, current_date), $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
       [tur, b.cari_id, tarih(b.tarih), tarih(b.gecerlilik),
         tur === 'teklif' ? (b.giris_metni ?? a?.deger ?? null) : null, tur === 'teklif' ? (b.kapanis_metni ?? kp?.deger ?? null) : null,
-        metin(b.aciklama), req.kullanici.id]);
+        metin(b.aciklama), req.kullanici.id, d, d === 'TRY' ? null : sayi(b.kur, 'Kur'), d !== 'TRY' && !!b.tl_karsilik_goster]);
       await satirlariYaz(q, t.id, b.satirlar);
       return t.id;
     });
@@ -76,9 +78,12 @@ module.exports = (r, { db, web, Y }) => {
       if (t.durum === 'iptal') throw web.hata(400, 'İptal edilmiş belge düzenlenemez.');
       if (t.fis_id && Array.isArray(b.satirlar)) throw web.hata(400, 'Satış fişine dönüştürülmüş belgenin satırları değiştirilemez.');
       await q(`UPDATE teklifler SET cari_id = coalesce($2, cari_id), tarih = coalesce($3::date, tarih), gecerlilik = $4,
-                 giris_metni = $5, kapanis_metni = $6, aciklama = $7, kase_imza = coalesce($8, kase_imza) WHERE id = $1`,
+                 giris_metni = $5, kapanis_metni = $6, aciklama = $7, kase_imza = coalesce($8, kase_imza),
+                 doviz = coalesce($9, doviz), kur = CASE WHEN coalesce($9, doviz) = 'TRY' THEN NULL ELSE coalesce($10, kur) END,
+                 tl_karsilik_goster = coalesce($11, tl_karsilik_goster) AND coalesce($9, doviz) <> 'TRY' WHERE id = $1`,
       [req.params.id, b.cari_id || null, tarih(b.tarih), tarih(b.gecerlilik), metin(b.giris_metni), metin(b.kapanis_metni),
-        metin(b.aciklama), b.kase_imza ?? null]);
+        metin(b.aciklama), b.kase_imza ?? null, b.doviz ? doviz(b.doviz) : null, sayi(b.kur, 'Kur'),
+        b.tl_karsilik_goster === undefined ? null : !!b.tl_karsilik_goster]);
       await satirlariYaz(q, req.params.id, b.satirlar);
     });
     return getir(req.params.id);
@@ -97,5 +102,5 @@ module.exports = (r, { db, web, Y }) => {
   });
 
   r.post('/teklifler/:id/fise-donustur', Y, async (req) => db.islem(req.kullanici.id,
-    (q) => q.bir('SELECT teklifi_fise_donustur($1) AS id', [req.params.id])));
+    (q) => q.bir('SELECT teklifi_fise_donustur($1, $2) AS id', [req.params.id, sayi(req.body?.kur, 'Kur')])));
 };

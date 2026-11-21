@@ -1,7 +1,7 @@
 // Teklif / proforma düzenleyici
 import { api } from '../api.js';
-import { html, $, $$, para, paraSade, bildir, onayla, sayiCoz, sayiGiris, bugunStr, zaman, esc } from '../ui.js';
-import { cariSecici, urunSecici } from '../bilesen.js';
+import { html, $, $$, para, paraSade, dovizPara, pencere, bildir, onayla, sayiCoz, sayiGiris, bugunStr, zaman, esc } from '../ui.js';
+import { cariSecici, urunSecici, kurAl, kurDegeri, urunFiyati } from '../bilesen.js';
 import { teklifYazdir, proformaYazdir } from '../belgeler.js';
 import { TEKLIF_DURUM, teklifRozet, TUR_AD } from './teklifler.js';
 
@@ -14,10 +14,19 @@ export default async function (el, [id], ctx) {
     const tur = ctx.sorgu.tur === 'proforma' ? 'proforma' : 'teklif';
     const c = ctx.sorgu.cari ? await api.get(`/cariler/${ctx.sorgu.cari}`) : null;
     t = { id: null, tur, durum: 'taslak', tarih: bugunStr(), gecerlilik: '', cari_id: c?.id || null, unvan: c?.unvan || '', satirlar: [],
-      kase_imza: true, aciklama: '',
+      kase_imza: true, aciklama: '', doviz: 'TRY', kur: null, tl_karsilik_goster: false,
       giris_metni: tur === 'teklif' ? ctx.ayarlar.teklif_giris || '' : '', kapanis_metni: tur === 'teklif' ? ctx.ayarlar.teklif_kapanis || '' : '' };
   } else t = await api.get(`/teklifler/${id}`);
   let satirlar = t.satirlar.map((s) => ({ ...s }));
+  const piyasa = await kurAl(ctx);
+  const kurYaz = (n) => Number(n).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  const dp = (n) => dovizPara(n, t.doviz);
+  // Ürün fiyatı belgenin para birimine çevrilir
+  const urunBelgeFiyati = (u) => {
+    const x = urunFiyati(u, piyasa, t.doviz || 'TRY');
+    if (x.kur_yok) bildir('Kur bilgisi alınamadı; fiyatı elle girin.', 'hata');
+    return x.birim_fiyat;
+  };
   let cari = t.cari_id ? { id: t.cari_id, unvan: t.unvan } : null;
   let kdvDahil = kdvDahilOku();
   let degisti = id === 'yeni';
@@ -55,6 +64,13 @@ export default async function (el, [id], ctx) {
           <label class="alan"><span>Kapanış metni</span><textarea id="t-kapanis" rows="2" ${ac ? '' : 'readonly'}>${t.kapanis_metni || ''}</textarea></label></div>` : ''}
         <div class="satir2">
           <label class="alan" style="margin:0"><span>İç not (çıktıda görünmez)</span><input id="t-aciklama" value="${t.aciklama || ''}"></label>
+          <div class="alan" style="margin:0"><span>Para birimi</span>
+            <div class="fiyat-doviz"><select id="t-doviz" ${ac ? '' : 'disabled'}>${['TRY', 'USD', 'EUR'].map((d) => html`<option value="${d}" ${t.doviz === d ? 'selected' : ''}>${d === 'TRY' ? '₺ Türk lirası' : d === 'USD' ? '$ Dolar (USD)' : '€ Euro (EUR)'}</option>`)}</select>
+            ${t.doviz !== 'TRY' ? html`<input id="t-kur" inputmode="decimal" value="${t.kur ? sayiGiris(t.kur) : ''}" placeholder="Kur" title="1 ${t.doviz} = ? TL" ${ac ? '' : 'readonly'} style="max-width:120px">` : ''}</div>
+            ${t.doviz !== 'TRY' ? html`<label class="kutu-sec" style="margin:.4rem 0 0"><input type="checkbox" id="t-tlk" ${t.tl_karsilik_goster ? 'checked' : ''} ${ac ? '' : 'disabled'}> Çıktıda TL karşılığını göster</label>
+              ${ac && kurDegeri(piyasa, t.doviz) ? html`<small>TCMB satış: <button type="button" class="btn-metin" style="color:var(--ana)" data-tcmb>${kurYaz(kurDegeri(piyasa, t.doviz))}</button></small>` : ''}` : ''}</div>
+        </div>
+        <div class="satir2" style="margin-top:.6rem"><span></span>
           <div class="alan" style="margin:0"><span>Seçenekler</span>
             <label class="kutu-sec" style="margin:.4rem 0 0"><input type="checkbox" id="t-kase" ${t.kase_imza ? 'checked' : ''}> Kaşe ve imza ekle
               ${!ctx.ayarlar.kase_imza ? html`<small style="color:var(--turuncu)">(Ayarlar'dan kaşe görseli yüklenmemiş)</small>` : ''}</label></div>
@@ -66,7 +82,7 @@ export default async function (el, [id], ctx) {
       <div class="kart"><div class="kart-ust"><h3>Kalemler</h3><span class="bosluk"></span>
         ${ac ? html`<label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatları KDV dahil gir</label>` : ''}</div>
         <div class="tablo-kap fis-tablo-kap"><table class="tablo fis-satirlar"><thead><tr><th>Ürün / açıklama</th><th class="sayi">Miktar</th><th>Birim</th>
-          <th class="sayi">Birim fiyat ${kdvDahil && ac ? '(KDV dahil)' : '(KDV hariç)'}</th><th class="sayi">İsk.%</th><th class="sayi">KDV%</th><th class="sayi">Tutar</th>${ac ? html`<th></th>` : ''}</tr></thead>
+          <th class="sayi">Birim fiyat${t.doviz !== 'TRY' ? ` (${t.doviz})` : ''} ${kdvDahil && ac ? '(KDV dahil)' : '(KDV hariç)'}</th><th class="sayi">İsk.%</th><th class="sayi">KDV%</th><th class="sayi">Tutar</th>${ac ? html`<th></th>` : ''}</tr></thead>
           <tbody>${satirlar.map((s, i) => (ac ? html`<tr data-i="${i}">
             <td style="min-width:260px">${s.urun_id ? html`<div><b>${s.aciklama}</b> <button type="button" class="btn-metin" style="color:var(--ana);font-size:.82rem" data-urun-degistir="${i}">değiştir</button></div>`
               : html`<input data-k="aciklama" class="urun-ara" value="${s.aciklama || ''}" placeholder="Ürün ara veya serbest açıklama yazın…">`}
@@ -79,7 +95,7 @@ export default async function (el, [id], ctx) {
             <td class="sayi s-tutar" style="vertical-align:middle">${paraSade(hesap(s).net)}</td>
             <td><button class="btn-ikon" data-sil="${i}" title="Sil">✕</button></td></tr>`
             : html`<tr><td><b>${s.aciklama}</b>${s.notu ? html`<div class="alt-satir">${s.notu}</div>` : ''}</td><td class="sayi">${sayiGiris(s.miktar)}</td><td>${s.birim}</td>
-              <td class="sayi">${paraSade(s.birim_fiyat)}</td><td class="sayi">${Number(s.iskonto_orani) || ''}</td><td class="sayi">${Number(s.kdv_orani)}</td><td class="sayi">${paraSade(hesap(s).net)}</td></tr>`))}
+              <td class="sayi">${dp(s.birim_fiyat)}</td><td class="sayi">${Number(s.iskonto_orani) || ''}</td><td class="sayi">${Number(s.kdv_orani)}</td><td class="sayi">${paraSade(hesap(s).net)}</td></tr>`))}
           ${!satirlar.length ? html`<tr><td colspan="8" class="bos-durum">Kalem ekleyin</td></tr>` : ''}</tbody></table></div>
         ${ac ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Kalem</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button>
           <button class="btn ikincil kucuk" data-barkod>📷 Barkodla ürün</button>
@@ -94,7 +110,7 @@ export default async function (el, [id], ctx) {
       const i = Number(inp.closest('tr').dataset.i);
       urunSecici(inp, (u) => {
         Object.assign(satirlar[i], { urun_id: u.id, aciklama: u.ad, birim: u.birim, kdv_orani: Number(u.kdv_orani ?? 20) });
-        if (!Number(satirlar[i].birim_fiyat) && u.onerilen_satis) satirlar[i].birim_fiyat = Number(u.onerilen_satis);
+        if (!Number(satirlar[i].birim_fiyat) && u.onerilen_satis) satirlar[i].birim_fiyat = urunBelgeFiyati(u);
         degisti = true; ciz();
         setTimeout(() => $(`tr[data-i="${i}"] [data-k=miktar]`, el)?.select(), 30);
       });
@@ -103,13 +119,19 @@ export default async function (el, [id], ctx) {
   }
   function toplamCiz() {
     const x = toplam();
-    $('#toplam', el).innerHTML = String(html`<div><span>Net (KDV hariç)</span><b>${para(x.ara)}</b></div><div><span>KDV</span><b>${para(x.kdv)}</b></div>
-      <div class="genel"><span>Toplam</span><span>${para(x.genel)}</span></div>`);
+    const k = Number(t.kur);
+    $('#toplam', el).innerHTML = String(html`<div><span>Net (KDV hariç)</span><b>${dp(x.ara)}</b></div><div><span>KDV</span><b>${dp(x.kdv)}</b></div>
+      <div class="genel"><span>Toplam</span><span>${dp(x.genel)}</span></div>
+      ${t.doviz !== 'TRY' && k > 0 ? html`<div class="kar-satir"><span>TL karşılığı (1 ${t.doviz} = ${kurYaz(k)} ₺)</span><b>${para(r2(x.genel * k))}</b></div>` : ''}`);
   }
 
   // Başlık alanları duruma yazılır (yeniden çizimde kaybolmasın)
   const BASLIK = { 't-tarih': 'tarih', 't-gecerlilik': 'gecerlilik', 't-giris': 'giris_metni', 't-kapanis': 'kapanis_metni', 't-aciklama': 'aciklama' };
-  const baslikYaz = (e) => { const k = BASLIK[e.target.id]; if (k) { t[k] = e.target.value; degisti = true; return true; } if (e.target.id === 't-kase') { t.kase_imza = e.target.checked; degisti = true; return true; } return false; };
+  const baslikYaz = (e) => {
+    if (e.target.id === 't-kur') { t.kur = sayiCoz(e.target.value); degisti = true; toplamCiz(); return true; }
+    if (e.target.id === 't-tlk') { t.tl_karsilik_goster = e.target.checked; degisti = true; return true; }
+    if (e.target.id === 't-doviz') { if (e.type === 'change') dovizDegistir(e.target.value); return true; }
+    const k = BASLIK[e.target.id]; if (k) { t[k] = e.target.value; degisti = true; return true; } if (e.target.id === 't-kase') { t.kase_imza = e.target.checked; degisti = true; return true; } return false; };
   el.addEventListener('change', baslikYaz);
   el.addEventListener('input', (e) => {
     if (baslikYaz(e)) return;
@@ -126,12 +148,27 @@ export default async function (el, [id], ctx) {
     toplamCiz();
   });
 
+  // Para birimi değişince mevcut fiyatlar istenirse kurla çevrilir
+  async function dovizDegistir(yeni) {
+    const eski = t.doviz || 'TRY';
+    if (yeni === eski) return;
+    const fiyatli = satirlar.some((s) => Number(s.birim_fiyat));
+    const ke = kurDegeri(piyasa, eski); const ky = kurDegeri(piyasa, yeni);
+    if (fiyatli && ke && ky && await onayla(`Mevcut fiyatlar ${eski} → ${yeni} güncel kurla çevrilsin mi? Vazgeçerseniz rakamlar aynı kalır, sadece para birimi değişir.`, { evet: 'Kurla çevir' })) {
+      for (const s of satirlar) s.birim_fiyat = r2(Number(s.birim_fiyat || 0) * ke / ky);
+    }
+    t.doviz = yeni;
+    t.kur = yeni === 'TRY' ? null : (kurDegeri(piyasa, yeni) || t.kur);
+    if (yeni === 'TRY') t.tl_karsilik_goster = false;
+    degisti = true; ciz();
+  }
+
   async function kaydet() {
     if (!cari) throw new Error('Cari seçin.');
     if (!satirlar.length) throw new Error('En az bir kalem ekleyin.');
     for (const s of satirlar) if (!String(s.aciklama || '').trim()) throw new Error('Açıklaması boş kalem var.');
     const govde = { tur: t.tur, cari_id: cari.id, tarih: t.tarih, gecerlilik: t.gecerlilik || null, giris_metni: t.giris_metni, kapanis_metni: t.kapanis_metni,
-      aciklama: t.aciklama, kase_imza: t.kase_imza,
+      aciklama: t.aciklama, kase_imza: t.kase_imza, doviz: t.doviz || 'TRY', kur: t.kur, tl_karsilik_goster: !!t.tl_karsilik_goster,
       satirlar: satirlar.map((s) => ({ urun_id: s.urun_id || null, aciklama: s.aciklama, notu: s.notu, miktar: s.miktar, birim: s.birim, birim_fiyat: s.birim_fiyat, iskonto_orani: s.iskonto_orani, kdv_orani: s.kdv_orani })) };
     const yeni = !t.id;
     t = yeni ? await api.post('/teklifler', govde) : await api.put(`/teklifler/${t.id}`, govde);
@@ -155,7 +192,7 @@ export default async function (el, [id], ctx) {
       for (const { urun: u, miktar: m } of sec) {
         const v = satirlar.find((x) => x.urun_id === u.id);
         if (v) { v.miktar = Number(v.miktar) + m; continue; }
-        const yeni = { urun_id: u.id, aciklama: u.ad, notu: '', miktar: m, birim: u.birim, birim_fiyat: Number(u.onerilen_satis || 0), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) };
+        const yeni = { urun_id: u.id, aciklama: u.ad, notu: '', miktar: m, birim: u.birim, birim_fiyat: urunBelgeFiyati(u), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) };
         const b = boslar(); if (b >= 0) satirlar[b] = yeni; else satirlar.push(yeni);
       }
       degisti = true; bildir(`${sec.length} ürün eklendi.`, 'basari'); return ciz();
@@ -167,11 +204,12 @@ export default async function (el, [id], ctx) {
       try {
         const u = await api.get(`/urunler/barkod/${encodeURIComponent(b)}`);
         const v = satirlar.find((s) => s.urun_id === u.id);
-        if (v) v.miktar = Number(v.miktar) + 1; else satirlar.push({ urun_id: u.id, aciklama: u.ad, miktar: 1, birim: u.birim, birim_fiyat: Number(u.onerilen_satis || 0), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) });
+        if (v) v.miktar = Number(v.miktar) + 1; else satirlar.push({ urun_id: u.id, aciklama: u.ad, miktar: 1, birim: u.birim, birim_fiyat: urunBelgeFiyati(u), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) });
         degisti = true; ciz();
       } catch (err) { bildir(err.message, 'hata'); }
       return;
     }
+    if (e.target.closest('[data-tcmb]')) { t.kur = kurDegeri(piyasa, t.doviz); degisti = true; return ciz(); }
     const d = e.target.closest('[data-durum]');
     if (d && t.id) {
       try { if (degisti && !kilitli()) await kaydet(); t = await api.post(`/teklifler/${t.id}/durum`, { durum: d.dataset.durum }); satirlar = t.satirlar.map((s) => ({ ...s })); ciz(); }
@@ -189,9 +227,21 @@ export default async function (el, [id], ctx) {
         if (t.durum === 'taslak') { t = await api.post(`/teklifler/${t.id}/durum`, { durum: 'gonderildi' }); satirlar = t.satirlar.map((s) => ({ ...s })); setTimeout(ciz, 500); }
       } else if (a === 'fis') {
         if (degisti && !kilitli()) await kaydet();
-        if (!await onayla(html`<b>${esc(t.belge_no)}</b> taslak satış fişine dönüştürülecek ve belge "Kabul edildi" olarak işaretlenecek.
+        let kurGir = null;
+        if (t.doviz && t.doviz !== 'TRY') {
+          const v = await pencere({
+            baslik: 'Satış fişine dönüştür',
+            icerik: html`<p><b>${esc(t.belge_no)}</b> ${t.doviz} cinsinden. Satış fişi ve cari TL tutulur; fiyatlar bu kurla TL'ye çevrilecek.</p>
+              <label class="alan"><span>Kur (1 ${t.doviz} = ? TL)</span><input name="kur" inputmode="decimal" value="${sayiGiris(kurDegeri(piyasa, t.doviz) || t.kur || '')}" autofocus></label>
+              ${t.kur ? html`<small class="soluk">Belgedeki kur: ${kurYaz(t.kur)} · TCMB satış: ${kurDegeri(piyasa, t.doviz) ? kurYaz(kurDegeri(piyasa, t.doviz)) : '—'}</small>` : ''}`,
+            kaydetMetin: 'Dönüştür',
+            kaydet: async (x) => { const k = sayiCoz(x.kur); if (!(k > 0)) throw new Error('Geçerli bir kur girin.'); return { kur: k }; },
+          });
+          if (!v) return;
+          kurGir = v.kur;
+        } else if (!await onayla(html`<b>${esc(t.belge_no)}</b> taslak satış fişine dönüştürülecek ve belge "Kabul edildi" olarak işaretlenecek.
           Fiş onaylanınca cariye borç yazılır ve stok düşer.`, { evet: 'Dönüştür' })) return;
-        const r = await api.post(`/teklifler/${t.id}/fise-donustur`);
+        const r = await api.post(`/teklifler/${t.id}/fise-donustur`, { kur: kurGir });
         bildir('Satış fişi oluşturuldu.', 'basari');
         ctx.git(`fis/${r.id}`);
       } else if (a === 'kopyala') {

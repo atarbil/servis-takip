@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { html, $, para, miktar, debounce, csvIndir } from '../ui.js';
+import { html, $, para, dovizPara, miktar, debounce, csvIndir } from '../ui.js';
 import { urunFormu } from '../bilesen.js';
 
 export default async function (el, _p, ctx) {
@@ -26,7 +26,7 @@ export default async function (el, _p, ctx) {
         <td data-et="Marka / model">${[u.marka, u.model].filter(Boolean).join(' · ')}</td>
         <td data-et="Grup">${[u.ana_grup, u.alt_grup].filter(Boolean).join(' › ')}</td>
         <td class="sayi" data-et="Stok"><span class="${u.stok_miktari < 0 ? 'negatif' : u.kritik_stok != null && u.stok_miktari <= u.kritik_stok ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</span></td>
-        <td class="sayi" data-et="Ort. maliyet">${para(u.ort_maliyet)}</td><td class="sayi" data-et="Satış">${u.onerilen_satis != null ? para(u.onerilen_satis) : ''}</td>
+        <td class="sayi" data-et="Ort. maliyet">${para(u.ort_maliyet)}</td><td class="sayi" data-et="Satış">${u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : ''}</td>
         <td data-et="Barkod" style="font-family:ui-monospace,monospace;font-size:.82rem">${u.barkodlar || ''}</td></tr>`)
         : html`<tr><td colspan="7" class="bos-durum">Ürün bulunamadı</td></tr>`}</tbody>
       ${veri.length ? html`<tfoot><tr><td colspan="4" data-et="">${veri.length} ürün</td><td colspan="3" class="sayi" data-et="Stok değeri">Stok değeri: ${para(deger)}</td></tr></tfoot>` : ''}</table>`);
@@ -47,8 +47,8 @@ export default async function (el, _p, ctx) {
     $('#q', el).value = b; f.q = b; ciz();
   };
   $('#yeni', el).onclick = async () => { const u = await urunFormu(); if (u) ctx.git(`urun/${u.id}`); };
-  $('#csv', el).onclick = () => csvIndir('urunler', ['Kod', 'Ürün', 'Marka', 'Model', 'Ana grup', 'Alt grup', 'Birim', 'Stok', 'Ort. maliyet', 'Satış fiyatı', 'KDV', 'Barkodlar'],
-    veri.map((u) => [u.kod, u.ad, u.marka, u.model, u.ana_grup, u.alt_grup, u.birim, Number(u.stok_miktari), Number(u.ort_maliyet), u.onerilen_satis != null ? Number(u.onerilen_satis) : '', Number(u.kdv_orani), u.barkodlar]));
+  $('#csv', el).onclick = () => csvIndir('urunler', ['Kod', 'Ürün', 'Marka', 'Model', 'Ana grup', 'Alt grup', 'Birim', 'Stok', 'Ort. maliyet', 'Satış fiyatı', 'Para birimi', 'KDV', 'Barkodlar'],
+    veri.map((u) => [u.kod, u.ad, u.marka, u.model, u.ana_grup, u.alt_grup, u.birim, Number(u.stok_miktari), Number(u.ort_maliyet), u.onerilen_satis != null ? Number(u.onerilen_satis) : '', u.satis_doviz || 'TRY', Number(u.kdv_orani), u.barkodlar]));
   el.addEventListener('click', (e) => { const t = e.target.closest('[data-git]'); if (t) ctx.git(t.dataset.git); });
   await ciz();
 }

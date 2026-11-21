@@ -58,6 +58,12 @@ Komutlar: `/havuz`, `/bugun`, `/yardim`. Sadece programa bağlanmış **yönetic
    ```
 4. Programda **Ayarlar → Telegram** → **Telegram hesabımı bağla** → çıkan `/baglan KOD` mesajını bota gönderin.
 
+### Bildirimler
+Bağlı **yönetici** hesaplarına şu bildirimler gider (Ayarlar → Telegram → Bildirimler'den kişi bazında açılıp kapatılır):
+- ✅ İş tamamlandı — fiyatlandırma bekliyor
+- 🟠 Sahada tanımsız ürün eklendi — maliyet onayı bekliyor
+- ☀️ Sabah planı (varsayılan 08:30) ve 🌙 akşam özeti (varsayılan 19:00) — saatler aynı ekrandan değiştirilir
+
 ## Natro'da kurulum
 
 ### 1. Sunucu

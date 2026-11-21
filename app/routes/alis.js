@@ -1,5 +1,6 @@
 'use strict';
 const { zorunlu, metin, sayi, tarih } = require('../lib/yardim');
+const { doviz } = require('../lib/yardim');
 
 module.exports = (r, { db, web, Y }) => {
   r.get('/alislar', Y, async (req) => {
@@ -27,13 +28,19 @@ module.exports = (r, { db, web, Y }) => {
 
   async function satirlariYaz(q, id, satirlar) {
     if (!Array.isArray(satirlar)) return;
+    // Dövizli faturada satır fiyatı dövizdir; TL fiyat fatura kuruyla hesaplanır
+    const fat = await q.bir('SELECT doviz, kur FROM alis_faturalari WHERE id = $1', [id]);
+    const dovizli = fat.doviz !== 'TRY';
+    if (dovizli && !(Number(fat.kur) > 0)) throw web.hata(400, 'Dövizli fatura için kur girin.', 'KUR_YOK');
     await q('DELETE FROM alis_faturasi_satirlari WHERE fatura_id = $1', [id]);
     for (const s of satirlar) {
       if (!s.urun_id) throw web.hata(400, 'Her satırda ürün seçilmeli.');
       const miktar = sayi(s.miktar, 'Miktar');
       if (!miktar || miktar <= 0) throw web.hata(400, 'Miktar sıfırdan büyük olmalı.');
-      await q(`INSERT INTO alis_faturasi_satirlari (fatura_id, urun_id, miktar, birim_fiyat, kdv_orani) VALUES ($1, $2, $3, $4, $5)`,
-        [id, s.urun_id, miktar, sayi(s.birim_fiyat, 'Fiyat') || 0, sayi(s.kdv_orani, 'KDV') ?? 20]);
+      const dFiyat = dovizli ? (sayi(s.doviz_fiyat, 'Döviz fiyatı') || 0) : null;
+      const tlFiyat = dovizli ? Math.round(dFiyat * Number(fat.kur) * 10000) / 10000 : (sayi(s.birim_fiyat, 'Fiyat') || 0);
+      await q(`INSERT INTO alis_faturasi_satirlari (fatura_id, urun_id, miktar, birim_fiyat, kdv_orani, doviz_fiyat) VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, s.urun_id, miktar, tlFiyat, sayi(s.kdv_orani, 'KDV') ?? 20, dFiyat]);
     }
   }
 
@@ -43,9 +50,10 @@ module.exports = (r, { db, web, Y }) => {
     zorunlu(req.body, { cari_id: 'Tedarikçi', belge_no: 'Fatura numarası' });
     const b = req.body;
     const id = await db.islem(req.kullanici.id, async (q) => {
-      const a = await q.bir(`INSERT INTO alis_faturalari (belge_no, cari_id, tarih, vade, aciklama, olusturan_id)
-        VALUES ($1, $2, coalesce($3::date, current_date), $4, $5, $6) RETURNING id`,
-      [metin(b.belge_no), b.cari_id, tarih(b.tarih), tarih(b.vade), metin(b.aciklama), req.kullanici.id]);
+      const d = doviz(b.doviz);
+      const a = await q.bir(`INSERT INTO alis_faturalari (belge_no, cari_id, tarih, vade, aciklama, olusturan_id, doviz, kur)
+        VALUES ($1, $2, coalesce($3::date, current_date), $4, $5, $6, $7, $8) RETURNING id`,
+      [metin(b.belge_no), b.cari_id, tarih(b.tarih), tarih(b.vade), metin(b.aciklama), req.kullanici.id, d, d === 'TRY' ? null : sayi(b.kur, 'Kur')]);
       await satirlariYaz(q, a.id, b.satirlar);
       return a.id;
     });
@@ -58,9 +66,10 @@ module.exports = (r, { db, web, Y }) => {
       const a = await q.bir('SELECT durum FROM alis_faturalari WHERE id = $1 FOR UPDATE', [req.params.id]);
       if (!a) throw web.hata(404, 'Fatura bulunamadı.');
       if (a.durum !== 'taslak') throw web.hata(400, 'Sadece taslak fatura düzenlenebilir.', 'FATURA_KILITLI');
+      const d = doviz(b.doviz);
       await q(`UPDATE alis_faturalari SET belge_no = coalesce($2, belge_no), cari_id = coalesce($3, cari_id),
-               tarih = coalesce($4::date, tarih), vade = $5, aciklama = $6 WHERE id = $1`,
-      [req.params.id, metin(b.belge_no), b.cari_id || null, tarih(b.tarih), tarih(b.vade), metin(b.aciklama)]);
+               tarih = coalesce($4::date, tarih), vade = $5, aciklama = $6, doviz = $7, kur = $8 WHERE id = $1`,
+      [req.params.id, metin(b.belge_no), b.cari_id || null, tarih(b.tarih), tarih(b.vade), metin(b.aciklama), d, d === 'TRY' ? null : sayi(b.kur, 'Kur')]);
       await satirlariYaz(q, req.params.id, b.satirlar);
     });
     return getir(req.params.id);

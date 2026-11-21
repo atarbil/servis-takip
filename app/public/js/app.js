@@ -9,6 +9,7 @@ const YONETICI_MENU = [
   { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
   { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
   { yol: 'cariler', ad: 'Cariler', ikon: 'kisi' },
+  { yol: 'envanter', ad: 'Envanter', ikon: 'cihaz' },
   { yol: 'teklifler', ad: 'Teklif / Proforma', ikon: 'belge' },
   { yol: 'fisler', ad: 'Satış Fişleri', ikon: 'fis' },
   { yol: 'alislar', ad: 'Alış Faturaları', ikon: 'alis' },
@@ -33,6 +34,7 @@ const IKON = {
   ayar: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
   menu: 'M4 6h16M4 12h16M4 18h16',
   etiket: 'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
+  cihaz: 'M4 5h16v10H4zM8 19h8M12 15v4',
   belge: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h6',
   cikis: 'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3',
 };
@@ -216,6 +218,8 @@ async function kurYukle() {
       ${k.eur ? html`<span title="Döviz alış ${kurFmt.format(k.eur.alis || 0)} · satış ${kurFmt.format(k.eur.satis)}"><small>EUR</small><b>${kurFmt.format(k.eur.satis)}</b></span>` : ''}
       <em>TCMB ${k.tarih || ''}</em>`);
     el.hidden = false;
+    el.title = 'Döviz çevirici';
+    el.onclick = async () => { const { dovizCeviriciPencere } = await import('./bilesen.js'); dovizCeviriciPencere(ctx); };
     ctx.kur = k;
   } catch { /* kur alınamazsa gösterilmez */ }
 }
@@ -236,7 +240,7 @@ ctx.sayacYenile = () => sayacYukle(true);
 const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
-  fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif',
+  fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
   urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);

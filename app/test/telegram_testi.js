@@ -51,6 +51,11 @@ async function cevapBekle(sohbet, onceki) {
   for (let i = 0; i < 40; i++) { const c = gonderilen.filter((m) => m.chat_id === sohbet); if (c.length > onceki) return c.at(-1).text; await bekle(100); }
   return null;
 }
+// Belirli içerikte bir mesaj gelene kadar bekler
+async function mesajBekle(sohbet, desen, ms = 5000) {
+  for (let i = 0; i < ms / 100; i++) { const m = gonderilen.find((x) => x.chat_id === sohbet && desen.test(x.text) && !x._alindi); if (m) { m._alindi = true; return m.text; } await bekle(100); }
+  return null;
+}
 async function yaz(from, metin, ek) {
   const once = gonderilen.filter((m) => m.chat_id === from.id).length;
   guncellemeEkle(from, metin, ek);
@@ -60,7 +65,7 @@ async function yaz(from, metin, ek) {
 (async () => {
   await new Promise((c) => sahte.listen(API_PORT, c));
   const uyg = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
-    env: { ...process.env, PORT: String(APP_PORT), TELEGRAM_TOKEN: TOKEN, TELEGRAM_API: `http://127.0.0.1:${API_PORT}`, ALAN_ADI: 'servis.ornek.com', GUVENLI_CEREZ: '0', DOSYA_KLASOR: '/tmp/tg-dosyalar' },
+    env: { ...process.env, PORT: String(APP_PORT), TELEGRAM_TOKEN: TOKEN, TELEGRAM_API: `http://127.0.0.1:${API_PORT}`, TELEGRAM_ZAMANLAYICI_MS: '400', ALAN_ADI: 'servis.ornek.com', GUVENLI_CEREZ: '0', DOSYA_KLASOR: '/tmp/tg-dosyalar' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let log = ''; uyg.stdout.on('data', (d) => { log += d; }); uyg.stderr.on('data', (d) => { log += d; });
@@ -73,6 +78,8 @@ async function yaz(from, metin, ek) {
     const ekip = (await api('GET', '/ekipler')).veri[0];
     const tek = (await api('POST', '/kullanicilar', { ad_soyad: 'Mehmet Usta', kullanici_adi: 'mehmet', sifre: 'Usta12345', rol: 'teknisyen', ekip_id: ekip.id })).veri;
     const musteri = (await api('POST', '/cariler', { unvan: 'Ahmet Market', telefon: '0532 111 22 33', adres: 'Moda Cad. 12' })).veri;
+    // Test sırasında zamanlanmış özet araya girmesin
+    await api('PUT', '/telegram/bildirimler', { bildirimler: {}, sabah_saat: '23:59', aksam_saat: '23:59' });
 
     for (let i = 0; i < 30 && !/@deneme_servis_bot/.test(log); i++) await bekle(200);
     let d = (await api('GET', '/telegram')).veri;
@@ -129,6 +136,41 @@ async function yaz(from, metin, ek) {
     kontrol('Bilinmeyen komut', /Bilinmeyen komut/.test(c), c);
     c = await yaz(murat, '<script>alert(1)</script> & test 0532 000 00 00');
     kontrol('HTML karakterleri güvenli gönderildi', c.includes('&lt;script&gt;') && !c.includes('<script>'), c);
+
+    // ---------- Bildirimler ----------
+    cerez = '';
+    await api('POST', '/giris', { kullanici_adi: 'mehmet', sifre: 'Usta12345' });
+    await api('POST', '/isler/1/baslat');
+    await api('POST', '/isler/1/tanimsiz-urun', { ad: 'Özel adaptör 12V', miktar: 2, not: 'Ahmet beyin deposundan' });
+    c = await mesajBekle(murat.id, /tanımsız ürün/);
+    kontrol('Tanımsız ürün bildirimi yöneticiye gitti', c && /Özel adaptör 12V/.test(c) && /Mehmet Usta/.test(c) && /#\/urun\//.test(c), c);
+    await api('POST', '/isler/1/teslim', { teslim_alan_ad: 'Ahmet Bey', imza: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' });
+    await api('POST', '/isler/1/tamamla', { not: 'bitti' });
+    c = await mesajBekle(murat.id, /İş tamamlandı/);
+    kontrol('İş tamamlandı bildirimi (fiyatlandırma bekliyor)', c && /#1/.test(c) && /Ahmet Market/.test(c) && /Fiyatlandırma bekliyor/.test(c) && /teslim alan: Ahmet Bey/.test(c), c);
+    cerez = '';
+    await api('POST', '/giris', { kullanici_adi: 'murat', sifre: 'Sifre1234' });
+    kontrol('Sabah planı elle gönderildi', (await api('POST', '/telegram/ozet', { tur: 'sabah' })).durum === 200);
+    c = await mesajBekle(murat.id, /Günaydın/);
+    kontrol('Sabah planı içeriği', c && /Havuzda: <b>3<\/b>/.test(c) && /Fiyatlandırma bekleyen: <b>1<\/b>/.test(c), c);
+    await api('POST', '/telegram/ozet', { tur: 'aksam' });
+    c = await mesajBekle(murat.id, /Günün özeti/);
+    kontrol('Akşam özeti: biten iş listede', c && /Tamamlanan iş: 1/.test(c) && /#1 /.test(c), c);
+    // Tercih kapalıysa gönderilmez
+    await api('PUT', '/telegram/bildirimler', { bildirimler: { is_tamamlandi: false, urun_onay: false, sabah: true, aksam: true } });
+    cerez = '';
+    await api('POST', '/giris', { kullanici_adi: 'mehmet', sifre: 'Usta12345' });
+    await api('POST', '/isler/1/tanimsiz-urun', { ad: 'Kapalı bildirim ürünü', miktar: 1 }).catch(() => {});
+    cerez = '';
+    await api('POST', '/giris', { kullanici_adi: 'murat', sifre: 'Sifre1234' });
+    kontrol('Kapatılan bildirim gönderilmedi', (await mesajBekle(murat.id, /Kapalı bildirim/, 1200)) === null);
+    // Zamanlayıcı: sabah saati şimdiye ayarlanınca bir kez gönderir
+    const simdi = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+    await api('PUT', '/telegram/bildirimler', { bildirimler: { sabah: true }, sabah_saat: simdi, aksam_saat: '23:59' });
+    c = await mesajBekle(murat.id, /Günaydın/, 4000);
+    kontrol('Zamanlanmış sabah planı gönderildi', !!c, c);
+    await bekle(1500);
+    kontrol('Sabah planı aynı gün ikinci kez gönderilmedi', (await mesajBekle(murat.id, /Günaydın/, 300)) === null);
 
     // Teknisyen bağlanırsa iş ekleyemez
     cerez = '';

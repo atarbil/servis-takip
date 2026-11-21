@@ -29,7 +29,7 @@ export default async function (el, [id], ctx) {
       <button class="btn ikincil" data-a="devir">Devir / düzeltme</button>
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
     </div>
-    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
+    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
       .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
     <div id="icerik"></div>`);
 
@@ -74,6 +74,14 @@ export default async function (el, [id], ctx) {
         ${c.isler.length ? c.isler.map((i) => html`<tr class="tikla" data-git="is/${i.id}"><td data-et="No">#${i.id}</td><td class="ana-hucre" data-et="">${i.baslik}</td><td data-et="Durum">${durumRozet(i.durum)}</td>
           <td data-et="Tarih">${tarih(i.plan_baslangic || i.olusturma)}</td><td data-et="Satış" class="sayi">${i.satis_kdv_haric != null ? para(i.satis_kdv_haric) : ''}</td>
           <td data-et="Kâr" class="sayi">${i.kar != null && i.satis_kdv_haric != null ? para(i.kar) : ''}</td></tr>`) : html`<tr><td colspan="6" class="bos-durum">İş yok</td></tr>`}</tbody></table></div></div>`);
+    } else if (sekme === 'envanter') {
+      const { envanterTablosu, envanterFormu } = await import('./envanter.js');
+      const liste = await api.get('/envanter', { cari_id: c.id, tumu: '1' });
+      k.innerHTML = String(html`<div class="sayfa-ust"><span class="soluk">${liste.length} cihaz kayıtlı</span><span class="bosluk"></span>
+        <button class="btn birincil" id="env-yeni">+ Cihaz ekle</button></div>
+        <div class="kart"><div class="tablo-kap">${envanterTablosu(liste, { bosMetin: 'Bu kurum için kayıtlı cihaz yok.' })}</div></div>`);
+      $('#env-yeni', k).onclick = async () => { if (await envanterFormu(null, { cari: c })) { bildir('Cihaz eklendi.', 'basari'); ciz(); } };
+      k.onclick = async (ev) => { const t = ev.target.closest('[data-env]'); if (t && await envanterFormu({ id: Number(t.dataset.env) }, { cari: c })) ciz(); };
     } else if (sekme === 'fisler') {
       const fl = await api.get(`/cariler/${c.id}/fisler`);
       k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Fiş no</th><th>Tarih</th><th>Durum</th><th class="sayi">Tutar</th><th class="sayi">Kâr</th></tr></thead><tbody>

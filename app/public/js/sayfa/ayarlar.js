@@ -166,7 +166,33 @@ export default async function (el, [secili], ctx) {
             <td>${b.rol === 'yonetici' ? 'Yönetici' : 'Teknisyen'}</td><td class="sayi"><button class="btn ikincil kucuk" data-tg-kaldir="${b.id}">Kaldır</button></td></tr>`)}</tbody></table>`
             : html`<div class="bos-durum">Bağlı hesap yok</div>`}
           <p class="soluk" style="padding:0 1rem;font-size:.85rem">Sadece bağlı <b>yönetici</b> hesaplarından gelen mesajlar işe çevrilir; diğer kişilerin mesajları reddedilir.</p>
-        </div></div></div>`);
+        </div></div></div>
+        <div class="kart" style="margin-top:1rem"><div class="kart-ust"><h3>Bildirimler</h3><span class="soluk">Bağlı yönetici hesaplarına Telegram'dan gönderilir</span></div>
+        <form class="kart-govde" id="tg-bildirim">
+          <div class="bildirim-liste">
+            ${[['is_tamamlandi', '✅ İş tamamlandı', 'Teknisyen işi bitirip imza aldığında — fiyatlandırma bekliyor'],
+              ['urun_onay', '🟠 Sahada tanımsız ürün', 'Teknisyen sistemde olmayan bir ürün eklediğinde'],
+              ['sabah', '☀️ Sabah planı', 'Her sabah ekip ekip bugünün işleri, havuz ve bekleyenler'],
+              ['aksam', '🌙 Akşam özeti', 'Biten işler, tahsilatlar, kesilen fişler, yarının planı']]
+              .map(([k2, ad, acik]) => html`<label class="kutu-sec bildirim-satir"><input type="checkbox" name="${k2}" ${t.bildirimler?.[k2] !== false ? 'checked' : ''}>
+                <span><b>${ad}</b><small>${acik}</small></span></label>`)}
+          </div>
+          <div class="satir3" style="margin-top:.6rem">
+            <label class="alan"><span>Sabah planı saati</span><input type="time" name="sabah_saat" value="${t.sabah_saat}"></label>
+            <label class="alan"><span>Akşam özeti saati</span><input type="time" name="aksam_saat" value="${t.aksam_saat}"></label>
+          </div>
+          <p class="soluk" style="font-size:.82rem">İşaretler sizin hesabınız içindir; saatler tüm yöneticiler için ortaktır.</p>
+          <div class="btn-grup"><button class="btn birincil">Kaydet</button>
+            ${t.benim ? html`<button type="button" class="btn ikincil" data-ozet="sabah">Sabah planını şimdi gönder</button>
+              <button type="button" class="btn ikincil" data-ozet="aksam">Akşam özetini şimdi gönder</button>` : ''}</div>
+        </form></div>`);
+      $('#tg-bildirim', k).onsubmit = async (e) => {
+        e.preventDefault();
+        const f = e.target;
+        const bildirimler = Object.fromEntries(['is_tamamlandi', 'urun_onay', 'sabah', 'aksam'].map((x) => [x, f.elements[x].checked]));
+        try { await api.put('/telegram/bildirimler', { bildirimler, sabah_saat: f.elements.sabah_saat.value, aksam_saat: f.elements.aksam_saat.value }); bildir('Bildirim ayarları kaydedildi.', 'basari'); }
+        catch (err) { bildir(err.message, 'hata'); }
+      };
       const kb = $('#tg-kod', k);
       if (kb) kb.onclick = async () => {
         try {
@@ -178,6 +204,8 @@ export default async function (el, [secili], ctx) {
         } catch (err) { bildir(err.message, 'hata'); }
       };
       k.onclick = async (e) => {
+        const oz = e.target.closest('[data-ozet]');
+        if (oz) { try { await api.post('/telegram/ozet', { tur: oz.dataset.ozet }); bildir('Telegram\'a gönderildi.', 'basari'); } catch (err) { bildir(err.message, 'hata'); } return; }
         const b = e.target.closest('[data-tg-kaldir]');
         if (!b || !await onayla('Telegram bağlantısı kaldırılsın mı? Bu hesaptan gelen mesajlar artık kabul edilmez.', { evet: 'Kaldır', tehlike: true })) return;
         try { await api.post('/telegram/kaldir', b.dataset.tgKaldir ? { kullanici_id: Number(b.dataset.tgKaldir) } : {}); bildir('Bağlantı kaldırıldı.'); ciz(); } catch (err) { bildir(err.message, 'hata'); }

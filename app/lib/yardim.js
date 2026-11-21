@@ -82,4 +82,7 @@ function setIfadesi(alanlar, baslangic = 1) {
   };
 }
 
-module.exports = { zorunlu, bos, metin, sayi, sayiCoz, pozitif, tarih, gorselKaydet, mesajCoz, sec, setIfadesi };
+const DOVIZLER = ['TRY', 'USD', 'EUR'];
+const doviz = (d, varsayilan = 'TRY') => (DOVIZLER.includes(d) ? d : varsayilan);
+
+module.exports = { doviz, DOVIZLER, zorunlu, bos, metin, sayi, sayiCoz, pozitif, tarih, gorselKaydet, mesajCoz, sec, setIfadesi };

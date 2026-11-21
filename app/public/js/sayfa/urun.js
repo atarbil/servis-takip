@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { html, $, para, paraSade, miktar, zaman, pencere, bildir, sayiCoz, sayiGiris } from '../ui.js';
+import { html, $, para, dovizPara, paraSade, miktar, zaman, pencere, bildir, sayiCoz, sayiGiris } from '../ui.js';
 import { urunFormu, urunSecici } from '../bilesen.js';
 
 const KAYNAK = { alis: 'Alış', is_malzeme: 'İşte kullanıldı', satis: 'Satış', sayim: 'Sayım', duzeltme: 'Düzeltme' };
@@ -18,7 +18,7 @@ export default async function (el, [id], ctx) {
     <div class="istatistik">
       <div class="ist vurgu"><small>Stok</small><b class="${u.stok_miktari < 0 ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</b></div>
       <div class="ist"><small>Ortalama maliyet</small><b>${para(u.ort_maliyet)}</b></div>
-      <div class="ist"><small>Satış fiyatı (KDV hariç)</small><b>${u.onerilen_satis != null ? para(u.onerilen_satis) : '—'}</b></div>
+      <div class="ist"><small>Satış fiyatı (KDV hariç)</small><b>${u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : '—'}</b></div>
       <div class="ist"><small>Stok değeri</small><b>${para(Math.max(0, u.stok_miktari) * u.ort_maliyet)}</b></div>
     </div>
     <div class="kart"><div class="kart-ust"><h3>Barkodlar</h3></div><div class="kart-govde">${u.barkodlar.length ? u.barkodlar.map((b) => html`<span class="cip" style="padding-right:.65rem">${b}</span>`) : html`<span class="soluk">Barkod tanımlı değil</span>`}</div></div>
@@ -50,7 +50,8 @@ export default async function (el, [id], ctx) {
           baslik: 'Ürünü onayla',
           icerik: html`<label class="alan"><span>Ürün adı</span><input name="ad" value="${u.ad}"></label>
             <div class="satir2"><label class="alan"><span>Birim maliyet (KDV hariç) *</span><input name="birim_maliyet" inputmode="decimal" required autofocus></label>
-            <label class="alan"><span>Satış fiyatı (KDV hariç)</span><input name="onerilen_satis" inputmode="decimal"></label>
+            <label class="alan"><span>Satış fiyatı (KDV hariç)</span><div class="fiyat-doviz"><input name="onerilen_satis" inputmode="decimal">
+              <select name="satis_doviz"><option value="TRY">₺ TL</option><option>USD</option><option>EUR</option></select></div></label>
             <label class="alan"><span>Ürün kodu</span><input name="kod" value="${u.kod || ''}"></label></div>
             <p class="soluk">Bu maliyet, ürünün kullanıldığı ve fişi henüz kesilmemiş işlere de yansıtılır.</p>`,
           kaydet: async (v) => {

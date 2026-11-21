@@ -1,8 +1,9 @@
 'use strict';
+const { kurGetir } = require('../lib/kur');
 const { zorunlu, metin, sayi, pozitif, gorselKaydet, sec, setIfadesi } = require('../lib/yardim');
 const { hizliIsEkle } = require('../lib/hizliis');
 
-module.exports = (r, { db, web, AYAR, G, Y }) => {
+module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';
 
   // Teknisyen sadece kendi ekibinin işlerini görebilir ve sadece planlı/sahadaki işte işlem yapabilir
@@ -59,8 +60,11 @@ module.exports = (r, { db, web, AYAR, G, Y }) => {
     const id = req.params.id;
     const is = (await db.query(`
       SELECT i.*, c.unvan AS cari_unvan, c.telefon AS cari_telefon, c.adres AS cari_adres, c.yetkili AS cari_yetkili,
-             e.ad AS ekip_ad, e.renk AS ekip_renk, ko.ad_soyad AS olusturan
+             e.ad AS ekip_ad, e.renk AS ekip_renk, ko.ad_soyad AS olusturan,
+             CASE WHEN ev.id IS NOT NULL THEN json_build_object('id', ev.id, 'tur', ev.tur, 'marka', ev.marka, 'model', ev.model, 'seri_no', ev.seri_no,
+               'konum', ev.konum, 'ip_adresi', ev.ip_adresi, 'garanti_bitis', ev.garanti_bitis) END AS cihaz
       FROM isler i LEFT JOIN cariler c ON c.id = i.cari_id LEFT JOIN ekipler e ON e.id = i.ekip_id
+      LEFT JOIN envanter ev ON ev.id = i.envanter_id
       LEFT JOIN kullanicilar ko ON ko.id = i.olusturan_id WHERE i.id = $1`, [id])).rows[0];
     const maliyetAlani = yon(req) ? ', m.birim_maliyet, round(m.miktar * m.birim_maliyet, 2) AS tutar' : '';
     const [gecmis, malzemeler, fotolar, teslim] = await Promise.all([
@@ -108,7 +112,7 @@ module.exports = (r, { db, web, AYAR, G, Y }) => {
   });
 
   r.put('/isler/:id', Y, async (req) => {
-    const alanlar = sec(req.body, ['baslik', 'aciklama', 'adres', 'iletisim_ad', 'iletisim_tel', 'oncelik', 'cari_id', 'ham_mesaj', 'plan_bitis', 'teknisyen_notu']);
+    const alanlar = sec(req.body, ['baslik', 'aciklama', 'adres', 'iletisim_ad', 'iletisim_tel', 'oncelik', 'cari_id', 'ham_mesaj', 'plan_bitis', 'teknisyen_notu', 'envanter_id']);
     if ('baslik' in alanlar && !metin(alanlar.baslik)) throw web.hata(400, 'İş başlığı boş olamaz.');
     if (!Object.keys(alanlar).length) return { tamam: true };
     await db.islem(req.kullanici.id, async (q) => {
@@ -140,7 +144,9 @@ module.exports = (r, { db, web, AYAR, G, Y }) => {
   r.post('/isler/:id/baslat', G, async (req, res) => { await isErisim(req, req.params.id, true); return fonk('is_baslat')(req, res); });
   r.post('/isler/:id/tamamla', G, async (req, res) => {
     await isErisim(req, req.params.id, true);
-    return fonk('is_tamamla', (b) => metin(b.not))(req, res);
+    const sonuc = await fonk('is_tamamla', (b) => metin(b.not))(req, res);
+    telegram?.bildirArkada('is_tamamlandi', () => telegram.isTamamlandiMetni(req.params.id));
+    return sonuc;
   });
 
   // ---------- Saha: malzeme ----------
@@ -160,8 +166,13 @@ module.exports = (r, { db, web, AYAR, G, Y }) => {
     const is = await isErisim(req, req.params.id, true);
     zorunlu(req.body, { ad: 'Ürün açıklaması' });
     const miktar = pozitif(req.body.miktar ?? 1, 'Miktar');
-    return db.islem(req.kullanici.id, (q) => q.bir('SELECT sahada_urun_tanimla($1, $2, $3, $4, $5) AS id',
+    const r2 = await db.islem(req.kullanici.id, (q) => q.bir(`SELECT sahada_urun_tanimla($1, $2, $3, $4, $5) AS id`,
       [is.id, metin(req.body.ad), miktar, metin(req.body.barkod), metin(req.body.not)]));
+    telegram?.bildirArkada('urun_onay', async () => {
+      const m = (await db.query('SELECT urun_id FROM is_malzemeleri WHERE id = $1', [r2.id])).rows[0];
+      return m ? telegram.urunOnayMetni(m.urun_id, is.id) : null;
+    });
+    return r2;
   });
 
   r.delete('/malzeme/:id', G, async (req) => {
@@ -198,6 +209,13 @@ module.exports = (r, { db, web, AYAR, G, Y }) => {
   });
 
   // ---------- Fiş ----------
-  r.post('/isler/:id/fis', Y, async (req) => db.islem(req.kullanici.id,
-    (q) => q.bir('SELECT satis_fisi_isten_olustur($1) AS id', [req.params.id])));
+  r.post('/isler/:id/fis', Y, async (req) => {
+    const kur = await kurGetir().catch(() => null);
+    return db.islem(req.kullanici.id, async (q) => {
+      const f = await q.bir('SELECT satis_fisi_isten_olustur($1) AS id', [req.params.id]);
+      // Dövizli ürünler güncel TCMB satış kuruyla TL'ye çevrilir
+      await q('SELECT fis_doviz_uygula($1, $2, $3)', [f.id, kur?.usd?.satis || null, kur?.eur?.satis || null]);
+      return f;
+    });
+  });
 };
