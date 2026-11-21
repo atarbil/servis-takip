@@ -1,0 +1,20 @@
+{$ALAN_ADI} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Kamera sadece kendi sitemizde (barkod okuma için) kullanılabilir
+		Permissions-Policy "camera=(self), geolocation=(self), microphone=()"
+		-Server
+	}
+
+	# Fotoğraf yüklemeleri için üst sınır
+	request_body {
+		max_size 25MB
+	}
+
+	reverse_proxy app:3000
+}

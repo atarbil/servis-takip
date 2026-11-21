@@ -1,0 +1,124 @@
+import { api } from '../api.js';
+import { html, $, $$, para, paraSade, tarih, bakiyeHucre, bakiyeAciklama, durumRozet, telLink, csvIndir, pencere, bildir, sayiCoz, bugunStr } from '../ui.js';
+import { cariFormu, finansPenceresi, yeniIsPenceresi } from '../bilesen.js';
+import { ekstreYazdir, BELGE } from '../belgeler.js';
+
+export default async function (el, [id], ctx) {
+  const c = await api.get(`/cariler/${id}`);
+  ctx.baslik(c.unvan);
+  const yil = new Date().getFullYear();
+  let sekme = ctx.sorgu.sekme || 'ekstre';
+  const aralik = { bas: `${yil}-01-01`, bit: bugunStr() };
+
+  el.innerHTML = String(html`
+    <div class="detay-ust">
+      <div style="flex:1;min-width:240px"><a href="#/cariler" class="btn-metin">← Cariler</a>
+        <h2>${c.unvan}</h2>
+        <div class="soluk">${[c.kod, c.yetkili, c.telefon && telLink(c.telefon), [c.ilce, c.il].filter(Boolean).join(' / ')].filter(Boolean).map((x, i) => html`${i ? ' · ' : ''}${x}`)}</div></div>
+      <div class="kart" style="margin:0;min-width:220px"><div class="kart-govde" style="padding:.7rem 1rem">
+        <small>${bakiyeAciklama(c.bakiye)}</small><div style="font-size:1.5rem;font-weight:800">${bakiyeHucre(c.bakiye)}</div>
+        ${c.vadesi_gecen ? html`<small style="color:var(--kirmizi)">Vadesi geçen: ${para(c.vadesi_gecen.gecikmis_tutar)} (${c.vadesi_gecen.gecikme_gun} gün)</small>` : ''}
+      </div></div>
+    </div>
+    <div class="btn-grup" style="margin-bottom:1rem">
+      ${c.tip !== 'tedarikci' ? html`<button class="btn birincil" data-a="tahsilat">💰 Tahsilat al</button>` : ''}
+      ${c.tip !== 'musteri' ? html`<button class="btn birincil" data-a="odeme">Ödeme yap</button>` : ''}
+      ${c.tip !== 'tedarikci' ? html`<button class="btn ikincil" data-a="is">+ Yeni iş</button><button class="btn ikincil" data-a="fis">+ Satış fişi</button>` : ''}
+      ${c.tip !== 'musteri' ? html`<a class="btn ikincil" href="#/alis/yeni?cari=${c.id}">+ Alış faturası</a>` : ''}
+      <button class="btn ikincil" data-a="devir">Devir / düzeltme</button>
+      <button class="btn ikincil" data-a="duzenle">Düzenle</button>
+    </div>
+    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
+      .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
+    <div id="icerik"></div>`);
+
+  async function ciz() {
+    $$('[data-sekme]', el).forEach((b) => b.classList.toggle('aktif', b.dataset.sekme === sekme));
+    const k = $('#icerik', el);
+    if (sekme === 'ekstre') {
+      const e = await api.get(`/cariler/${c.id}/ekstre`, aralik);
+      const tb = e.satirlar.reduce((a, s) => a + Number(s.borc), 0);
+      const ta = e.satirlar.reduce((a, s) => a + Number(s.alacak), 0);
+      k.innerHTML = String(html`<div class="filtre">
+        <label>Başlangıç <input type="date" id="e-bas" value="${aralik.bas}"></label><label>Bitiş <input type="date" id="e-bit" value="${aralik.bit}"></label>
+        <button class="btn ikincil kucuk" data-ar="bu-yil">Bu yıl</button><button class="btn ikincil kucuk" data-ar="gecen-yil">Geçen yıl</button><button class="btn ikincil kucuk" data-ar="tumu">Tümü</button>
+        <span class="bosluk"></span><button class="btn ikincil" id="e-yazdir">🖨 Yazdır / PDF</button><button class="btn ikincil" id="e-csv">Excel</button></div>
+        <div class="kart"><div class="tablo-kap"><table class="tablo"><thead><tr><th>Tarih</th><th>Belge</th><th>Açıklama</th><th>Vade</th><th class="sayi">Borç</th><th class="sayi">Alacak</th><th class="sayi">Bakiye</th></tr></thead>
+        <tbody>${e.satirlar.map((s) => html`<tr class="${s.belge_tip === 'satis_fisi' || s.belge_tip === 'alis_faturasi' ? 'tikla' : ''}" data-belge="${s.belge_tip}" data-no="${s.belge_no || ''}">
+          <td class="nowrap">${tarih(s.tarih)}</td><td class="nowrap">${BELGE[s.belge_tip] || s.belge_tip}<div class="alt-satir">${s.belge_no || ''}</div></td>
+          <td>${s.aciklama || ''}</td><td class="nowrap">${s.vade ? tarih(s.vade) : ''}</td>
+          <td class="sayi">${s.borc ? paraSade(s.borc) : ''}</td><td class="sayi">${s.alacak ? paraSade(s.alacak) : ''}</td><td class="sayi">${bakiyeHucre(s.bakiye)}</td></tr>`)}</tbody>
+        <tfoot><tr><td colspan="4">Dönem toplamı</td><td class="sayi">${paraSade(tb)}</td><td class="sayi">${paraSade(ta)}</td><td class="sayi">${bakiyeHucre(e.satirlar.at(-1)?.bakiye || 0)}</td></tr></tfoot></table></div></div>`);
+      const yenidenAralik = () => { aralik.bas = $('#e-bas', k).value; aralik.bit = $('#e-bit', k).value; ciz(); };
+      $('#e-bas', k).onchange = yenidenAralik; $('#e-bit', k).onchange = yenidenAralik;
+      k.onclick = async (ev) => {
+        const ar = ev.target.closest('[data-ar]')?.dataset.ar;
+        if (ar) {
+          if (ar === 'bu-yil') Object.assign(aralik, { bas: `${yil}-01-01`, bit: `${yil}-12-31` });
+          if (ar === 'gecen-yil') Object.assign(aralik, { bas: `${yil - 1}-01-01`, bit: `${yil - 1}-12-31` });
+          if (ar === 'tumu') Object.assign(aralik, { bas: '2000-01-01', bit: `${yil + 1}-12-31` });
+          return ciz();
+        }
+        const satir = ev.target.closest('[data-belge]');
+        if (satir?.dataset.no && satir.dataset.belge === 'satis_fisi') {
+          const f = (await api.get('/fisler', { q: satir.dataset.no })).find((x) => x.fis_no === satir.dataset.no);
+          if (f) ctx.git(`fis/${f.id}`);
+        }
+      };
+      $('#e-yazdir', k).onclick = () => ekstreYazdir(ctx, e);
+      $('#e-csv', k).onclick = () => csvIndir(`ekstre-${c.unvan}`, ['Tarih', 'Belge', 'Belge no', 'Açıklama', 'Vade', 'Borç', 'Alacak', 'Bakiye'],
+        e.satirlar.map((s) => [tarih(s.tarih), BELGE[s.belge_tip] || s.belge_tip, s.belge_no, s.aciklama, s.vade ? tarih(s.vade) : '', Number(s.borc), Number(s.alacak), Number(s.bakiye)]));
+    } else if (sekme === 'isler') {
+      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>No</th><th>İş</th><th>Durum</th><th>Tarih</th><th class="sayi">Satış</th><th class="sayi">Kâr</th></tr></thead><tbody>
+        ${c.isler.length ? c.isler.map((i) => html`<tr class="tikla" data-git="is/${i.id}"><td data-et="No">#${i.id}</td><td class="ana-hucre" data-et="">${i.baslik}</td><td data-et="Durum">${durumRozet(i.durum)}</td>
+          <td data-et="Tarih">${tarih(i.plan_baslangic || i.olusturma)}</td><td data-et="Satış" class="sayi">${i.satis_kdv_haric != null ? para(i.satis_kdv_haric) : ''}</td>
+          <td data-et="Kâr" class="sayi">${i.kar != null && i.satis_kdv_haric != null ? para(i.kar) : ''}</td></tr>`) : html`<tr><td colspan="6" class="bos-durum">İş yok</td></tr>`}</tbody></table></div></div>`);
+    } else if (sekme === 'fisler') {
+      const fl = await api.get(`/cariler/${c.id}/fisler`);
+      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Fiş no</th><th>Tarih</th><th>Durum</th><th class="sayi">Tutar</th><th class="sayi">Kâr</th></tr></thead><tbody>
+        ${fl.length ? fl.map((f) => html`<tr class="tikla ${f.durum === 'iptal' ? 'iptal' : ''}" data-git="fis/${f.id}"><td class="ana-hucre" data-et="">${f.fis_no}</td><td data-et="Tarih">${tarih(f.tarih)}</td>
+          <td data-et="Durum">${durumRozet(f.durum)}</td><td class="sayi" data-et="Tutar">${para(f.genel_toplam)}</td><td class="sayi" data-et="Kâr">${para(f.ara_toplam - f.maliyet_toplam)}</td></tr>`)
+          : html`<tr><td colspan="5" class="bos-durum">Fiş yok</td></tr>`}</tbody></table></div></div>`);
+    } else if (sekme === 'yillik') {
+      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Yıl</th><th class="sayi">İş</th><th class="sayi">Ciro (KDV hariç)</th><th class="sayi">Maliyet</th><th class="sayi">Kâr</th><th class="sayi">Tahsilat</th><th class="sayi">Yıl sonu bakiye</th></tr></thead><tbody>
+        ${c.yillik.length ? c.yillik.map((y) => html`<tr><td class="ana-hucre" data-et="">${y.yil}</td><td class="sayi" data-et="İş">${y.is_sayisi}</td><td class="sayi" data-et="Ciro">${para(y.ciro_kdv_haric)}</td>
+          <td class="sayi" data-et="Maliyet">${para(y.maliyet)}</td><td class="sayi" data-et="Kâr">${para(y.kar)}</td><td class="sayi" data-et="Tahsilat">${para(y.tahsilat)}</td><td class="sayi" data-et="Bakiye">${bakiyeHucre(y.yil_sonu_bakiye)}</td></tr>`)
+          : html`<tr><td colspan="7" class="bos-durum">Henüz satış yok</td></tr>`}</tbody></table></div></div>`);
+    } else {
+      k.innerHTML = String(html`<div class="kart"><div class="kart-govde"><dl class="bilgi-liste">
+        <dt>Ünvan</dt><dd>${c.unvan}</dd><dt>Tür</dt><dd>${{ musteri: 'Müşteri', tedarikci: 'Tedarikçi', her_ikisi: 'Müşteri + Tedarikçi' }[c.tip]}</dd>
+        <dt>Yetkili</dt><dd>${c.yetkili || '-'}</dd><dt>Telefon</dt><dd>${telLink(c.telefon) || '-'} ${c.telefon2 ? html` · ${telLink(c.telefon2)}` : ''}</dd>
+        <dt>E-posta</dt><dd>${c.eposta || '-'}</dd><dt>Adres</dt><dd>${c.adres || '-'} ${[c.ilce, c.il].filter(Boolean).join(' / ')}</dd>
+        <dt>Vergi</dt><dd>${[c.vergi_dairesi, c.vergi_no].filter(Boolean).join(' · ') || '-'}</dd><dt>Notlar</dt><dd style="white-space:pre-wrap">${c.notlar || '-'}</dd>
+        <dt>Toplam borç</dt><dd>${para(c.toplam_borc)}</dd><dt>Toplam alacak</dt><dd>${para(c.toplam_alacak)}</dd>
+        <dt>Son tahsilat</dt><dd>${c.son_tahsilat ? tarih(c.son_tahsilat) : '-'}</dd></dl></div></div>`);
+    }
+  }
+
+  el.addEventListener('click', async (e) => {
+    const s = e.target.closest('[data-sekme]');
+    if (s) { sekme = s.dataset.sekme; return ciz(); }
+    const g = e.target.closest('[data-git]');
+    if (g) return ctx.git(g.dataset.git);
+    const a = e.target.closest('[data-a]')?.dataset.a;
+    if (!a) return;
+    try {
+      if (a === 'tahsilat' || a === 'odeme') { if (await finansPenceresi(a, { cari: c })) ctx.yenile(); }
+      else if (a === 'duzenle') { if (await cariFormu(c)) ctx.yenile(); }
+      else if (a === 'is') { const r = await yeniIsPenceresi(ctx, { cari: c, havuza: true }); if (r) ctx.git(`is/${r.id}`); }
+      else if (a === 'fis') { const r = await api.post('/fisler', { cari_id: c.id }); ctx.git(`fis/${r.id}`); }
+      else if (a === 'devir') {
+        const r = await pencere({
+          baslik: 'Devir / bakiye düzeltme',
+          icerik: html`<div class="bilgi-kutu">Eski programdan açılış bakiyesi veya bakiye düzeltmesi için. <b>+</b> tutar: cari size borçlanır, <b>−</b> tutar: cari alacaklanır.</div>
+            <div class="satir2"><label class="alan"><span>Tutar</span><input name="tutar" inputmode="decimal" placeholder="Örn: 1.500 veya -250" required></label>
+            <label class="alan"><span>Tarih</span><input type="date" name="tarih" value="${bugunStr()}"></label></div>
+            <label class="alan"><span>Açıklama</span><input name="aciklama" value="Devir bakiyesi"></label>`,
+          kaydet: async (v) => { const t = sayiCoz(v.tutar); if (!t) throw new Error('Tutar girin.'); await api.post(`/cariler/${c.id}/devir`, { ...v, tutar: t }); },
+        });
+        if (r) { bildir('Kaydedildi.', 'basari'); ctx.yenile(); }
+      }
+    } catch (err) { bildir(err.message, 'hata'); }
+  });
+  await ciz();
+}
