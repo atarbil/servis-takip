@@ -15,10 +15,11 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Her silme önce ne olacağını gösteren bir onay penceresi açar (ör. "cariden 12.500 ₺ borç düşecek, 3 ürün stoğa dönecek").
 - Silinen kayıt **İşlem kayıtları**nda kim, ne zaman, neyi sildi olarak kalır.
 - Teknisyen hiçbir şeyi silemez (şu anki gibi).
-- Derlemede karar: silinenler 30 gün "Silinenler" kutusunda tutulup geri alınabilsin mi? (Öneri: evet, yanlışlıkla silmeye karşı.)
+- **Karar:** silinenler 30 gün **Silinenler** kutusunda kalır; bu sürede yönetici geri alabilir (geri alınca etkileri de geri gelir:
+  bakiye, stok, kasa). 30 gün sonra kalıcı olarak temizlenir. Kutudan elle "kalıcı sil" de yapılabilir.
 
 ### 2. İş menüsü tek başlık altında (21.11.2026)
-- Sol menüde **İşler** tek başlık; tıklanınca altında açılsın: **İş Havuzu · Takvim · Tüm İşler** (Fiyatlandırma da buraya alınabilir).
+- Sol menüde **İşler** tek başlık; tıklanınca altında açılsın: **İş Havuzu · Takvim · Tüm İşler**. **Karar:** Fiyatlandırma ayrı menü olarak kalır.
 - Alt menü açık/kapalı durumu hatırlansın; bulunulan sayfa vurgulansın; havuz ve fiyatlandırma sayı rozetleri başlıkta da görünsün.
 - Telefonda alt çubuktaki "Havuz" ve "Takvim" kısayolları aynı kalsın.
 
