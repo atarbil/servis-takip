@@ -91,13 +91,16 @@ Ayrıca Natro'nun sunucu yedekleme/snapshot hizmetini açmanız ek bir güvence 
 
 ## Güncelleme
 
-Yeni sürüm dosyalarını aynı klasöre yükleyip:
+Kod GitHub'da (`atarbil/servis-takip`, gizli depo) tutulur. Sunucu, depoyu sadece okuyabilen bir anahtarla (deploy key) bağlıdır.
 
 ```bash
+cd /opt/servis-takip
 bash scripts/guncelle.sh
 ```
 
-Güncellemeden önce otomatik yedek alınır.
+Betik sırasıyla: yedek alır → GitHub'dan son sürümü çeker → programı yeniden başlatır → açıldığını kontrol eder.
+Veritabanı değişiklikleri (`db/` altındaki yeni numaralı dosyalar) program açılırken kendiliğinden uygulanır.
+`.env` ve `yedekler/` GitHub'da yoktur, güncellemeden etkilenmez.
 
 ## Muhasebe kuralları (bilmeniz gerekenler)
 
