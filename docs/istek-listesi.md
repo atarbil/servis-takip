@@ -16,9 +16,15 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Sabah 08:30 günün planı; akşam 19:00 günün özeti (tamamlanan işler, tahsilatlar, fiyatlandırma bekleyenler).
 - Hangi bildirimlerin alınacağı Ayarlar'dan açılıp kapatılır.
 
+### 3. Dolar bazlı fiyat (21.11.2026)
+- Stok kartında satış fiyatı (ve son alış fiyatı) için para birimi: TL / USD / EUR.
+- Fiş, teklif ve proformaya eklenirken günün TCMB döviz satış kuruyla TL'ye çevrilir; satırda kaynak fiyat ve kullanılan kur görünür ("120 USD × 41,9578").
+- Belgede kur elle değiştirilebilir ve "kurları güncelle" ile tüm dövizli satırlar yeniden hesaplanır.
+- Alış faturası dövizli girilebilir (fatura kuru ile TL maliyete çevrilir).
+- Ürünler listesinde dövizli fiyat ve güncel TL karşılığı birlikte görünür.
+
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
-- Dolar bazlı ürün fiyatı (TCMB kuruyla TL'ye çevrim).
 - Seri no ve garanti takibi (envanterle birleştirilebilir).
 - Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
