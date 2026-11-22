@@ -37,6 +37,7 @@ services:
       PORT: "3000"
     volumes:
       - dosyalar:/data/dosyalar        # imzalar, fotoğraflar, PDF'ler
+      - ./guncelleme:/data/guncelleme  # "Programı güncelle" istekleri (scripts/guncelleme_servisi_kur.sh)
     depends_on:
       db:
         condition: service_healthy

@@ -128,6 +128,21 @@ Betik sırasıyla: yedek alır → GitHub'dan son sürümü çeker → programı
 Veritabanı değişiklikleri (`db/` altındaki yeni numaralı dosyalar) program açılırken kendiliğinden uygulanır.
 `.env` ve `yedekler/` GitHub'da yoktur, güncellemeden etkilenmez.
 
+### Programdan güncelleme (telefondan)
+
+Yönetici, sağ üstteki kişisel menüden **Programı güncelle** ekranını açar. Bu ekranda yeni sürümdeki değişiklikler görünür;
+**Şimdi güncelle** dendiğinde şifre tekrar sorulur ve yukarıdaki betik sunucuda çalışır. İlerleme ekranda izlenir.
+
+Program sunucuda komut çalıştıramaz: yalnızca `guncelleme/` klasörüne bir istek dosyası bırakır. Bu dosyayı sunucudaki
+`servis-takip-guncelleme` systemd servisi görür ve `scripts/guncelleme_servisi.sh` ile güncellemeyi yapar. Servis bir kez kurulur:
+
+```bash
+cd /opt/servis-takip
+bash scripts/guncelleme_servisi_kur.sh
+```
+
+Servis kaydı: `journalctl -u servis-takip-guncelleme.service`, son güncellemenin çıktısı: `guncelleme/son.log`.
+
 ## Muhasebe kuralları (bilmeniz gerekenler)
 
 - **Cari bakiye** = borç − alacak. **Pozitif:** müşteri size borçlu. **Negatif:** siz cariye borçlusunuz (tedarikçi veya avans).

@@ -4,20 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Programdan "Güncelle" düğmesi (22.11.2026)
-Sunucu güncellemesi telefondan, SSH'ye girmeden yapılabilsin.
-- **Yer:** sağ üstteki kişisel menü → "Programı güncelle". Yalnız **yönetici** görür.
-- **Ekranda:** kurulu sürüm (tarih + kısa kod), GitHub'da yeni sürüm olup olmadığı ve yeni sürümdeki değişiklikler
-  (commit başlıkları). Son güncellemenin tarihi ve sonucu da görünür.
-- **"Şimdi güncelle":** önce şifre tekrar sorulur. Ardından yedek alınır, yeni sürüm indirilir ve program yeniden başlatılır.
-  İlerleme ekranda adım adım görünür. Program 1–2 dakika kapanıp açılır; sayfa beklemede kalır, program açılınca kendini yeniler.
-  Önbellek yenileme (Ctrl+F5) gerekmez.
-- **Güvenlik:** programa sunucu yönetim yetkisi (Docker erişimi) **verilmez**. Program yalnızca ortak bir klasöre "güncelleme
-  istendi" notu bırakır. Sunucudaki küçük bir sistem servisi (systemd) bu notu görünce `guncelle.sh`'yi çalıştırır ve
-  sonucu/kaydı aynı klasöre yazar. Böylece programa girilse bile sunucuda komut çalıştırılamaz; yalnızca güncelleme
-  tetiklenebilir. Aynı anda iki güncelleme başlatılamaz.
-- **Kurulum:** bu servis bir kez SSH'den kurulur (tek komut, `scripts/` içine eklenecek). Sonraki güncellemeler düğmeyle yapılır.
-- Güncelleme başarısız olursa hata kaydı ekranda görünür ve program eski sürümle çalışmaya devam eder.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -26,6 +13,15 @@ Sunucu güncellemesi telefondan, SSH'ye girmeden yapılabilsin.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 22.11.2026 — 11. derleme
+- **Programı güncelle** (sağ üstteki kişisel menü, yalnız yönetici): kurulu sürüm, GitHub'daki yeni değişiklikler, son kontrol zamanı.
+  Ekran açılınca yeni sürüm kendiliğinden kontrol edilir. **Şimdi güncelle** denince şifre tekrar sorulur; ardından yedek alınır,
+  yeni sürüm indirilir ve program yeniden başlatılır. Adımlar ve ayrıntılı kayıt ekranda canlı izlenir. Program kapanıp açılırken
+  sayfa bekler, bitince kendini yeniler (Ctrl+F5 gerekmez). Başarısız olursa hata kaydı görünür, program eski sürümle çalışmaya devam eder.
+- **Güvenlik:** programa sunucu yetkisi verilmedi. Program yalnızca `guncelleme/` klasörüne istek dosyası bırakır; güncellemeyi
+  sunucudaki `servis-takip-guncelleme` systemd servisi yapar. Bir kez `bash scripts/guncelleme_servisi_kur.sh` ile kurulur.
+- Test: sahte git deposu + servis benzetimi ile uçtan uca (yanlış şifre, ilerleme, başarı sonrası "Program güncel").
 
 ### 22.11.2026 — 10. derleme
 - **Kameradan barkod okuma yeniden yazıldı (iPhone ve Android):**

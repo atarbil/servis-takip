@@ -32,6 +32,7 @@ export const YONETICI_MENU = [
 export const KULLANICI_MENU = [
   { yol: 'ayarlar', ad: 'Ayarlar', ikon: 'ayar' },
   { yol: 'silinenler', ad: 'Silinenler', ikon: 'cop' },
+  { yol: 'guncelleme', ad: 'Programı güncelle', ikon: 'yenile' },
 ];
 const MOBIL_ALT = ['panel', 'havuz', 'takvim', 'cariler'];
 const DUZ_MENU = [...YONETICI_MENU.flatMap((m) => m.alt || [m]), ...KULLANICI_MENU];
@@ -51,6 +52,7 @@ const kullaniciGrup = (ek) => html`<div class="um-grup um-kullanici ${ek}" data-
 const menuHtml = () => html`${YONETICI_MENU.map((m) => (m.alt ? grupHtml(m) : menuLink(m)))}${kullaniciGrup('yalniz-mobil')}`;
 
 const IKON = {
+  yenile: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
   ev: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
   havuz: 'M4 6h16M4 12h16M4 18h10',
   takvim: 'M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
@@ -380,7 +382,7 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 let sonYukleme = 0;
