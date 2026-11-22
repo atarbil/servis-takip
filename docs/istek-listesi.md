@@ -4,7 +4,20 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Programdan "Güncelle" düğmesi (22.11.2026)
+Sunucu güncellemesi telefondan, SSH'ye girmeden yapılabilsin.
+- **Yer:** sağ üstteki kişisel menü → "Programı güncelle". Yalnız **yönetici** görür.
+- **Ekranda:** kurulu sürüm (tarih + kısa kod), GitHub'da yeni sürüm olup olmadığı ve yeni sürümdeki değişiklikler
+  (commit başlıkları). Son güncellemenin tarihi ve sonucu da görünür.
+- **"Şimdi güncelle":** önce şifre tekrar sorulur. Ardından yedek alınır, yeni sürüm indirilir ve program yeniden başlatılır.
+  İlerleme ekranda adım adım görünür. Program 1–2 dakika kapanıp açılır; sayfa beklemede kalır, program açılınca kendini yeniler.
+  Önbellek yenileme (Ctrl+F5) gerekmez.
+- **Güvenlik:** programa sunucu yönetim yetkisi (Docker erişimi) **verilmez**. Program yalnızca ortak bir klasöre "güncelleme
+  istendi" notu bırakır. Sunucudaki küçük bir sistem servisi (systemd) bu notu görünce `guncelle.sh`'yi çalıştırır ve
+  sonucu/kaydı aynı klasöre yazar. Böylece programa girilse bile sunucuda komut çalıştırılamaz; yalnızca güncelleme
+  tetiklenebilir. Aynı anda iki güncelleme başlatılamaz.
+- **Kurulum:** bu servis bir kez SSH'den kurulur (tek komut, `scripts/` içine eklenecek). Sonraki güncellemeler düğmeyle yapılır.
+- Güncelleme başarısız olursa hata kaydı ekranda görünür ve program eski sürümle çalışmaya devam eder.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
