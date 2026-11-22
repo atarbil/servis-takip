@@ -4,7 +4,28 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Form tasarımı: yazdırma şablonlarını kendim tasarlayayım (22.11.2026)
+Kullanıcı örnek ekran gönderdi (başka bir paneldeki "Form Tasarımı": belge türü sekmeleri, şablon kartları, varsayılan seçimi,
+içe/dışa aktar, "+ Yeni şablon"). Bizdeki karşılığı:
+- **Menü:** kişisel menüde (sağ üst) Ayarlar'ın hemen altında **"Form tasarımı"**; Ayarlar içinde de sekme olarak. Yalnız yönetici.
+- **Belge türü sekmeleri** (yanında şablon sayısı): Teklif · Proforma · Satış fişi · Tahsilat makbuzu · Servis teslim formu ·
+  Dış servis fişi · Cari ekstre.
+- **Şablon kartları:** her şablonun küçük önizlemesi; Düzenle · Kopyala · Sil · **Varsayılan yap** (o tür yazdırılırken bu kullanılır).
+  Mevcut tasarımlar "Standart" şablon olarak hazır gelir, silinemez; bozulursa ona dönülür.
+- **Tasarım ekranı** (solda ayarlar, sağda A4 canlı önizleme, örnek müşteri/ürünlerle):
+  - **Bölümler:** üst bilgi (logo + firma), belge başlığı, müşteri kutusu, belge bilgileri (tarih/no/vade/geçerlilik), giriş metni,
+    kalem tablosu, toplamlar, yazıyla tutar, notlar/şartlar, banka bilgileri, kaşe-imza, alt bilgi. Sürükleyerek **sırala**,
+    göster/gizle.
+  - **Logo:** sol / orta / sağ, boyut; ya da tam genişlik antetli şerit görseli (yükleme).
+  - **Renk ve yazı:** ana renk (çizgiler, tablo başlığı), yazı tipi, yazı boyutu, kenar boşlukları.
+  - **Kalem tablosu sütunları:** sıra no, görsel, kod, açıklama, miktar, birim, birim fiyat, iskonto, KDV %, tutar (KDV hariç/dahil) —
+    seç ve sırala; sütun başlıklarını yeniden adlandır.
+  - **Metinler:** başlık (ör. "FİYAT TEKLİFİ"), giriş metni, şartlar, alt bilgi; içine alan eklenebilir:
+    {musteri}, {tarih}, {gecerlilik}, {belge_no}, {toplam}, {firma}…
+  - Kâğıt: A4 dikey/yatay, A5 (makbuz için), tek/çift nüsha.
+- **İçe aktar / Tümünü dışa aktar** (dosya olarak yedek, başka kuruluma taşıma).
+- Teklif / fiş / makbuz yazdırılırken **şablon seçilebilir** (varsayılan otomatik gelir).
+- Şablonlar veritabanında saklanır (yedeklerle birlikte); önizleme ve yazdırma aynı çizim kodunu kullanır (ekranda ne görünürse kâğıtta o).
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
