@@ -880,3 +880,14 @@ dialog.pencere.hizli-pencere.ben-yaptim { width: min(1180px, 94vw); height: min(
 dialog.imza-dialog { margin: 0; padding: 0; border: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; inset: 0; }
 dialog.imza-dialog::backdrop { background: rgb(15 23 42 / .5); }
 dialog.imza-dialog[open] { display: flex; flex-direction: column; }
+
+/* Barkod kamera ekranı */
+.barkod-alan { position: relative; flex: 1; min-height: 0; display: flex; background: #000; }
+.barkod-alan .tarama-mesaj { position: absolute; left: 8px; right: 8px; bottom: 14px; text-align: center; color: #fff; font-weight: 600; text-shadow: 0 1px 3px #000; }
+.barkod-tani { position: absolute; left: 0; right: 0; top: 6px; text-align: center; color: rgb(255 255 255 / .65); font-size: .72rem; text-shadow: 0 1px 2px #000; pointer-events: none; }
+.barkod-dugmeler { position: absolute; right: 10px; top: 28px; display: flex; flex-direction: column; gap: 10px; }
+.barkod-dugme { width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgb(0 0 0 / .55); color: #fff; font-size: 1.3rem; cursor: pointer; }
+.barkod-dugme.acik { background: #facc15; }
+.barkod-zoom { position: absolute; left: 12%; right: 12%; bottom: 52px; display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 700; }
+.barkod-zoom input { flex: 1; accent-color: #22c55e; }
+.tarama-cerceve.okundu { border-color: #facc15; box-shadow: 0 0 0 9999px rgb(34 197 94 / .35); }

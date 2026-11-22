@@ -112,6 +112,8 @@ async function isle(req, res) {
     const uzun = /\.(png|svg|ico|webp)$/.test(dosya) ? 'public, max-age=604800' : 'no-cache';
     return web.dosyaGonder(res, dosya, uzun);
   }
+  // Eksik dosya (ör. .js) için 404: tarayıcı yedeğe (CDN) geçebilsin
+  if (/\.[a-z0-9]{1,5}$/i.test(yol)) { res.writeHead(404); return res.end(); }
   // Tek sayfa uygulama: bilinmeyen yollar index.html'e
   return web.dosyaGonder(res, path.join(AYAR.public, 'index.html'));
 }

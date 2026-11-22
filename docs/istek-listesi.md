@@ -4,20 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Kameradan barkod okuma iyileştirmesi (22.11.2026)
-Sorun: kamerayla barkod okunmuyor. Olası nedenler: iPhone/bilgisayarda okuma kütüphanesi dış sunucudan (CDN) iniyor; bazı Android'lerde
-tarayıcının kendi okuyucusu var görünüp çalışmıyor ve yedeğe geçilmiyor; kamera düşük çözünürlük ve sabit odakla açılıyor.
-- Okuma kütüphanesi (ZXing) **kendi sunucumuzdan** gelir (Docker kurulumunda indirilir); CDN sadece yedek.
-- Android'in kendi okuyucusu biçim desteklemiyor / hata veriyorsa veya birkaç saniyede bir şey bulamazsa **otomatik ZXing'e geçer**.
-- Kamera yüksek çözünürlükte (1920×1080) ve **sürekli odakla** açılır; **🔦 fener** ve **yakınlaştırma** düğmeleri (destekleyen telefonda);
-  ekrana dokununca odaklanır; arka kamera seçimi (birden çok arka kamerası olan telefonlar için "kamera değiştir").
-- Sadece çerçevenin içi taranır ve büyütülür (küçük barkodlar için); yan duran barkodlar için döndürülmüş tarama.
-- Yanlış okumaya karşı: EAN/UPC sağlama haneli kontrol; aynı kod iki kez üst üste okununca kabul. Okununca bip sesi + titreşim.
-- Ekranda hangi okuyucunun çalıştığı küçük yazıyla görünür (sorun olursa tanı için).
-- Kullanıcı bildirimi (22.11.2026 21:06): kamera açılıyor, "çerçevenin içine tutun" yazıyor, barkod çerçevede ama okumuyor →
-  okuyucu çalışıyor fakat çözemiyor: çözünürlük/odak ve çerçeve kırpma/büyütme maddeleri öncelikli; ayrıca Android yerleşik
-  okuyucu sonuç vermezse ZXing'e geçiş.
-- Kamera hiç açılmazsa nedeni açık yazılır (izin yok / HTTPS / başka uygulama kullanıyor); elle yazma ve USB/Bluetooth okuyucu yine çalışır.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -26,6 +13,23 @@ tarayıcının kendi okuyucusu var görünüp çalışmıyor ve yedeğe geçilmi
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 22.11.2026 — 10. derleme
+- **Kameradan barkod okuma yeniden yazıldı (iPhone ve Android):**
+  - **Yerleşik okuyucu:** internet ya da dış kütüphane gerekmez, her telefonda çalışır. EAN-13, EAN-8, UPC-A ve Code 128 okur
+    (ürün barkodları ve kamera/kayıt cihazı seri numaraları). Odak tam değilken bulanık görüntüyü de okuyacak şekilde ayarlandı.
+    Barkod yatay, dikey, ters ya da biraz eğik tutulabilir.
+  - Android'in kendi okuyucusu ve ZXing (QR vb. için) yardımcı olarak çalışmaya devam eder. ZXing artık kendi sunucumuzdan gelir
+    (Docker kurulumunda indirilir), CDN yalnızca yedek.
+  - Kamera 1920×1080 ve sürekli odakla açılır. Sadece çerçevenin içi alınıp büyütülerek taranır; ara sıra tüm görüntüye de bakılır.
+  - **Ekrana dokununca odaklanır.** Destekleyen telefonda **🔦 fener**, **yakınlaştırma çubuğu** ve **🔄 kamera değiştir**
+    (iPhone Pro'larda geniş/ultra geniş/tele) düğmeleri çıkar. Seçilen kamera hatırlanır.
+  - Yanlış okumaya karşı: sağlama hanesi kontrolü, aynı kodun birden çok tarama çizgisinde ya da iki karede görülmesi.
+    Okununca çerçeve sararır, bip sesi ve (Android'de) titreşim.
+  - Ekranın üstünde küçük tanı yazısı: çalışan okuyucular, kamera çözünürlüğü, taranan kare sayısı.
+- **Barkod arama:** UPC-A (12 hane) ile başında 0 olan EAN-13 aynı ürünü bulur. Okuyucu hangisini verirse versin ürün bulunur.
+- Test: üretilen barkod görüntüleriyle (bulanık, gürültülü, küçük, eğik, dikey) ve sahte kamera görüntüsüyle uçtan uca test.
+  Rastgele desenlerde yanlış okuma görülmedi.
 
 ### 22.11.2026 — 9. derleme
 - **"✓ Teslim et / Tamamla":** havuz sayfasında, paneldeki havuz kartında ve iş detayında (havuz, planlı, sahada). Sahaya gitmeyen

@@ -76,6 +76,14 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   void hik;
   x = await y('POST', '/urunler', { ad: 'Başka', barkodlar: ['8690000000011'] });
   kontrol('Aynı barkod ikinci ürüne verilemez', x.durum === 409, x.veri);
+  // UPC-A (12 hane) ↔ EAN-13 (başında 0): kamera hangisini verirse versin aynı ürün bulunur
+  const upc = (await y('POST', '/urunler', { ad: 'UPC Ürün', barkodlar: ['036000291452'] })).veri;
+  x = await y('GET', '/urunler/barkod/0036000291452');
+  kontrol('13 haneli okuma 12 haneli UPC kaydını bulur', x.veri.id === upc.id, x.veri);
+  x = await y('GET', '/urunler/barkod/690000000011');
+  kontrol('12 hane, başında 0 olmayan EAN-13 ile eşleşmez', x.durum === 404, x.veri);
+  x = await y('GET', '/urunler/barkod/08690000000011');
+  kontrol('Geçersiz uzunluk eşleşmez', x.durum === 404, x.veri);
   x = await y('POST', '/alislar', { cari_id: tedarikci.id, belge_no: 'A-1', satirlar: [
     { urun_id: kamera.id, miktar: 10, birim_fiyat: 1000 }, { urun_id: kablo.id, miktar: 100, birim_fiyat: '10,00' }] });
   kontrol('Alış faturası taslak', x.veri.durum === 'taslak' && x.veri.genel_toplam === 13200, x.veri);
