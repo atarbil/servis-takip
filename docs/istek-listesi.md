@@ -4,7 +4,18 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Giriş ekranı animasyonu: telefonda görünsün, ikisinde de daha şık (22.11.2026)
+Sorun: kamera montajı yapan usta bilgisayarda güzel; telefonda giriş kutusunun arkasında %45 soluklukla kalıyor, görünmüyor.
+- **Telefon:** sahne ekranın üst yarısında, kutunun arkasında değil, **tam canlılıkta** oynar; giriş kutusu altta "alttan açılan
+  kart" gibi durur. Sahne telefona göre yeniden kadrajlanır (usta + kamera + kablo ortada, boşluklar kırpılır).
+  Klavye açılınca sahne küçülür, kutu yukarı kayar.
+- **Bilgisayar:** sahne solda kalır, daha derinlikli ve temiz çizim: akşam üstü gökyüzü geçişi, binanın cephesi, yumuşak gölgeler,
+  ustanın hareketleri daha doğal (merdivene tırmanır → kamerayı takar → vidalar → kabloyu çeker → aşağı iner).
+- **Hikâyeye bağlantı:** kablo switch'e oradan giriş kutusuna ulaşır; kamera ışığı yandığında kutunun üstünde küçük bir
+  **"● CANLI"** kamera önizleme şeridi açılır (kutunun kenarı mavi parlar), sonra sakin bekleme haline geçer (kamera yavaşça tarar,
+  veri ışıkları akar).
+- Tek sefer oynar (~5 sn), sonra hafif döngü; yeniden girişte tekrar oynamaz (aynı gün). "Hareketi azalt" ayarlı telefonlarda durağan son kare.
+- Hafif kalır: tek SVG, dış dosya yok; açılış hızını etkilemez.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
