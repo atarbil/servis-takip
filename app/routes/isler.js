@@ -3,6 +3,27 @@ const { kurGetir } = require('../lib/kur');
 const { zorunlu, metin, sayi, pozitif, gorselKaydet, sec, setIfadesi } = require('../lib/yardim');
 const { hizliIsEkle } = require('../lib/hizliis');
 
+// Pencereden girilen hizmet / işçilik / malzeme satırlarını fişin sonuna ekler (malzeme fiş onayında stoktan düşer)
+async function fisSatirlariEkle(q, fisId, satirlar) {
+  let sira = Number((await q.bir('SELECT coalesce(max(sira), -1) + 1 AS s FROM satis_fisi_satirlari WHERE fis_id = $1', [fisId])).s);
+  for (const s of satirlar) {
+    const tip = ['urun', 'iscilik', 'hizmet'].includes(s.tip) ? s.tip : (s.urun_id ? 'urun' : 'hizmet');
+    let urun = null;
+    if (tip === 'urun') {
+      urun = await q.bir('SELECT id, ad, birim, kdv_orani, onerilen_satis FROM urunler WHERE id = $1', [s.urun_id]);
+      if (!urun) throw require('../lib/web').hata(400, 'Malzeme satırında ürün seçilmeli.');
+    }
+    const fiyat = sayi(s.birim_fiyat, 'Fiyat');
+    await q(`INSERT INTO satis_fisi_satirlari (fis_id, sira, tip, urun_id, aciklama, miktar, birim, birim_fiyat, iskonto_orani, kdv_orani, birim_maliyet, stoktan_dus)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, 0, true)`,
+    [fisId, sira++, tip, urun?.id || null, urun ? urun.ad : metin(s.aciklama), sayi(s.miktar, 'Miktar') || 1,
+      metin(s.birim) || urun?.birim || (tip === 'iscilik' ? 'saat' : 'adet'),
+      fiyat ?? Number(urun?.onerilen_satis || 0),
+      sayi(s.kdv_orani, 'KDV') ?? (urun ? Number(urun.kdv_orani) : 20)]);
+  }
+}
+const doluSatirlar = (l) => (Array.isArray(l) ? l.filter((s) => s && (s.urun_id || metin(s.aciklama))) : []);
+
 module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';
 
@@ -120,7 +141,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     if (!mesaj) throw web.hata(400, 'İşin açıklamasını yazın.');
     const cariId = Number(b.cari_id);
     if (!cariId) throw web.hata(400, 'Cari seçin.');
-    const satirlar = Array.isArray(b.satirlar) ? b.satirlar.filter((s) => s && (s.urun_id || metin(s.aciklama))) : [];
+    const satirlar = doluSatirlar(b.satirlar);
     if (!satirlar.length) throw web.hata(400, 'En az bir hizmet veya malzeme satırı girin.');
     const kur = await kurGetir().catch(() => null);
     return db.islem(req.kullanici.id, async (q) => {
@@ -132,22 +153,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
       await q("SELECT set_config('app.gecmis_notu', '', true)");
       const f = await q.bir(`INSERT INTO satis_fisleri (cari_id, is_id, tarih, aciklama, olusturan_id)
         VALUES ($1, $2, current_date, $3, $4) RETURNING id`, [cariId, is.id, is.baslik, req.kullanici.id]);
-      let sira = 0;
-      for (const s of satirlar) {
-        const tip = ['urun', 'iscilik', 'hizmet'].includes(s.tip) ? s.tip : (s.urun_id ? 'urun' : 'hizmet');
-        let urun = null;
-        if (tip === 'urun') {
-          urun = await q.bir('SELECT id, ad, birim, kdv_orani, onerilen_satis, satis_doviz FROM urunler WHERE id = $1', [s.urun_id]);
-          if (!urun) throw web.hata(400, 'Malzeme satırında ürün seçilmeli.');
-        }
-        const fiyat = sayi(s.birim_fiyat, 'Fiyat');
-        await q(`INSERT INTO satis_fisi_satirlari (fis_id, sira, tip, urun_id, aciklama, miktar, birim, birim_fiyat, iskonto_orani, kdv_orani, birim_maliyet, stoktan_dus)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, 0, true)`,
-        [f.id, sira++, tip, urun?.id || null, urun ? urun.ad : metin(s.aciklama), sayi(s.miktar, 'Miktar') || 1,
-          metin(s.birim) || urun?.birim || (tip === 'iscilik' ? 'saat' : 'adet'),
-          fiyat ?? Number(urun?.onerilen_satis || 0),
-          sayi(s.kdv_orani, 'KDV') ?? (urun ? Number(urun.kdv_orani) : 20)]);
-      }
+      await fisSatirlariEkle(q, f.id, satirlar);
       // Dövizli ürünler (fiyatı elle girilmediyse) günün kuruyla TL'ye çevrilir
       await q('SELECT fis_doviz_uygula($1, $2, $3)', [f.id, kur?.usd?.satis || null, kur?.eur?.satis || null]);
       return { is_id: is.id, fis_id: f.id, cari: is.cari, baslik: is.baslik };
@@ -249,6 +255,43 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
           sayi(req.body.enlem), sayi(req.body.boylam), req.kullanici.id]);
     });
     return { tamam: true };
+  });
+
+  // Havuzdaki veya planlı işi ofisten kapatma ("Teslim et / Tamamla"): sahaya gitmeyen malzeme teslimi ya da hizmet + malzeme.
+  // İş tamamlandı olur, o cariye taslak fiş açılır (işte sahada eklenmiş malzeme de fişe gelir). İmza isteğe bağlı.
+  r.post('/isler/:id/teslim-et', Y, async (req) => {
+    const b = req.body || {};
+    const is = (await db.query('SELECT id, durum, cari_id, baslik FROM isler WHERE id = $1', [req.params.id])).rows[0];
+    if (!is) throw web.hata(404, 'İş bulunamadı.');
+    if (!['havuz', 'planlandi', 'sahada'].includes(is.durum)) throw web.hata(400, 'Bu iş zaten tamamlanmış veya iptal edilmiş.');
+    const cariId = Number(b.cari_id) || is.cari_id;
+    if (!cariId) throw web.hata(400, 'Cari seçin.');
+    const satirlar = doluSatirlar(b.satirlar);
+    const malzemeVar = (await db.query('SELECT 1 FROM is_malzemeleri WHERE is_id = $1 LIMIT 1', [is.id])).rows.length > 0;
+    if (!satirlar.length && !malzemeVar) throw web.hata(400, 'En az bir hizmet veya malzeme satırı girin.');
+    const teslimAlan = metin(b.teslim_alan_ad);
+    if (b.imza && !teslimAlan) throw web.hata(400, 'İmza için teslim alan kişinin adını yazın.');
+    const imzaYol = b.imza ? gorselKaydet(AYAR.dosyaKlasor, b.imza, 'imzalar') : null;
+    const kur = await kurGetir().catch(() => null);
+    return db.islem(req.kullanici.id, async (q) => {
+      if (cariId !== is.cari_id) {
+        if (!(await q.bir('SELECT 1 FROM cariler WHERE id = $1', [cariId]))) throw web.hata(400, 'Cari bulunamadı.');
+        await q('UPDATE isler SET cari_id = $2 WHERE id = $1', [is.id, cariId]);
+      }
+      await q("SELECT set_config('app.gecmis_notu', $1, true)", [`Ofisten tamamlandı${teslimAlan ? ' · teslim alan: ' + teslimAlan : ''}`]);
+      await q(`UPDATE isler SET durum = 'tamamlandi', plan_baslangic = coalesce(plan_baslangic, now() - interval '1 minute'),
+                 baslama_zamani = coalesce(baslama_zamani, now()), bitis_zamani = now(),
+                 teknisyen_notu = coalesce(teknisyen_notu, $2) WHERE id = $1`, [is.id, metin(b.not)]);
+      await q("SELECT set_config('app.gecmis_notu', '', true)");
+      if (imzaYol && !(await q.bir('SELECT 1 FROM teslim_onaylari WHERE is_id = $1', [is.id]))) {
+        await q(`INSERT INTO teslim_onaylari (is_id, teslim_alan_ad, imza_dosya, musteri_notu, teknisyen_id) VALUES ($1, $2, $3, $4, $5)`,
+          [is.id, teslimAlan, imzaYol, metin(b.not), req.kullanici.id]);
+      }
+      const f = await q.bir('SELECT satis_fisi_isten_olustur($1) AS id', [is.id]);
+      await fisSatirlariEkle(q, f.id, satirlar);
+      await q('SELECT fis_doviz_uygula($1, $2, $3)', [f.id, kur?.usd?.satis || null, kur?.eur?.satis || null]);
+      return { is_id: is.id, fis_id: f.id, imza: !!imzaYol };
+    });
   });
 
   // ---------- Fiş ----------

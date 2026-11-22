@@ -3,8 +3,9 @@ import { html, $ } from './ui.js';
 
 export function imzaAl({ baslik = 'Müşteri teslim onayı', ad = '', tel = '', metin = '' } = {}) {
   return new Promise((coz) => {
-    const el = document.createElement('div');
-    el.className = 'tam-ekran imza-ekran';
+    // <dialog> olarak açılır: başka bir pencerenin (ör. "Teslim et") üstünde de görünür ve kullanılabilir
+    const el = document.createElement('dialog');
+    el.className = 'tam-ekran imza-ekran imza-dialog';
     el.innerHTML = String(html`
       <div class="ust-cubuk"><b style="flex:1">${baslik}</b><button class="btn ikincil kucuk" data-kapat>Vazgeç</button></div>
       <div style="padding:.6rem .8rem;border-bottom:1px solid var(--cizgi);display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
@@ -18,6 +19,7 @@ export function imzaAl({ baslik = 'Müşteri teslim onayı', ad = '', tel = '', 
         <button class="btn ikincil" data-temizle>Temizle</button><span class="bosluk"></span>
         <button class="btn basari buyuk" data-kaydet>İmzayı kaydet</button></div>`);
     document.body.append(el);
+    el.showModal();
     const canvas = $('canvas', el);
     const g = canvas.getContext('2d');
     let ciziliyor = false; let bos = true; let son = null;
@@ -56,7 +58,8 @@ export function imzaAl({ baslik = 'Müşteri teslim onayı', ad = '', tel = '', 
     canvas.addEventListener('pointerup', bitir);
     canvas.addEventListener('pointercancel', bitir);
 
-    const kapat = (v) => { window.removeEventListener('resize', boyutla); el.remove(); coz(v); };
+    const kapat = (v) => { window.removeEventListener('resize', boyutla); if (el.open) el.close(); el.remove(); coz(v); };
+    el.addEventListener('cancel', (e) => { e.preventDefault(); kapat(null); });
     $('[data-kapat]', el).onclick = () => kapat(null);
     $('[data-temizle]', el).onclick = () => { bos = true; $('.imza-ipucu', el).hidden = false; boyutla(); };
     $('[data-kaydet]', el).onclick = () => {

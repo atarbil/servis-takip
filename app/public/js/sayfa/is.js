@@ -13,10 +13,10 @@ export default async function (el, [id], ctx) {
   const aktifFis = (is.fisler || []).find((f) => f.durum !== 'iptal');
 
   const aksiyon = {
-    havuz: html`<button class="btn birincil" data-a="planla">📅 Takvime yerleştir</button><button class="btn ikincil" data-a="duzenle">Düzenle</button><button class="btn tehlike-cizgi" data-a="iptal">İptal et</button>`,
-    planlandi: html`<button class="btn birincil" data-a="planla">Taşı / yeniden planla</button><button class="btn ikincil" data-a="havuz">↩ Havuza geri al</button>
+    havuz: html`<button class="btn birincil" data-a="planla">📅 Takvime yerleştir</button><button class="btn basari" data-a="teslimet" title="Sahaya gitmeden kapat">✓ Teslim et / Tamamla</button><button class="btn ikincil" data-a="duzenle">Düzenle</button><button class="btn tehlike-cizgi" data-a="iptal">İptal et</button>`,
+    planlandi: html`<button class="btn birincil" data-a="planla">Taşı / yeniden planla</button><button class="btn basari" data-a="teslimet">✓ Teslim et / Tamamla</button><button class="btn ikincil" data-a="havuz">↩ Havuza geri al</button>
       <a class="btn ikincil" href="#/saha/${is.id}">Saha ekranı</a><button class="btn ikincil" data-a="duzenle">Düzenle</button><button class="btn tehlike-cizgi" data-a="iptal">İptal</button>`,
-    sahada: html`<a class="btn birincil" href="#/saha/${is.id}">Saha ekranı</a><button class="btn ikincil" data-a="havuz">↩ Havuza geri al</button><button class="btn ikincil" data-a="duzenle">Düzenle</button>`,
+    sahada: html`<a class="btn birincil" href="#/saha/${is.id}">Saha ekranı</a><button class="btn basari" data-a="teslimet" title="Ofisten kapat">✓ Teslim et / Tamamla</button><button class="btn ikincil" data-a="havuz">↩ Havuza geri al</button><button class="btn ikincil" data-a="duzenle">Düzenle</button>`,
     tamamlandi: html`${aktifFis ? html`<a class="btn birincil" href="#/fis/${aktifFis.id}">Taslak fişe git</a>` : html`<button class="btn birincil" data-a="fis">🧾 Satış fişi oluştur</button>`}
       <button class="btn ikincil" data-a="form">🖨 Teslim formu</button><button class="btn ikincil" data-a="duzenle">Düzenle</button>`,
     fis_kesildi: html`${aktifFis ? html`<a class="btn birincil" href="#/fis/${aktifFis.id}">Fişe git (${aktifFis.fis_no})</a>` : ''}<button class="btn ikincil" data-a="form">🖨 Teslim formu</button>`,
@@ -127,6 +127,7 @@ export default async function (el, [id], ctx) {
       } else if (a === 'form') teslimFormuYazdir(ctx, is);
       else if (a === 'cari') cariBagla();
       else if (a === 'duzenle') duzenle();
+      else if (a === 'teslimet') { const { teslimEtPenceresi } = await import('./havuz.js'); await teslimEtPenceresi(ctx, is); }
       else if (a === 'sil') { if (await silOnay('is', is.id)) ctx.git('isler'); }
       else if (a === 'cihaz') cihazSec();
     } catch (err) { bildir(err.message, 'hata'); }

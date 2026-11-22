@@ -873,3 +873,10 @@ dialog.pencere.hizli-pencere.ben-yaptim { width: min(1180px, 94vw); height: min(
   .hi-sag { border-left: 0; padding-left: 0; border-top: 1px solid var(--cizgi); padding-top: .8rem; }
   #hi-satirlar { overflow: visible; border: 0; padding: 0; }
 }
+.hi-is-ozet { display: grid; gap: .15rem; padding: .6rem .7rem; background: #f8fafc; border: 1px solid var(--cizgi); border-radius: 10px; }
+.hi-is-ozet small { color: var(--soluk); white-space: pre-line; max-height: 4.5em; overflow: hidden; }
+.hi-imza { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.hi-imza-onizleme { height: 38px; border: 1px solid var(--cizgi); border-radius: 6px; background: #fff; vertical-align: middle; }
+dialog.imza-dialog { margin: 0; padding: 0; border: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; inset: 0; }
+dialog.imza-dialog::backdrop { background: rgb(15 23 42 / .5); }
+dialog.imza-dialog[open] { display: flex; flex-direction: column; }

@@ -19,8 +19,9 @@ function zxingYukle() {
 
 export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
   return new Promise((coz) => {
-    const el = document.createElement('div');
-    el.className = 'tam-ekran';
+    // <dialog>: açık bir pencerenin (ör. iş ekle) üstünde de görünür
+    const el = document.createElement('dialog');
+    el.className = 'tam-ekran imza-dialog';
     el.innerHTML = String(html`
       <div class="ust-cubuk"><b style="flex:1">${baslik}</b><button class="btn ikincil kucuk" data-kapat>Kapat</button></div>
       <div style="position:relative;flex:1;min-height:0;display:flex">
@@ -30,6 +31,7 @@ export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
       </div>
       <form class="alt-cubuk"><input name="b" placeholder="veya barkodu elle yazın" inputmode="numeric" autocomplete="off"><button class="btn birincil">Tamam</button></form>`);
     document.body.append(el);
+    el.showModal();
     const video = $('video', el);
     const mesaj = $('.tarama-mesaj', el);
     let akis = null; let zamanlayici = null; let okuyucu = null; let bitti = false;
@@ -39,6 +41,7 @@ export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
       clearInterval(zamanlayici);
       try { okuyucu?.reset(); } catch { /* */ }
       akis?.getTracks().forEach((t) => t.stop());
+      if (el.open) el.close();
       el.remove();
       coz(sonuc ? String(sonuc).trim() : null);
     };
@@ -48,6 +51,7 @@ export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
       kapat(deger);
     };
     $('[data-kapat]', el).onclick = () => kapat(null);
+    el.addEventListener('cancel', (e) => { e.preventDefault(); kapat(null); });
     $('form', el).onsubmit = (e) => { e.preventDefault(); const v = e.target.b.value.trim(); if (v) kapat(v); };
 
     (async () => {

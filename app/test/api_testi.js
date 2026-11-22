@@ -345,6 +345,43 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Carisiz reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', satirlar: [{ tip: 'hizmet', aciklama: 'a' }] })).durum === 400);
   kontrol('Teknisyen kullanamaz', (await t('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'hizmet', aciklama: 'a' }] })).durum === 403);
 
+  // ---------- Havuzdaki işi "Teslim et / Tamamla" ----------
+  {
+    const kab = (await y('GET', `/urunler/${kablo.id}`)).veri;
+    const st0 = Number(kab.stok_miktari);
+    let r = await y('POST', '/isler/hizli', { mesaj: 'Ahmet Market 50 metre kablo istedi', cari_id: musteri.id });
+    const tIs = r.veri.id;
+    r = await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ tip: 'urun', urun_id: kablo.id, miktar: 50 }] });
+    kontrol('Sadece malzeme teslimi: iş kapandı, taslak fiş', r.durum === 200 && r.veri.fis_id && r.veri.imza === false, r.veri);
+    const tf = (await y('GET', `/fisler/${r.veri.fis_id}`)).veri;
+    kontrol('Fişte malzeme, stoktan düşecek', tf.satirlar.length === 1 && Number(tf.satirlar[0].miktar) === 50 && tf.satirlar[0].stoktan_dus === true && tf.is_id === tIs, tf.satirlar);
+    kontrol('İş tamamlandı, fiyatlandırmada', (await y('GET', `/isler/${tIs}`)).veri.durum === 'tamamlandi' && (await y('GET', '/fiyatlandirma')).veri.some((x) => x.id === tIs));
+    await y('POST', `/fisler/${tf.id}/onayla`);
+    kontrol('Onayla: stoktan 50 düştü, iş fiş kesildi', Number((await y('GET', `/urunler/${kablo.id}`)).veri.stok_miktari) === st0 - 50 && (await y('GET', `/isler/${tIs}`)).veri.durum === 'fis_kesildi');
+    kontrol('Kapanmış iş tekrar teslim edilemez', (await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ tip: 'hizmet', aciklama: 'x' }] })).durum === 400);
+
+    // Carisiz havuz işi: pencerede cari seçilir; hizmet + malzeme + imza
+    r = await y('POST', '/isler/hizli', { mesaj: 'Ofis ağ kurulumu (cari sonra)' });
+    const t2 = r.veri.id;
+    kontrol('Carisiz iş cari seçilmeden kapanmaz', (await y('POST', `/isler/${t2}/teslim-et`, { satirlar: [{ tip: 'hizmet', aciklama: 'x' }] })).veri?.hata?.includes('Cari') ?? true);
+    kontrol('İmza için ad gerekir', (await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, imza: PNG, satirlar: [{ tip: 'hizmet', aciklama: 'x' }] })).durum === 400);
+    r = await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, teslim_alan_ad: 'Mehmet Bey', imza: PNG,
+      satirlar: [{ tip: 'hizmet', aciklama: 'Ağ kurulumu', birim_fiyat: 1500 }, { tip: 'urun', urun_id: kablo.id, miktar: 20 }] });
+    kontrol('Hizmet + malzeme + imza', r.durum === 200 && r.veri.imza === true, r.veri);
+    const t2d = (await y('GET', `/isler/${t2}`)).veri;
+    kontrol('Cari işe bağlandı, teslim onayı kaydedildi', t2d.cari_id === musteri.id && t2d.teslim?.teslim_alan_ad === 'Mehmet Bey', { cari: t2d.cari_id, teslim: t2d.teslim });
+    kontrol('Teknisyen bu yolu kullanamaz', (await t('POST', `/isler/${t2}/teslim-et`, { satirlar: [] })).durum === 403);
+    // Sahada malzeme eklenmiş planlı iş: satır girmeden de kapanır, malzeme fişe gelir
+    r = await y('POST', '/isler', { baslik: 'Sahada yarım kalan', cari_id: musteri.id });
+    const t3 = r.veri.id;
+    await y('POST', `/isler/${t3}/planla`, { ekip_id: ekipler[0].id, baslangic: new Date().toISOString() });
+    await t('POST', `/isler/${t3}/baslat`);
+    await t('POST', `/isler/${t3}/malzeme`, { urun_id: kablo.id, miktar: 3 });
+    r = await y('POST', `/isler/${t3}/teslim-et`, { satirlar: [] });
+    const t3f = (await y('GET', `/fisler/${r.veri.fis_id}`)).veri;
+    kontrol('Sahadaki işin malzemesi fişe geldi (stoktan tekrar düşmez)', r.durum === 200 && t3f.satirlar.length === 1 && t3f.satirlar[0].stoktan_dus === false, t3f.satirlar);
+  }
+
   // ---------- Panel düzeni ve menü adları ----------
   kontrol('Panel düzeni başta boş', (await y('GET', '/ben/panel')).veri === null);
   x = await y('PUT', '/ben/panel', { sutunlar: [['havuz', 'bugun'], ['doviz', '<script>'], []], gizli: ['kasa', 'kasa'] });

@@ -44,7 +44,8 @@ export default async function (el, _p, ctx) {
         <small class="sag-deger">${saat(i.baslama_zamani)}'den beri</small></li>`)}</ul>` : bos('Sahada iş yok.')) },
     havuz: { ad: 'Havuzda bekleyenler', html: () => kart('Havuzda bekleyenler', o.havuz_isler.length ? html`<ul class="mini-liste">${o.havuz_isler.map((i) => html`<li>
         <div class="ana-metin" data-git="is/${i.id}" style="cursor:pointer"><b>${i.oncelik === 1 ? '🔴 ' : ''}${i.baslik}</b><small>${i.unvan || 'Cari bağlı değil'} · ${sureMetni(i.bekleme_sn)} önce</small></div>
-        <button class="btn ikincil kucuk" data-planla="${i.id}">📅 Planla</button></li>`)}</ul>
+        <div class="btn-grup" style="flex-wrap:nowrap"><button class="btn ikincil kucuk" data-planla="${i.id}">📅 Planla</button>
+          <button class="btn ikincil kucuk" data-teslim="${i.id}" title="Teslim et / Tamamla">✓</button></div></li>`)}</ul>
         ${o.havuz > o.havuz_isler.length ? html`<div class="mini-bos"><a href="#/havuz">Tümünü gör (${o.havuz}) →</a></div>` : ''}` : bos('Havuz boş. 👍'),
       { sayi: o.havuz, sag: html`<a href="#/havuz" class="btn ikincil kucuk">Havuz</a>` }) },
     dis_servis: { ad: 'Dış servis', html: () => kart('🔧 Dış servis', ds.length ? html`<ul class="mini-liste">${ds.map((d) => html`<li class="tikla" data-git="dis-servis/${d.id}">
@@ -170,6 +171,8 @@ export default async function (el, _p, ctx) {
       kaydet(); return ciz();
     }
     if (duzenleme && e.target.closest('.panel-kart')) { if (e.target.closest('a')) e.preventDefault(); return; }
+    const te = e.target.closest('[data-teslim]');
+    if (te) { const { teslimEtPenceresi } = await import('./havuz.js'); await teslimEtPenceresi(ctx, { id: Number(te.dataset.teslim) }); return; }
     const p = e.target.closest('[data-planla]');
     if (p) {
       const is = o.havuz_isler.find((x) => x.id === Number(p.dataset.planla));
