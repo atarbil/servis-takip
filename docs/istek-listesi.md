@@ -4,25 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Telefonda uygulama gibi görünüm (22.11.2026)
-Sorun: telefondan sayfaları kullanmak zor. Telefon ekran görüntüleriyle (390 px) yapılan incelemede görülenler ve yapılacaklar:
-- **Yazı kutusuna dokununca iPhone sayfayı büyütüyor** (yazı boyutu 15 px; iPhone 16 px altını yakınlaştırır). Telefonda kutular
-  16 px olacak, sayfa kendiliğinden büyümeyecek; iki parmakla yanlışlıkla kayma/büyüme engellenecek.
-- **Listeler uygulama listesi gibi:** şu an her kayıt (cari, fiş, iş, ürün, teklif, kasa hareketi) alt alta "etiket: değer" satırlarından
-  oluşan uzun bir kart; ekrana 2–3 kayıt sığıyor. Yerine tek satırlık sıkı liste: solda başlık + altında küçük bilgi, sağda tutar/durum
-  rozeti; dokununca detay. Ekrana 7–9 kayıt sığacak.
-- **Filtreler kapanır panelde:** arama kutusu üstte sabit; durum/tarih/tür seçimleri "⚙ Filtre" düğmesinin altında açılır (şu an
-  kırpılmış "Tüm d…", "Tü…" kutuları ve iki satır tarih ekranın yarısını kaplıyor). Seçili filtre sayısı düğmede görünür.
-- **Başlık tekrarı kalkacak:** üst çubukta zaten sayfa adı var; sayfa içindeki ikinci başlık ve açıklama telefonda gizlenir.
-- **Düğmeler:** "Excel'e aktar", "Yazdır" gibi ikincil işler "⋯" menüsüne; ana iş ("+ Yeni cari", "+ Yeni satış fişi") sağ altta
-  yuvarlak **+ düğmesi** olur (alt menünün üstünde).
-- **Pencereler telefonda alttan açılan tam ekran sayfa** olur; Kaydet/Vazgeç her zaman altta görünür (klavye açıkken de).
-- **Satış fişi / alış / teklif telefonda:** kalemler kart listesi, ürün ekleme ayrı ekranda (ara + barkod + miktar), alt kısımda sabit
-  toplam çubuğu ve "Kaydet / Onayla". Bilgisayardaki Excel tarzı tablo aynen kalır.
-- **Ana ekrana ekle:** uygulama simgesiyle açılınca tarayıcı çubukları olmadan tam ekran (zaten destekleniyor); menüye "Telefona
-  uygulama olarak ekle" yardımı (iPhone: Paylaş → Ana Ekrana Ekle, Android: ⋮ → Uygulamayı yükle). Çentik/alt çizgi boşlukları düzeltilir.
-- **Dokunma rahatlığı:** düğme ve satırlar en az 44 px yükseklikte; aşağı çekince yenileme; geri tuşu/kaydırma ile pencere kapanması.
-- Bilgisayar görünümü değişmez; değişiklikler yalnız telefon genişliğinde (≤ 760 px) geçerli.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -31,6 +13,21 @@ Sorun: telefondan sayfaları kullanmak zor. Telefon ekran görüntüleriyle (390
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 22.11.2026 — 12. derleme
+- **Telefonda uygulama gibi görünüm** (yalnız telefon genişliğinde; bilgisayar görünümü aynı):
+  - **Listeler sıkı satır:** solda ad + küçük bilgiler, sağda tutar/bakiye/stok. Cariler, fişler, işler, ürünler, teklifler, alışlar,
+    kasa, envanter, dış servis… Ekrana 2–3 yerine 8–10 kayıt sığıyor. Fiş/teklif/alış listesinde KDV hariç ve maliyet telefonda gizli.
+  - **Filtre:** üstte arama kutusu + "⚙ Filtre" düğmesi; diğer seçimler düğmeye basınca açılır, seçili filtre sayısı düğmede yazar.
+  - **+ düğmesi:** "+ Yeni cari / satış fişi / ürün / teklif / iş…" sağ altta yuvarlak düğme.
+  - **⋯ menüsü:** üst çubukta; Excel'e aktar, Yazdır, Sil, İptal gibi ikincil işler burada.
+  - **Başlık tekrarı** kalktı (sayfa adı üst çubukta).
+  - **Fiş / alış / teklif:** altta sabit çubuk — genel toplam, Kaydet, ✓ Onayla. Satır ekleme düğmeleri yana kayan tek satır.
+  - **Pencereler tam ekran**, Kaydet/Vazgeç altta büyük düğmeler. **Geri tuşu** açık pencereyi kapatır (sayfadan çıkmaz).
+  - **Aşağı çekince yenileme.** Yazı kutularında iPhone yakınlaştırması ve çift dokunma büyütmesi kapalı; düğmeler parmağa uygun boyda.
+  - Kişisel menüde **"📱 Telefona uygulama olarak ekle"**: Android'de doğrudan yükleme penceresi, iPhone'da adım adım anlatım.
+    Ana ekrandan açılınca tam ekran; çentik boşlukları ayarlı.
+- Test: mobil_testi.js (+ düğmesi, ⋯ menüsü, filtre, tam ekran pencere, geri tuşu, fiş alt çubuğu, bilgisayarda değişiklik olmaması).
 
 ### 22.11.2026 — 11. derleme
 - **Programı güncelle** (sağ üstteki kişisel menü, yalnız yönetici): kurulu sürüm, GitHub'daki yeni değişiklikler, son kontrol zamanı.

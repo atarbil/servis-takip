@@ -1,6 +1,7 @@
 // Uygulama kabuğu: oturum, menü, sayfa yönlendirme
 import { api } from './api.js';
 import { html, ham, $, $$, bildir, pencere } from './ui.js';
+import { mobilBaslat, uygulamaEkle, uygulamaKurulu } from './mobil.js';
 
 // Menü: üstte gruplu açılır menü. Adlar Ayarlar → Menü'den değiştirilebilir (ayarlar.menu_adlari).
 export const YONETICI_MENU = [
@@ -47,7 +48,8 @@ const kullaniciGrup = (ek) => html`<div class="um-grup um-kullanici ${ek}" data-
     <button type="button" class="um-baslik" aria-haspopup="true" aria-expanded="false"><span class="avatar">${(ctx.kullanici.ad_soyad || '?').split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>
       <span class="um-ad">${ctx.kullanici.ad_soyad}</span><span class="um-ok">${ikon('asagi', 16)}</span></button>
     <div class="um-acilir sag" role="menu">${KULLANICI_MENU.map(menuLink)}
-      <hr><button type="button" role="menuitem" data-sifre>${ikon('anahtar')}<span>Şifre değiştir</span></button>
+      <hr>${uygulamaKurulu() ? '' : html`<button type="button" role="menuitem" data-uygulama>📱<span>Telefona uygulama olarak ekle</span></button>`}
+      <button type="button" role="menuitem" data-sifre>${ikon('anahtar')}<span>Şifre değiştir</span></button>
       <button type="button" role="menuitem" data-cikis>${ikon('cikis')}<span>Çıkış</span></button></div></div>`;
 const menuHtml = () => html`${YONETICI_MENU.map((m) => (m.alt ? grupHtml(m) : menuLink(m)))}${kullaniciGrup('yalniz-mobil')}`;
 
@@ -106,6 +108,7 @@ async function basla() {
   try { ctx.ayarlar = await api.get('/ayarlar'); } catch { /* */ }
   menuAdlariYukle();
   kabukCiz();
+  mobilBaslat();
   window.addEventListener('hashchange', yonlendir);
   yonlendir();
 }
@@ -312,6 +315,7 @@ function kabukCiz() {
     document.body.innerHTML = String(html`<div class="kabuk teknisyen">
       <header class="ust"><div class="ust-firma"><div class="logo">ST</div><div><b>${firma}</b><small>${k.ad_soyad}${k.ekip_ad ? ' · ' + k.ekip_ad : ''}</small></div></div>
         <span class="bosluk"></span>
+        ${uygulamaKurulu() ? '' : html`<button class="btn-ikon" data-uygulama title="Telefona uygulama olarak ekle">📱</button>`}
         <button class="btn-ikon" id="btn-sifre" title="Şifre">🔑</button>
         <button class="btn-ikon" id="btn-cikis" title="Çıkış">${ikon('cikis')}</button></header>
       <main id="sayfa"></main></div>`);
@@ -345,6 +349,7 @@ function kabukCiz() {
   }
   $$('#btn-cikis, [data-cikis]').forEach((b) => { b.onclick = cikis; });
   $$('#btn-sifre, [data-sifre]').forEach((b) => { b.onclick = () => { menuKapat(); sifreDegistir(); }; });
+  $$('[data-uygulama]').forEach((b) => { b.onclick = () => { menuKapat(); uygulamaEkle(pencere, html); }; });
   if (ctx.yonetici) { kurYukle(); setInterval(kurYukle, 30 * 60 * 1000); }
 }
 

@@ -23,11 +23,11 @@ export default async function (el, _p, ctx) {
       ${veri.length ? veri.map((x) => html`<tr class="tikla ${x.durum === 'iptal' ? 'iptal' : ''}" data-git="fis/${x.id}">
         <td class="ana-hucre" data-et="">${x.fis_no}${x.is_id ? html`<div class="alt-satir">İş #${x.is_id}</div>` : ''}</td><td data-et="Tarih">${tarih(x.tarih)}</td>
         <td data-et="Cari">${x.unvan}</td><td data-et="Durum">${durumRozet(x.durum)}</td>
-        <td class="sayi" data-et="KDV hariç">${para(x.ara_toplam)}</td><td class="sayi" data-et="Toplam"><b>${para(x.genel_toplam)}</b></td>
-        <td class="sayi" data-et="Maliyet">${para(x.maliyet_toplam)}</td><td class="sayi ${x.kar < 0 ? 'negatif' : ''}" data-et="Kâr">${para(x.kar)}</td></tr>`)
+        <td class="sayi" data-et="KDV hariç" data-mobil="gizle">${para(x.ara_toplam)}</td><td class="sayi" data-et="Toplam"><b>${para(x.genel_toplam)}</b></td>
+        <td class="sayi" data-et="Maliyet" data-mobil="gizle">${para(x.maliyet_toplam)}</td><td class="sayi ${x.kar < 0 ? 'negatif' : ''}" data-et="Kâr">${para(x.kar)}</td></tr>`)
         : html`<tr><td colspan="8" class="bos-durum">Fiş yok</td></tr>`}</tbody>
-      ${g.length ? html`<tfoot><tr><td colspan="4" data-et="">Onaylı ${g.length} fiş</td><td class="sayi" data-et="KDV hariç">${para(t('ara_toplam'))}</td>
-        <td class="sayi" data-et="Toplam">${para(t('genel_toplam'))}</td><td class="sayi" data-et="Maliyet">${para(t('maliyet_toplam'))}</td><td class="sayi" data-et="Kâr">${para(t('kar'))}</td></tr></tfoot>` : ''}</table>`);
+      ${g.length ? html`<tfoot><tr><td colspan="4" data-et="">Onaylı ${g.length} fiş</td><td class="sayi" data-et="KDV hariç" data-mobil="gizle">${para(t('ara_toplam'))}</td>
+        <td class="sayi" data-et="Toplam">${para(t('genel_toplam'))}</td><td class="sayi" data-et="Maliyet" data-mobil="gizle">${para(t('maliyet_toplam'))}</td><td class="sayi" data-et="Kâr">${para(t('kar'))}</td></tr></tfoot>` : ''}</table>`);
   };
   $('#q', el).addEventListener('input', debounce((e) => { f.q = e.target.value; ciz(); }, 250));
   $('#durum', el).onchange = (e) => { f.durum = e.target.value; ciz(); };

@@ -45,7 +45,7 @@ export default async function (el, _p, ctx) {
       ${veri.length ? veri.map((t) => html`<tr class="tikla ${t.durum === 'iptal' ? 'iptal' : ''}" data-git="teklif/${t.id}">
         <td class="ana-hucre" data-et="">${t.belge_no}</td><td data-et="Tür">${TUR_AD[t.tur]}</td><td data-et="Tarih">${tarih(t.tarih)}</td>
         <td data-et="Cari">${t.unvan}</td><td data-et="Durum">${teklifRozet(t.durum)}</td>
-        <td class="sayi" data-et="KDV hariç">${para(t.ara_toplam)}</td><td class="sayi" data-et="Toplam"><b>${para(t.genel_toplam)}</b></td>
+        <td class="sayi" data-et="KDV hariç" data-mobil="gizle">${para(t.ara_toplam)}</td><td class="sayi" data-et="Toplam"><b>${para(t.genel_toplam)}</b></td>
         <td data-et="Fiş">${t.fis_no || ''}</td></tr>`)
         : html`<tr><td colspan="8" class="bos-durum"><b>Belge yok</b>Sağ üstten yeni teklif veya proforma oluşturun.</td></tr>`}</tbody></table>`);
   };

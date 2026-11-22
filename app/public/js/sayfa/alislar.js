@@ -18,9 +18,9 @@ export default async function (el, _p, ctx) {
     $('#liste', el).innerHTML = String(html`<table class="tablo mobil-kart"><thead><tr><th>Fatura no</th><th>Tarih</th><th>Tedarikçi</th><th>Durum</th><th class="sayi">KDV hariç</th><th class="sayi">Toplam</th></tr></thead><tbody>
       ${veri.length ? veri.map((x) => html`<tr class="tikla ${x.durum === 'iptal' ? 'iptal' : ''}" data-git="alis/${x.id}">
         <td class="ana-hucre" data-et="">${x.belge_no}</td><td data-et="Tarih">${tarih(x.tarih)}</td><td data-et="Tedarikçi">${x.unvan}</td><td data-et="Durum">${durumRozet(x.durum)}</td>
-        <td class="sayi" data-et="KDV hariç">${para(x.ara_toplam)}</td><td class="sayi" data-et="Toplam"><b>${para(x.genel_toplam)}</b></td></tr>`)
+        <td class="sayi" data-et="KDV hariç" data-mobil="gizle">${para(x.ara_toplam)}</td><td class="sayi" data-et="Toplam"><b>${para(x.genel_toplam)}</b></td></tr>`)
         : html`<tr><td colspan="6" class="bos-durum">Fatura yok</td></tr>`}</tbody>
-      ${g.length ? html`<tfoot><tr><td colspan="4" data-et="">Onaylı ${g.length} fatura</td><td class="sayi" data-et="KDV hariç">${para(g.reduce((a, x) => a + Number(x.ara_toplam), 0))}</td>
+      ${g.length ? html`<tfoot><tr><td colspan="4" data-et="">Onaylı ${g.length} fatura</td><td class="sayi" data-et="KDV hariç" data-mobil="gizle">${para(g.reduce((a, x) => a + Number(x.ara_toplam), 0))}</td>
         <td class="sayi" data-et="Toplam">${para(g.reduce((a, x) => a + Number(x.genel_toplam), 0))}</td></tr></tfoot>` : ''}</table>`);
   };
   $('#q', el).addEventListener('input', debounce((e) => { f.q = e.target.value; ciz(); }, 250));
