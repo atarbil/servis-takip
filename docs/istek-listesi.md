@@ -37,6 +37,20 @@ içe/dışa aktar, "+ Yeni şablon"). Bizdeki karşılığı:
   - **Önizleme verisi seçimi:** örnek veri yerine gerçek bir teklif/fiş seçip onunla önizleme.
   - **Geri al / ileri al** ve kaydetmeden çıkarken uyarı; her kayıtta önceki sürüm saklanır (son 10 sürüme dönülebilir).
   - Telefonda tasarım ekranı: ayarlar ve önizleme sekmeli (üst üste değil).
+- Kullanıcının gönderdiği **2. örnek (şablon düzenleme ekranı)** — buna göre düzen:
+  - Üstte **Kaydet · Sil · Geri dön**. Solda büyük A4 önizleme, sağda ayar paneli.
+  - **Önizlemede doğrudan düzenleme:** kesik çizgili kutular tıklanınca yazılabilir metin alanı olur (firma adı satırı, adres/vergi
+    bilgisi bloğu, başlığın altındaki giriş metni kutusu, tablonun altındaki not/şart kutusu). Kalın, hizalama, yazı boyutu küçük araç
+    çubuğuyla. **Logo kutusu köşesinden tutup büyütülür**, sürüklenerek sola/ortaya/sağa yerleşir.
+  - Sağ panel: **Şablon adı, Şablon tipi, Dil (Türkçe / İngilizce — sabit etiketler "Tarih/Date, Miktar/Qty"… çevrilir), Başlık,
+    Sayfa boyu (A4 / A5 / A4 yatay).**
+  - **Genel ayarlar** (her biri Görünsün / Görünmesin): geçerlilik tarihi, logo, müşteri adresi, dip toplam bloğu, açıklama
+    (satış ekranındaki açıklama alanı), güncel bakiye, vergi no/daire, yazıyla tutar, kaşe-imza, banka bilgileri.
+  - **Kolon ayarları** (Görünsün / Görünmesin): indirim oranı, birim fiyat, birim fiyat KDV hariç, KDV hariç toplam, liste fiyatı,
+    KDV oranı, toplam tutar, ürün resmi, ürün kodu, barkod, raf yeri (+ bizde: miktar birimi, seri no, döviz).
+  - Dip toplam bloğu: Brüt · İndirim · Net · KDV · Toplam (ayrı ayrı gösterilebilir).
+  - Bizim yorumumuz: anahtar listesi açılır kutu yerine **aç/kapa düğmeleri** (tek dokunuşla), bölümler katlanabilir başlıklar
+    ("Genel", "Kolonlar", "Renk ve yazı", "Metinler"), değişiklik önizlemeye anında yansır.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
