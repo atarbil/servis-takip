@@ -4,7 +4,17 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Form tasarımı: belgedeki sabit yazıları değiştirebileyim (23.11.2026)
+Kullanıcı: "Belgenin içindeki PROFORMA FATURA, TAHSİLAT MAKBUZU vs. — tasarımda değiştirebileceğim sabit değişkenler lazım."
+- **Başlık önizlemede doğrudan düzenlenir** (şu an yalnız sağ paneldeki "Başlık" kutusundan): "PROFORMA FATURA" yazısına tıklayıp yazılır.
+- **"Sabit yazılar" ayar grubu:** o belge türünde geçen tüm sabit yazılar tek listede, her birinin yanında kutu (boş = varsayılan):
+  Sayın · Tarih · No · Vade · Geçerlilik · Dönem · Cari bakiye · Tel · VD / VN · Yalnız · Net · Brüt · İndirim · KDV · Toplam ·
+  TL karşılığı · Teslim eden / Teslim alan · Ödeme yapan / Tahsil eden · Ödeme şekli · Belge / dekont no · Cihaz · Seri no ·
+  Arıza / şikâyet · Yanında teslim alınanlar · Yapılan iş · Ekip · Süre · Teknisyen notu · Malzemeler · Borç / Alacak / Bakiye ·
+  ASIL / SURET · MÜŞTERİ / FİRMA NÜSHASI · TASLAK / İPTAL · Sayfa · ödeme şekli adları (Nakit, Havale / EFT, Kredi kartı)…
+- Önizlemedeki bu etiketlere de **tıklayıp doğrudan yazılabilir** (kesik çizgiyle gösterilir).
+- Dil İngilizce seçiliyse varsayılanlar İngilizce gelir; değiştirilen yazı her iki dilde de kullanıcının yazdığıdır.
+- "Tümünü varsayılana döndür" düğmesi. Değişkenler ({musteri}, {tarih}…) bu kutularda da kullanılabilir.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
