@@ -26,6 +26,17 @@ içe/dışa aktar, "+ Yeni şablon"). Bizdeki karşılığı:
 - **İçe aktar / Tümünü dışa aktar** (dosya olarak yedek, başka kuruluma taşıma).
 - Teklif / fiş / makbuz yazdırılırken **şablon seçilebilir** (varsayılan otomatik gelir).
 - Şablonlar veritabanında saklanır (yedeklerle birlikte); önizleme ve yazdırma aynı çizim kodunu kullanır (ekranda ne görünürse kâğıtta o).
+- Kullanıcı notu (23:31): "Bunun gibi bir tasarım ekranı, kendi yorumunu da katabilirsin." Eklenecek kendi önerilerim:
+  - **Hazır tema galerisi:** "+ Yeni şablon" denince boş sayfa yerine 4 hazır başlangıç: Klasik (bugünkü), Modern (renkli üst şerit),
+    Sade (çizgisiz, bol boşluk), Kurumsal (iki sütun firma/müşteri, gri tablo). Seçip üstünden düzenlenir.
+  - **Firma renginden otomatik renk:** logodan baskın renk önerilir, tek tıkla uygulanır.
+  - **Filigran:** taslak belgede "TASLAK", iptalde "İPTAL" çapraz silik yazı (açılıp kapatılabilir).
+  - **QR kod (isteğe bağlı):** belge numarası/tutar ya da IBAN ile ödeme bilgisi; müşteri telefonla okutur.
+  - **Ürün görseli sütunu** (ürüne fotoğraf eklenmişse), **döviz gösterimi** (USD/EUR fiyat + TL karşılığı), **sayfa numarası**
+    "Sayfa 1/2", uzun tabloda başlık her sayfada tekrar.
+  - **Önizleme verisi seçimi:** örnek veri yerine gerçek bir teklif/fiş seçip onunla önizleme.
+  - **Geri al / ileri al** ve kaydetmeden çıkarken uyarı; her kayıtta önceki sürüm saklanır (son 10 sürüme dönülebilir).
+  - Telefonda tasarım ekranı: ayarlar ve önizleme sekmeli (üst üste değil).
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
