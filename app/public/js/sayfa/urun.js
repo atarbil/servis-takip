@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { html, $, para, dovizPara, paraSade, miktar, zaman, pencere, bildir, sayiCoz, sayiGiris } from '../ui.js';
+import { html, $, para, dovizPara, paraSade, miktar, zaman, pencere, bildir, sayiCoz, sayiGiris, gorselKucult } from '../ui.js';
 import { urunFormu, urunSecici, silOnay } from '../bilesen.js';
 
 const KAYNAK = { alis: 'Alış', is_malzeme: 'İşte kullanıldı', satis: 'Satış', sayim: 'Sayım', duzeltme: 'Düzeltme' };
@@ -21,6 +21,14 @@ export default async function (el, [id], ctx) {
       <div class="ist"><small>Satış fiyatı (KDV hariç)</small><b>${u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : '—'}</b></div>
       <div class="ist"><small>Stok değeri</small><b>${para(Math.max(0, u.stok_miktari) * u.ort_maliyet)}</b></div>
     </div>
+    <div class="kart urun-resim-kart"><div class="kart-ust"><h3>Resim ve raf yeri</h3><span class="soluk">yazdırma şablonlarında kullanılır</span></div>
+      <div class="kart-govde urun-resim-govde">
+        <div class="urun-resim-kutu">${u.resim ? html`<img src="/dosya/${u.resim}" alt="">` : html`<span class="soluk">Resim yok</span>`}</div>
+        <div class="urun-resim-islem">
+          <label class="btn ikincil kucuk">📷 ${u.resim ? 'Resmi değiştir' : 'Resim yükle'}<input type="file" accept="image/*" id="urun-resim" hidden></label>
+          ${u.resim ? html`<button class="btn tehlike-cizgi kucuk" data-a="resim-sil">Resmi kaldır</button>` : ''}
+          <label class="alan" style="margin-top:.6rem"><span>Raf yeri</span><input id="raf-yeri" value="${u.raf_yeri || ''}" placeholder="ör. A-3, Depo 2. raf" maxlength="40"></label>
+        </div></div></div>
     <div class="kart"><div class="kart-ust"><h3>Barkodlar</h3></div><div class="kart-govde">${u.barkodlar.length ? u.barkodlar.map((b) => html`<span class="cip" style="padding-right:.65rem">${b}</span>`) : html`<span class="soluk">Barkod tanımlı değil</span>`}</div></div>
     <div class="kart"><div class="kart-ust"><h3>Stok hareketleri</h3><span class="soluk">son 200</span></div><div class="tablo-kap">
       <table class="tablo mobil-kart"><thead><tr><th>Zaman</th><th>İşlem</th><th>Açıklama</th><th class="sayi">Miktar</th><th class="sayi">Birim maliyet</th><th>Kullanıcı</th></tr></thead><tbody>
@@ -30,6 +38,13 @@ export default async function (el, [id], ctx) {
         <td class="sayi" data-et="Maliyet">${paraSade(h.birim_maliyet)}</td><td data-et="Kullanıcı">${h.ad_soyad || ''}</td></tr>`)
         : html`<tr><td colspan="6" class="bos-durum">Hareket yok</td></tr>`}</tbody></table></div></div>`);
 
+  $('#urun-resim', el)?.addEventListener('change', async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try { await api.post(`/urunler/${id}/resim`, { veri: await gorselKucult(f, 800, 0.85) }); bildir('Resim kaydedildi', 'basari'); ctx.yenile(); } catch (h) { bildir(h.message, 'hata'); }
+  });
+  $('#raf-yeri', el)?.addEventListener('change', async (e) => {
+    try { await api.put(`/urunler/${id}`, { raf_yeri: e.target.value.trim() || null }); bildir('Raf yeri kaydedildi', 'basari'); } catch (h) { bildir(h.message, 'hata'); }
+  });
   el.addEventListener('click', async (e) => {
     const g = e.target.closest('[data-git]'); if (g) return ctx.git(g.dataset.git);
     const a = e.target.closest('[data-a]')?.dataset.a;
@@ -37,6 +52,7 @@ export default async function (el, [id], ctx) {
     try {
       if (a === 'duzenle') { if (await urunFormu(u)) ctx.yenile(); }
       else if (a === 'sil') { if (await silOnay('urun', u.id)) ctx.git('urunler'); }
+      else if (a === 'resim-sil') { await api.post(`/urunler/${id}/resim`, {}); ctx.yenile(); }
       else if (a === 'sayim') {
         const r = await pencere({
           baslik: 'Stok sayımı',

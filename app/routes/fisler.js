@@ -34,7 +34,8 @@ module.exports = (r, { db, web, Y }) => {
     if (!f) throw web.hata(404, 'Fiş bulunamadı.');
     f.satirlar = (await db.query(`
       SELECT s.*, round(s.miktar * s.birim_fiyat * (1 - s.iskonto_orani / 100), 2) AS tutar,
-             round(s.miktar * s.birim_maliyet, 2) AS maliyet, u.kod AS urun_kod, u.onay_bekliyor, u.ort_maliyet AS urun_maliyet
+             round(s.miktar * s.birim_maliyet, 2) AS maliyet, u.kod AS urun_kod, u.onay_bekliyor, u.ort_maliyet AS urun_maliyet,
+             u.resim AS urun_resim, u.raf_yeri, u.onerilen_satis AS liste_fiyati, (SELECT min(b.barkod) FROM urun_barkodlari b WHERE b.urun_id = u.id) AS barkod
       FROM satis_fisi_satirlari s LEFT JOIN urunler u ON u.id = s.urun_id WHERE s.fis_id = $1 ORDER BY s.sira, s.id`, [id])).rows;
     return f;
   }

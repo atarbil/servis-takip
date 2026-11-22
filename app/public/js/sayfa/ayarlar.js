@@ -23,7 +23,7 @@ import { html, $, $$, zaman, pencere, bildir, para, onayla } from '../ui.js';
 export default async function (el, [secili], ctx) {
   ctx.baslik('Ayarlar');
   let sekme = secili || 'firma';
-  el.innerHTML = String(html`<div class="sekmeler">${[['firma', 'Firma bilgileri'], ['kullanicilar', 'Kullanıcılar'], ['ekipler', 'Ekipler'], ['hesaplar', 'Kasa / banka hesapları'], ['telegram', 'Telegram'], ['menu', 'Menü'], ['denetim', 'İşlem kayıtları']]
+  el.innerHTML = String(html`<div class="sekmeler">${[['firma', 'Firma bilgileri'], ['kullanicilar', 'Kullanıcılar'], ['ekipler', 'Ekipler'], ['hesaplar', 'Kasa / banka hesapları'], ['telegram', 'Telegram'], ['menu', 'Menü'], ['formlar', 'Form tasarımı'], ['denetim', 'İşlem kayıtları']]
     .map(([k, a]) => html`<button data-s="${k}">${a}</button>`)}</div><div id="s"></div>`);
 
   async function ciz() {
@@ -260,6 +260,6 @@ export default async function (el, [secili], ctx) {
           <td data-et="Kayıt">${TABLO[x.tablo] || x.tablo} #${x.kayit_id}</td><td data-et="Değişiklik" style="font-size:.82rem;max-width:520px;word-break:break-word">${ozet(x)}</td></tr>`)}</tbody></table></div></div>`);
     }
   }
-  el.addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (b) { sekme = b.dataset.s; history.replaceState(null, '', `#/ayarlar/${sekme}`); ciz(); } });
+  el.addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (b?.dataset.s === 'formlar') return ctx.git('formlar'); if (b) { sekme = b.dataset.s; history.replaceState(null, '', `#/ayarlar/${sekme}`); ciz(); } });
   await ciz();
 }

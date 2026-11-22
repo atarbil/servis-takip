@@ -1,10 +1,10 @@
 'use strict';
-const { zorunlu, metin, sayi, sec, setIfadesi, doviz } = require('../lib/yardim');
+const { zorunlu, metin, sayi, sec, setIfadesi, doviz, gorselKaydet } = require('../lib/yardim');
 const { kurGetir } = require('../lib/kur');
 
-const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'satis_doviz', 'kdv_orani', 'kritik_stok', 'aktif'];
+const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'satis_doviz', 'kdv_orani', 'kritik_stok', 'aktif', 'raf_yeri'];
 
-module.exports = (r, { db, web, G, Y }) => {
+module.exports = (r, { db, web, G, Y, AYAR }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';
 
   // Ürün arama. Her kelime ad, kod, marka, model veya gruplardan birinde geçmeli (Türkçe harf farkı yok sayılır).
@@ -95,6 +95,13 @@ module.exports = (r, { db, web, G, Y }) => {
       if (acilis) await q(`SELECT stok_hareket($1, $2, $3, 'sayim', NULL, 'Açılış stoğu')`, [u.id, acilis, maliyet]);
       return u;
     });
+  });
+
+  // Ürün resmi (yazdırma şablonlarında "ürün resmi" sütunu için)
+  r.post('/urunler/:id/resim', Y, async (req) => {
+    const yol = req.body.veri ? gorselKaydet(AYAR.dosyaKlasor, req.body.veri, 'urunler') : null;
+    await db.islem(req.kullanici.id, (q) => q('UPDATE urunler SET resim = $2 WHERE id = $1', [req.params.id, yol]));
+    return { resim: yol };
   });
 
   r.put('/urunler/:id', Y, async (req) => {

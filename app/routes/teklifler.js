@@ -29,7 +29,8 @@ module.exports = (r, { db, web, Y }) => {
       LEFT JOIN teklifler k ON k.id = t.kaynak_teklif_id WHERE t.id = $1`, [id])).rows[0];
     if (!t) throw web.hata(404, 'Belge bulunamadı.');
     t.satirlar = (await db.query(`
-      SELECT s.*, round(s.miktar * s.birim_fiyat * (1 - s.iskonto_orani / 100), 2) AS tutar, u.kod AS urun_kod
+      SELECT s.*, round(s.miktar * s.birim_fiyat * (1 - s.iskonto_orani / 100), 2) AS tutar, u.kod AS urun_kod,
+             u.resim AS urun_resim, u.raf_yeri, u.onerilen_satis AS liste_fiyati, (SELECT min(b.barkod) FROM urun_barkodlari b WHERE b.urun_id = u.id) AS barkod
       FROM teklif_satirlari s LEFT JOIN urunler u ON u.id = s.urun_id WHERE s.teklif_id = $1 ORDER BY s.sira, s.id`, [id])).rows;
     return t;
   }

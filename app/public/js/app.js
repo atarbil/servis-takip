@@ -32,6 +32,7 @@ export const YONETICI_MENU = [
 ];
 export const KULLANICI_MENU = [
   { yol: 'ayarlar', ad: 'Ayarlar', ikon: 'ayar' },
+  { yol: 'formlar', ad: 'Form tasarımı', ikon: 'belge' },
   { yol: 'silinenler', ad: 'Silinenler', ikon: 'cop' },
   { yol: 'guncelleme', ad: 'Programı güncelle', ikon: 'yenile' },
 ];
@@ -445,7 +446,7 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 let sonYukleme = 0;

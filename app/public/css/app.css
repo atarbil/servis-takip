@@ -1062,3 +1062,207 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
   .ust-cubuk { padding-top: env(safe-area-inset-top); }
 }
 .mb-adim { padding-left: 1.2rem; display: grid; gap: .45rem; }
+
+/* =====================================================================
+   Form tasarımı: belge çizimi (.fb) — yazdırma ve tasarım önizlemesi aynı stil
+   ===================================================================== */
+.fb { position: relative; font-family: var(--fb-yazi); font-size: var(--fb-boy); color: #000; line-height: 1.4; --fb-cizgi: #000; --fb-ince: #c9ced6; }
+.fb * { box-sizing: border-box; }
+.fb-b { margin: 0 0 12px; break-inside: avoid; }
+.fb-b-kalemler, .fb-b-govde { break-inside: auto; }
+.fb-metin:empty { display: none; }
+.fb-serit { display: block; width: 100%; max-height: 220px; object-fit: contain; }
+.fb-ust { display: flex; gap: 16px; align-items: flex-start; }
+.fb-ust.fb-hiza-orta { flex-direction: column; align-items: center; text-align: center; }
+.fb-ust.fb-hiza-sag { flex-direction: row-reverse; text-align: right; }
+.fb-logo { position: relative; flex: 0 0 auto; max-width: 100%; }
+.fb-logo img { display: block; width: 100%; height: auto; max-height: 160px; object-fit: contain; }
+.fb-firma { flex: 1; min-width: 0; }
+.fb-firma-ad { font-size: 1.5em; font-weight: 800; margin: 2px 0 6px; letter-spacing: .01em; }
+.fb-firma-bilgi { font-size: .92em; font-weight: 700; line-height: 1.55; }
+.fb-baslik { text-align: center; font-size: 1.75em; font-weight: 400; letter-spacing: .02em; color: var(--fb-renk); margin: 14px 0 2px; }
+.fb-musteri { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
+.fb-musteri-kutu { flex: 1; min-width: 0; }
+.fb-etiket { font-size: .78em; color: #555; text-transform: uppercase; letter-spacing: .06em; }
+.fb-unvan { font-size: 1.12em; font-weight: 700; text-transform: uppercase; margin-bottom: 3px; }
+.fb-bakiye { margin-top: 4px; }
+.fb-bilgi { border-collapse: collapse; }
+.fb-bilgi th { text-align: right; padding: 1px 6px 1px 0; font-weight: 700; white-space: nowrap; }
+.fb-bilgi td { padding: 1px 0; white-space: nowrap; }
+.fb-tablo { width: 100%; border-collapse: collapse; }
+.fb-tablo th { text-align: left; font-weight: 700; padding: 6px 6px; border-bottom: 1.5px solid var(--fb-cizgi); font-size: .92em; }
+.fb-tablo td { padding: 6px 6px; border-bottom: 1px solid var(--fb-ince); vertical-align: middle; }
+.fb-tablo .sayi { text-align: right; white-space: nowrap; }
+.fb-tablo thead { display: table-header-group; }
+.fb-tablo tr { break-inside: avoid; }
+.fb-tablo tfoot td { font-weight: 700; border-top: 1.5px solid var(--fb-cizgi); }
+.fb-tablo.fb-dikey th { width: 28%; border-bottom: 1px solid var(--fb-ince); background: transparent; vertical-align: top; }
+.fb-k-no { width: 28px; color: #444; } .fb-k-resim { width: 64px; }
+.fb-urun-resim { width: 56px; height: 56px; object-fit: contain; display: block; }
+.fb-satir-not { font-size: .86em; color: #444; font-weight: 400; margin-top: 2px; }
+.fb-toplam { margin: 8px 0 0 auto; border-collapse: collapse; min-width: 44%; }
+.fb-toplam td { padding: 3px 6px; text-align: right; }
+.fb-toplam td:first-child { color: #333; }
+.fb-toplam tr.genel td { font-weight: 800; font-size: 1.1em; border-top: 1.5px solid var(--fb-cizgi); padding-top: 5px; }
+.fb-toplam small { display: block; font-size: .75em; color: #555; }
+.fb-yazi { margin-top: 4px; }
+.fb-yazi span { color: #444; }
+.fb-ara-baslik { font-size: 1.05em; margin: 4px 0 6px; }
+.fb-aciklama { margin: 0 0 6px; }
+.fb-notlar, .fb-giris, .fb-banka { white-space: normal; }
+.fb-banka { border: 1px solid var(--fb-ince); border-radius: 6px; padding: 8px 10px; }
+.fb-alt { font-size: .82em; color: #444; text-align: center; border-top: 1px solid var(--fb-ince); padding-top: 6px; }
+.fb-qr { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; float: right; }
+.fb-qr svg { width: 96px; height: 96px; display: block; }
+.fb-qr small { font-size: .7em; color: #555; }
+.fb-b-qr::after { content: ''; display: block; clear: both; }
+.fb-imzalar { display: flex; gap: 24px; margin-top: 8px; }
+.fb-imzalar > div { flex: 1; border: 1px solid #999; min-height: 110px; padding: 6px 8px; }
+.fb-imzalar img { max-height: 90px; max-width: 100%; }
+.fb-kase-alan { display: flex; justify-content: flex-end; }
+.fb-kase { max-width: 230px; max-height: 150px; object-fit: contain; }
+.fb-soluk { color: #555; }
+.fb-filigran { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-28deg); font-size: 110px; font-weight: 900;
+  color: rgb(220 38 38 / .1); letter-spacing: .1em; pointer-events: none; white-space: nowrap; z-index: 0; }
+.fb-nusha { position: absolute; right: 0; margin-top: -6px; font-size: .75em; font-weight: 800; letter-spacing: .1em; color: #666; }
+.fb-iki-nusha .fb-nusha { position: static; text-align: right; margin: -6px 0 4px; }
+.fb-kesme { border-top: 1.5px dashed #888; margin: 18px 0; position: relative; }
+.fb-kesme::before { content: '✂'; position: absolute; left: 0; top: -12px; font-size: 14px; color: #888; background: #fff; padding-right: 4px; }
+.fb-ara { height: 24px; }
+.fb-iki-nusha .fb-b { margin-bottom: 8px; }
+
+/* Temalar */
+.fb-tema-klasik .fb-tablo th { border-bottom-color: #000; }
+.fb-tema-modern .fb-ust { background: var(--fb-renk); color: #fff; padding: 14px 16px; border-radius: 6px; align-items: center; }
+.fb-tema-modern .fb-ust .fb-logo img { background: #fff; border-radius: 6px; padding: 6px; }
+.fb-tema-modern .fb-firma-bilgi { font-weight: 500; opacity: .95; }
+.fb-tema-modern .fb-baslik { text-align: left; font-weight: 800; font-size: 1.6em; }
+.fb-tema-modern .fb-tablo th { background: var(--fb-renk); color: #fff; border: 0; }
+.fb-tema-modern .fb-tablo tbody tr:nth-child(even) td { background: #f4f6fa; }
+.fb-tema-modern .fb-toplam tr.genel td { background: var(--fb-renk); color: #fff; border: 0; }
+.fb-tema-sade { --fb-cizgi: #cbd5e1; --fb-ince: #eef1f5; }
+.fb-tema-sade .fb-firma-bilgi { font-weight: 400; color: #444; }
+.fb-tema-sade .fb-baslik { text-align: right; font-size: 1.4em; font-weight: 300; letter-spacing: .2em; }
+.fb-tema-sade .fb-tablo th { text-transform: uppercase; font-size: .78em; letter-spacing: .06em; color: #555; }
+.fb-tema-sade .fb-imzalar > div { border-color: #ddd; }
+.fb-tema-kurumsal .fb-ust { border-bottom: 3px solid var(--fb-renk); padding-bottom: 10px; }
+.fb-tema-kurumsal .fb-musteri-kutu { border: 1px solid #cfd5dd; border-left: 4px solid var(--fb-renk); padding: 8px 10px; border-radius: 4px; }
+.fb-tema-kurumsal .fb-bilgi { border: 1px solid #cfd5dd; border-radius: 4px; }
+.fb-tema-kurumsal .fb-bilgi th, .fb-tema-kurumsal .fb-bilgi td { padding: 3px 8px; }
+.fb-tema-kurumsal .fb-tablo th { background: #e8ebef; border-bottom: 1.5px solid var(--fb-renk); }
+.fb-tema-kurumsal .fb-tablo td { border: 1px solid #dfe3e8; }
+.fb-tema-kurumsal .fb-baslik { font-weight: 800; }
+
+/* Tasarım modu: düzenlenebilir kutular kesik çizgili */
+.fb-duzenle .fb-metin { outline: 1px dashed #93c5fd; outline-offset: 2px; min-height: 1.4em; cursor: text; }
+.fb-duzenle .fb-metin:empty { display: block; }
+.fb-duzenle .fb-metin:empty::before { content: 'Metin eklemek için tıklayın'; color: #94a3b8; font-style: italic; }
+.fb-duzenle .fb-metin:focus { outline: 2px solid #2563eb; background: #f8fbff; }
+.fb-duzenle .fb-logo { outline: 1px dashed #93c5fd; outline-offset: 2px; cursor: grab; touch-action: none; }
+.fb-duzenle .fb-logo.suruk { cursor: grabbing; opacity: .8; }
+.fb-logo-tut { position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; background: #2563eb; border: 2px solid #fff; border-radius: 3px; cursor: nwse-resize; z-index: 2; touch-action: none; }
+.fb-bos-logo { min-height: 60px; display: grid; place-items: center; color: #64748b; font-size: 11px; text-align: center; background: #f8fafc; }
+.fb-duzenle .fb-bos { border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 11px; padding: 10px; text-align: center; border-radius: 4px; }
+.fb-duzenle .fb-b { position: relative; }
+.fb-duzenle .fb-b.secili { box-shadow: 0 0 0 2px rgb(37 99 235 / .25); border-radius: 3px; }
+
+/* Yazdırırken */
+@media print {
+  #yazdir-alani .fb { width: 100%; }
+  #yazdir-alani .fb-tema-modern .fb-ust, #yazdir-alani .fb-tema-modern .fb-tablo th, #yazdir-alani .fb-tema-modern .fb-toplam tr.genel td,
+  #yazdir-alani .fb-tema-kurumsal .fb-tablo th, #yazdir-alani .fb-tablo tbody tr td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+.sablon-sec { display: grid; gap: .5rem; }
+.urun-resim-govde { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
+.urun-resim-kutu { width: 120px; height: 120px; border: 1px solid var(--cizgi); border-radius: 10px; display: grid; place-items: center; background: #fff; overflow: hidden; }
+.urun-resim-kutu img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.urun-resim-islem { flex: 1; min-width: 200px; }
+
+/* ---------- Form tasarımı ekranları ---------- */
+.fm-sekmeler .sayi-rozet { background: var(--gri-acik, #eef1f5); border-radius: 99px; padding: 0 .45rem; font-size: .75rem; margin-left: .2rem; }
+.fm-bilgi { background: #fff; border: 1px solid var(--cizgi); border-left: 4px solid #f97316; border-radius: 10px; padding: .8rem 1rem; margin: .8rem 0 1rem; font-size: .92rem; }
+.fm-kartlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+.fm-kart { background: #fff; border: 1px solid var(--cizgi); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.fm-kart.varsayilan { border-color: #22c55e; box-shadow: 0 0 0 2px rgb(34 197 94 / .2); }
+.fm-kart-gorsel { background: #eef1f5; padding: 12px; display: flex; justify-content: center; cursor: pointer; }
+.fm-kart-gorsel:hover .fm-mini { box-shadow: 0 6px 18px rgb(15 23 42 / .18); }
+.fm-kart-alt { padding: .7rem .8rem; display: grid; gap: .5rem; }
+.fm-kart-ad { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
+.fm-kart-yeni { border: 2px dashed #cbd5e1; background: transparent; min-height: 260px; align-items: center; justify-content: center; gap: .3rem; cursor: pointer; color: var(--soluk); font: inherit; }
+.fm-kart-yeni span { font-size: 2.4rem; line-height: 1; color: var(--ana); }
+.fm-kart-yeni:hover { border-color: var(--ana); color: var(--ana); }
+.fm-mini { position: relative; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgb(15 23 42 / .12); pointer-events: none; transition: box-shadow .2s; }
+.fm-mini-ic { transform-origin: 0 0; position: absolute; left: 0; top: 0; }
+.fm-temalar { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .8rem; }
+.fm-tema { display: flex; flex-direction: column; gap: .3rem; padding: .5rem; border: 2px solid var(--cizgi); border-radius: 10px; cursor: pointer; align-items: center; text-align: center; }
+.fm-tema input { position: absolute; opacity: 0; }
+.fm-tema:has(input:checked) { border-color: var(--ana); background: #eff5ff; }
+.fm-tema small { color: var(--soluk); font-size: .78rem; line-height: 1.3; }
+
+.fm-ust { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .8rem; position: sticky; top: 0; z-index: 5; background: var(--zemin); padding: .4rem 0; }
+.fm-ad { font-size: 1.1rem; }
+.fm-duzen { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 1rem; align-items: start; }
+.fm-sol { min-width: 0; }
+.fm-onizleme-ust { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; margin-bottom: .5rem; }
+.fm-onizleme-ust label { display: flex; gap: .4rem; align-items: center; font-weight: 600; font-size: .9rem; }
+.fm-onizleme-ust select { width: auto; min-width: 220px; }
+.fm-ipucu { font-size: .82rem; }
+.fm-arac { display: flex; gap: .2rem; align-items: center; flex-wrap: wrap; background: #fff; border: 1px solid var(--cizgi); border-radius: 10px; padding: .3rem; margin-bottom: .5rem;
+  position: sticky; top: 56px; z-index: 4; box-shadow: 0 4px 14px rgb(15 23 42 / .08); }
+.fm-arac button { border: 0; background: none; min-width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font: inherit; }
+.fm-arac button:hover { background: var(--cizgi2); }
+.fm-arac > span { width: 1px; height: 20px; background: var(--cizgi); margin: 0 .2rem; }
+.fm-arac select { width: auto; min-height: 32px; padding: .2rem .4rem; font-size: .85rem; }
+.fm-kagit-kap { background: #e5e9f0; border-radius: 12px; padding: 4px; overflow: hidden; }
+.fm-kagit { background: #fff; transform-origin: 0 0; box-shadow: 0 6px 24px rgb(15 23 42 / .15); margin: 0 auto; }
+.fm-panel { background: #fff; border: 1px solid var(--cizgi); border-radius: 12px; padding: .4rem; position: sticky; top: 60px; max-height: calc(100vh - 80px); overflow: auto; }
+.fm-grup { border-bottom: 1px solid var(--cizgi2); }
+.fm-grup:last-of-type { border-bottom: 0; }
+.fm-grup summary { cursor: pointer; padding: .7rem .7rem; font-weight: 700; background: #64748b; color: #fff; border-radius: 8px; margin: .3rem 0; list-style: none; }
+.fm-grup summary::-webkit-details-marker { display: none; }
+.fm-grup summary::after { content: '▾'; float: right; transition: transform .2s; }
+.fm-grup:not([open]) summary::after { transform: rotate(-90deg); }
+.fm-grup-ic { padding: .4rem .5rem .8rem; }
+.fm-anahtarlar { display: grid; gap: .1rem; }
+.fm-anahtar { display: flex; align-items: center; gap: .6rem; padding: .4rem .2rem; cursor: pointer; font-size: .92rem; flex: 1; min-width: 0; }
+.fm-anahtar input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.fm-anahtar-iz { flex: 0 0 auto; width: 38px; height: 22px; border-radius: 99px; background: #cbd5e1; position: relative; transition: background .2s; }
+.fm-anahtar-iz::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgb(0 0 0 / .25); }
+.fm-anahtar input:checked + .fm-anahtar-iz { background: #22c55e; }
+.fm-anahtar input:checked + .fm-anahtar-iz::after { transform: translateX(16px); }
+.fm-anahtar input:focus-visible + .fm-anahtar-iz { outline: 2px solid var(--ana); outline-offset: 2px; }
+.fm-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .1rem; }
+.fm-liste li { display: flex; align-items: center; gap: .4rem; border-bottom: 1px solid var(--cizgi2); padding: .1rem 0; }
+.fm-liste li > span:first-child { flex: 1; }
+.fm-sira { display: inline-flex; gap: 2px; }
+.fm-sira button { border: 1px solid var(--cizgi); background: #fff; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
+.fm-sira button:disabled { opacity: .3; cursor: default; }
+.fm-kolon-ad { width: 110px !important; min-height: 32px; padding: .2rem .4rem; font-size: .85rem; }
+.fm-secenek { display: inline-flex; border: 1px solid var(--cizgi); border-radius: 8px; overflow: hidden; }
+.fm-secenek button { border: 0; background: #fff; padding: .45rem .9rem; cursor: pointer; font: inherit; border-right: 1px solid var(--cizgi); }
+.fm-secenek button:last-child { border-right: 0; }
+.fm-secenek button.aktif { background: var(--ana); color: #fff; }
+.fm-renk { display: flex; gap: .6rem; align-items: flex-end; }
+.fm-renk input[type=color] { width: 64px; height: 40px; padding: 2px; }
+.fm-not { font-size: .82rem; margin: .2rem 0 .5rem; }
+.fm-not code { background: var(--cizgi2); border-radius: 4px; padding: 0 .25rem; font-size: .8rem; }
+.fm-mobil-sekme { display: none; }
+@media (max-width: 1100px) { .fm-duzen { grid-template-columns: minmax(0, 1fr) 320px; } }
+@media (max-width: 860px) {
+  .fm-duzen { grid-template-columns: 1fr; }
+  .fm-mobil-sekme { display: flex; gap: .3rem; margin-bottom: .6rem; background: #fff; border-radius: 10px; padding: .25rem; border: 1px solid var(--cizgi); }
+  .fm-mobil-sekme button { flex: 1; border: 0; background: none; padding: .6rem; border-radius: 8px; font: inherit; font-weight: 700; }
+  .fm-mobil-sekme button.aktif { background: var(--ana); color: #fff; }
+  .fm-duzen.mg-ayar .fm-sol { display: none; }
+  .fm-duzen.mg-onizleme .fm-panel { display: none; }
+  .fm-panel { position: static; max-height: none; }
+  .fm-ust { position: static; }
+  .fm-arac { top: 0; }
+  .fm-ipucu { display: none; }
+}
+@media (max-width: 860px) {
+  .fm-ust { gap: .35rem; }
+  .fm-ust .btn { min-height: 38px; padding: .35rem .65rem; font-size: .9rem; }
+  .fm-ust .fm-ad { flex-basis: 100%; order: -1; font-size: 1.05rem; }
+  .fm-ust [data-a="kaydet"] { margin-left: auto; }
+}

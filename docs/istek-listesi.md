@@ -4,53 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Form tasarımı: yazdırma şablonlarını kendim tasarlayayım (22.11.2026)
-Kullanıcı örnek ekran gönderdi (başka bir paneldeki "Form Tasarımı": belge türü sekmeleri, şablon kartları, varsayılan seçimi,
-içe/dışa aktar, "+ Yeni şablon"). Bizdeki karşılığı:
-- **Menü:** kişisel menüde (sağ üst) Ayarlar'ın hemen altında **"Form tasarımı"**; Ayarlar içinde de sekme olarak. Yalnız yönetici.
-- **Belge türü sekmeleri** (yanında şablon sayısı): Teklif · Proforma · Satış fişi · Tahsilat makbuzu · Servis teslim formu ·
-  Dış servis fişi · Cari ekstre.
-- **Şablon kartları:** her şablonun küçük önizlemesi; Düzenle · Kopyala · Sil · **Varsayılan yap** (o tür yazdırılırken bu kullanılır).
-  Mevcut tasarımlar "Standart" şablon olarak hazır gelir, silinemez; bozulursa ona dönülür.
-- **Tasarım ekranı** (solda ayarlar, sağda A4 canlı önizleme, örnek müşteri/ürünlerle):
-  - **Bölümler:** üst bilgi (logo + firma), belge başlığı, müşteri kutusu, belge bilgileri (tarih/no/vade/geçerlilik), giriş metni,
-    kalem tablosu, toplamlar, yazıyla tutar, notlar/şartlar, banka bilgileri, kaşe-imza, alt bilgi. Sürükleyerek **sırala**,
-    göster/gizle.
-  - **Logo:** sol / orta / sağ, boyut; ya da tam genişlik antetli şerit görseli (yükleme).
-  - **Renk ve yazı:** ana renk (çizgiler, tablo başlığı), yazı tipi, yazı boyutu, kenar boşlukları.
-  - **Kalem tablosu sütunları:** sıra no, görsel, kod, açıklama, miktar, birim, birim fiyat, iskonto, KDV %, tutar (KDV hariç/dahil) —
-    seç ve sırala; sütun başlıklarını yeniden adlandır.
-  - **Metinler:** başlık (ör. "FİYAT TEKLİFİ"), giriş metni, şartlar, alt bilgi; içine alan eklenebilir:
-    {musteri}, {tarih}, {gecerlilik}, {belge_no}, {toplam}, {firma}…
-  - Kâğıt: A4 dikey/yatay, A5 (makbuz için), tek/çift nüsha.
-- **İçe aktar / Tümünü dışa aktar** (dosya olarak yedek, başka kuruluma taşıma).
-- Teklif / fiş / makbuz yazdırılırken **şablon seçilebilir** (varsayılan otomatik gelir).
-- Şablonlar veritabanında saklanır (yedeklerle birlikte); önizleme ve yazdırma aynı çizim kodunu kullanır (ekranda ne görünürse kâğıtta o).
-- Kullanıcı notu (23:31): "Bunun gibi bir tasarım ekranı, kendi yorumunu da katabilirsin." Eklenecek kendi önerilerim:
-  - **Hazır tema galerisi:** "+ Yeni şablon" denince boş sayfa yerine 4 hazır başlangıç: Klasik (bugünkü), Modern (renkli üst şerit),
-    Sade (çizgisiz, bol boşluk), Kurumsal (iki sütun firma/müşteri, gri tablo). Seçip üstünden düzenlenir.
-  - **Firma renginden otomatik renk:** logodan baskın renk önerilir, tek tıkla uygulanır.
-  - **Filigran:** taslak belgede "TASLAK", iptalde "İPTAL" çapraz silik yazı (açılıp kapatılabilir).
-  - **QR kod (isteğe bağlı):** belge numarası/tutar ya da IBAN ile ödeme bilgisi; müşteri telefonla okutur.
-  - **Ürün görseli sütunu** (ürüne fotoğraf eklenmişse), **döviz gösterimi** (USD/EUR fiyat + TL karşılığı), **sayfa numarası**
-    "Sayfa 1/2", uzun tabloda başlık her sayfada tekrar.
-  - **Önizleme verisi seçimi:** örnek veri yerine gerçek bir teklif/fiş seçip onunla önizleme.
-  - **Geri al / ileri al** ve kaydetmeden çıkarken uyarı; her kayıtta önceki sürüm saklanır (son 10 sürüme dönülebilir).
-  - Telefonda tasarım ekranı: ayarlar ve önizleme sekmeli (üst üste değil).
-- Kullanıcının gönderdiği **2. örnek (şablon düzenleme ekranı)** — buna göre düzen:
-  - Üstte **Kaydet · Sil · Geri dön**. Solda büyük A4 önizleme, sağda ayar paneli.
-  - **Önizlemede doğrudan düzenleme:** kesik çizgili kutular tıklanınca yazılabilir metin alanı olur (firma adı satırı, adres/vergi
-    bilgisi bloğu, başlığın altındaki giriş metni kutusu, tablonun altındaki not/şart kutusu). Kalın, hizalama, yazı boyutu küçük araç
-    çubuğuyla. **Logo kutusu köşesinden tutup büyütülür**, sürüklenerek sola/ortaya/sağa yerleşir.
-  - Sağ panel: **Şablon adı, Şablon tipi, Dil (Türkçe / İngilizce — sabit etiketler "Tarih/Date, Miktar/Qty"… çevrilir), Başlık,
-    Sayfa boyu (A4 / A5 / A4 yatay).**
-  - **Genel ayarlar** (her biri Görünsün / Görünmesin): geçerlilik tarihi, logo, müşteri adresi, dip toplam bloğu, açıklama
-    (satış ekranındaki açıklama alanı), güncel bakiye, vergi no/daire, yazıyla tutar, kaşe-imza, banka bilgileri.
-  - **Kolon ayarları** (Görünsün / Görünmesin): indirim oranı, birim fiyat, birim fiyat KDV hariç, KDV hariç toplam, liste fiyatı,
-    KDV oranı, toplam tutar, ürün resmi, ürün kodu, barkod, raf yeri (+ bizde: miktar birimi, seri no, döviz).
-  - Dip toplam bloğu: Brüt · İndirim · Net · KDV · Toplam (ayrı ayrı gösterilebilir).
-  - Bizim yorumumuz: anahtar listesi açılır kutu yerine **aç/kapa düğmeleri** (tek dokunuşla), bölümler katlanabilir başlıklar
-    ("Genel", "Kolonlar", "Renk ve yazı", "Metinler"), değişiklik önizlemeye anında yansır.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -59,6 +13,35 @@ içe/dışa aktar, "+ Yeni şablon"). Bizdeki karşılığı:
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 22.11.2026 — 14. derleme: Form tasarımı
+- **Menü:** kişisel menüde Ayarlar'ın altında "Form tasarımı" (ve Ayarlar'da sekme). Yalnız yönetici.
+- **Liste:** 7 belge türü sekmesi (sayılarıyla): Teklif, Proforma, Satış fişi, Tahsilat makbuzu, Servis teslim formu, Dış servis fişi,
+  Cari ekstre. Şablon kartları küçük önizlemeli; Düzenle · Kopyala · Varsayılan yap · Sil. İçe aktar / Tümünü dışa aktar (görseller dahil).
+  Her türün **Standart** şablonu var: değiştirilemez, silinemez; kopyalanıp düzenlenir. Varsayılan silinirse Standart'a dönülür.
+- **Yeni şablon:** 4 hazır tema önizlemeli: Klasik, Modern (renkli şerit), Sade, Kurumsal.
+- **Düzenleme ekranı:** solda A4 önizleme, sağda katlanır ayar grupları.
+  - Önizlemede **doğrudan yazma**: firma adı, firma bilgileri, giriş metni, notlar/şartlar, banka bilgileri, alt bilgi. Biçim çubuğu:
+    kalın/eğik/altı çizili, hizalama, yazı büyüt/küçült, **alan ekle** ({musteri} {tarih} {belge_no} {toplam} {gecerlilik} {vade} {firma}),
+    "otomatiğe dön".
+  - **Logo:** köşesinden sürükleyerek büyüt, sürükleyerek sol/orta/sağa taşı; şablona özel logo; antet şeridi (firma / özel / yok).
+  - Şablon adı, dil (Türkçe / İngilizce), başlık, sayfa boyu (A4, A4 yatay, A5), nüsha (makbuz / dış servis), tema.
+  - Ana renk (+ **logodan renk öner**), yazı tipi, yazı boyu, kenar boşluğu.
+  - **Bölümler:** aç/kapa + yukarı/aşağı sıralama. **Genel ayarlar:** aç/kapa düğmeleri (logo, müşteri adresi/telefon/vergi, tarih,
+    vade, geçerlilik, güncel bakiye, satır notları, açıklama, kaşe, imza kutuları, filigran, sayfa no…).
+  - **Kolon ayarları:** sıra no, ürün resmi, kod, barkod, raf yeri, açıklama, miktar, liste fiyatı, birim fiyat (KDV hariç/dahil),
+    indirim, KDV oranı, tutar (KDV hariç/dahil) — aç/kapa, sırala, başlığını değiştir. **Dip toplam:** brüt, indirim, net, KDV, toplam, TL karşılığı.
+  - **QR kod** (belge bilgisi ya da kendi metniniz, ör. IBAN). **Filigran:** taslak satış fişinde "TASLAK", iptalde "İPTAL".
+    **Sayfa numarası** (Chrome/Edge).
+  - **Geri al / ileri al** (Ctrl+Z / Ctrl+Y), Ctrl+S kaydet, kaydetmeden çıkarken uyarı. **Sürümler:** her kayıtta önceki hal saklanır
+    (son 10), geri yüklenebilir. **Önizleme verisi:** örnek veri ya da gerçek bir teklif / proforma / fiş / dış servis kaydı.
+    **Deneme yazdır.** Telefonda Ayarlar / Önizleme sekmeleri.
+- **Yazdırma:** tüm belgeler artık şablon motoruyla basılıyor (önizleme = kâğıt). Bir türde birden fazla şablon varsa yazdırırken
+  seçilir (varsayılan seçili gelir).
+- **Ürün kartı:** ürün resmi yükleme ve raf yeri (şablonda "ürün resmi" / "raf yeri" kolonları için).
+- Güvenlik: metin kutuları hem sunucuda hem tarayıcıda temizlenir (yalnız biçim etiketleri). QR üretici standart kütüphane çıktısıyla
+  birebir karşılaştırılarak doğrulandı.
+- Test: form_testi.js (32 kontrol) + tüm paketler.
 
 ### 22.11.2026 — 13. derleme
 - **Giriş ekranı animasyonu yenilendi:** akşam gökyüzü (yıldızlar, ay), ışıkları yanıp sönen bina cephesi. Usta merdivene
