@@ -91,6 +91,16 @@ const kontrol = (ad, ok, ek) => { console.log(ok ? 'OK  ' : 'HATA', ad, ok ? '' 
   await grupAc('Bölümler');
   await s.locator('label.fm-anahtar:has(input[data-bolum=qr])').click();
   kontrol('QR kod önizlemede', !!(await s.$('.fm-kagit .fb-qr svg')));
+  // Sabit yazılar: başlığa önizlemede tıklayıp yaz, "Sayın"ı panelden değiştir
+  const bas = s.locator('.fm-kagit [data-etiket=baslik]');
+  await bas.click(); await s.keyboard.press('Control+A'); await s.keyboard.type('FİYAT TEKLİFİ'); await s.keyboard.press('Enter');
+  kontrol('Başlık önizlemede değişti', (await bas.textContent()).trim() === 'FİYAT TEKLİFİ');
+  await grupAc('Sabit yazılar');
+  await s.fill('.fm-etiketler [data-etiket-giris=sayin]', 'Müşteri:');
+  kontrol('"Sayın" panelden değişti', (await s.textContent('.fm-kagit [data-etiket=sayin]')).trim() === 'Müşteri:');
+  const toplamYazi = s.locator('.fm-kagit .fb-toplam tr.genel [data-etiket=toplam]');
+  await toplamYazi.click(); await s.keyboard.press('Control+A'); await s.keyboard.type('GENEL TOPLAM'); await s.locator('.fm-kagit [data-etiket=sayin]').click();
+  kontrol('"Toplam" önizlemede değişti ve panele yansıdı', (await s.inputValue('.fm-etiketler [data-etiket-giris=toplam]')) === 'GENEL TOPLAM');
   await s.screenshot({ path: `${EKRAN}/F1_tasarim.png` });
   // Kaydet
   await s.click('[data-a=kaydet]'); await s.waitForTimeout(500);
@@ -98,6 +108,7 @@ const kontrol = (ad, ok, ek) => { console.log(ok ? 'OK  ' : 'HATA', ad, ok ? '' 
   kontrol('Kaydedildi: banka metni', String(kayitli.ayar.metin.banka).includes('TR00 0001'));
   kontrol('Kaydedildi: firma adı metni', String(kayitli.ayar.metin.firma_ad).includes('Teknik Servis'));
   kontrol('Kaydedildi: kolon başlığı', kayitli.ayar.kolonlar.find((k) => k.id === 'aciklama').ad === 'Ürün / Hizmet');
+  kontrol('Kaydedildi: sabit yazılar', kayitli.ayar.baslik === 'FİYAT TEKLİFİ' && kayitli.ayar.etiket.sayin === 'Müşteri:' && kayitli.ayar.etiket.toplam === 'GENEL TOPLAM', JSON.stringify(kayitli.ayar.etiket));
   // İkinci kayıt → sürüm
   await s.fill('[data-ad]', 'Modern teklif v2'); await s.waitForTimeout(600);
   await s.click('[data-a=kaydet]'); await s.waitForTimeout(400);
@@ -130,6 +141,7 @@ const kontrol = (ad, ok, ek) => { console.log(ok ? 'OK  ' : 'HATA', ad, ok ? '' 
   await s.waitForFunction(() => window.__yazdirildi > 0);
   const basilan = await s.$eval('#yazdir-alani', (e) => e.innerHTML);
   kontrol('Varsayılan (Modern) şablonla yazdırıldı', basilan.includes('fb-tema-modern') && basilan.includes('Ürün / Hizmet'));
+  kontrol('Yazdırmada değiştirilmiş sabit yazılar', basilan.includes('FİYAT TEKLİFİ') && basilan.includes('Müşteri:') && basilan.includes('GENEL TOPLAM') && !basilan.includes('contenteditable'));
   await s.emulateMedia({ media: 'print' });
   await s.pdf({ path: `${EKRAN}/F3_modern_teklif.pdf`, format: 'A4' });
   await s.setViewportSize({ width: 794, height: 1123 });

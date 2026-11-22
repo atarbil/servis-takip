@@ -5,6 +5,7 @@ import { html, ham, $, $$, bildir, pencere, onayla, zaman, yazdir, gorselKucult,
 import {
   TUR_AD, BOLUM_AD, KOLON_AD, ALAN_AD, TOPLAM_AD, TEMALAR, YAZI_TIPLERI, KAGITLAR,
   belgeHtml, sayfaStili, ornekVeri, veriHazirla, ayarTamamla, alanlarTur, kalemliMi, varsayilanAyar,
+  etiketlerTur, etiketVarsayilan, baslikVarsayilan,
 } from '../form.js';
 import { sablonOnbellekSil } from '../belgeler.js';
 
@@ -97,6 +98,30 @@ export default async function (el, [id], ctx) {
       m.addEventListener('input', () => { ayar.metin[m.dataset.metin] = m.innerHTML; kayitGec(); });
       m.addEventListener('blur', () => { kayit(); setTimeout(() => { if (!document.activeElement?.closest?.('#fm-arac, [data-metin]')) arac.hidden = true; }, 200); });
     });
+    // Sabit yazılar (başlık, Sayın, Tarih, Toplam…): tek satır düz metin
+    $$('[data-etiket]', kagit).forEach((m) => {
+      const k = m.dataset.etiket;
+      const yaz = (deger) => { if (k === 'baslik') ayar.baslik = deger; else ayar.etiket[k] = deger; };
+      m.addEventListener('focus', () => { arac.hidden = true; odak = null; });
+      m.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); m.blur(); } });
+      m.addEventListener('paste', (e) => { e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData.getData('text/plain') || '').replace(/\s+/g, ' ')); });
+      m.addEventListener('input', () => {
+        const d = m.textContent.replace(/\s+/g, ' ');
+        yaz(d); kayitGec();
+        const g = $(`[data-etiket-giris="${k}"]`, panel); if (g) g.value = d;
+      });
+      m.addEventListener('blur', () => {
+        const d = m.textContent.replace(/\s+/g, ' ').trim();
+        // boş bırakılırsa ya da varsayılanla aynıysa varsayılana döner
+        const vars = k === 'baslik' ? baslikVarsayilan(tur, ayar.dil) : etiketVarsayilan(ayar.dil, k);
+        if (!d || d === vars) { if (k === 'baslik') ayar.baslik = ''; else delete ayar.etiket[k]; } else yaz(d);
+        kayit();
+        const deger = k === 'baslik' ? ayar.baslik : ayar.etiket[k] || '';
+        $$(`[data-etiket-giris="${k}"]`, panel).forEach((g) => { g.value = deger; });
+        // aynı yazı belgede birden çok yerde geçebilir; yeniden çizmeden eşitle (odak kaybolmasın)
+        $$(`[data-etiket="${k}"]`, kagit).forEach((x) => { x.textContent = deger || vars; });
+      });
+    });
     const logo = $('[data-logo]', kagit); if (!logo) return;
     const tut = $('[data-logo-boyut]', logo);
     const olcek = () => Number(kagit.dataset.olcek) || 1;
@@ -163,7 +188,7 @@ export default async function (el, [id], ctx) {
         <label class="alan"><span>Şablon tipi</span><input value="${TUR_AD[tur]}" readonly></label>
         <div class="satir2"><label class="alan"><span>Dil</span><select data-ayar="dil"><option value="tr">Türkçe</option><option value="en">İngilizce</option></select></label>
           <label class="alan"><span>Sayfa boyu</span><select data-ayar="kagit">${Object.entries(KAGITLAR).map(([k, a]) => html`<option value="${k}">${a}</option>`)}</select></label></div>
-        <label class="alan"><span>Başlık</span><input data-ayar="baslik" value="${ayar.baslik}" placeholder="Boş bırakılırsa: varsayılan başlık" maxlength="60"></label>
+        <label class="alan"><span>Başlık</span><input data-etiket-giris="baslik" value="${ayar.baslik}" placeholder="${baslikVarsayilan(tur, ayar.dil)}" maxlength="80"></label>
         ${tekNusha ? html`<label class="alan"><span>Nüsha</span><select data-ayar-sayi="nusha"><option value="1">Tek nüsha</option><option value="2">Aynı sayfada 2 nüsha (asıl / suret)</option></select></label>` : ''}
         <label class="alan"><span>Tema</span><select data-ayar="tema">${Object.entries(TEMALAR).map(([k, t]) => html`<option value="${k}">${t.ad} — ${t.aciklama}</option>`)}</select></label>`, ac('Şablon'))}
       ${bolumHtml('Renk, yazı ve logo', html`
@@ -192,6 +217,12 @@ export default async function (el, [id], ctx) {
       ${kalemliMi(tur) ? bolumHtml('QR kod', html`<p class="soluk fm-not">"Bölümler"den QR kodu açın. Müşteri telefonuyla okutur.</p>
         <label class="alan"><span>İçerik</span><select data-qr><option value="belge">Belge bilgisi (firma · belge no · tarih · tutar)</option><option value="ozel">Kendi metnim (ör. IBAN)</option></select></label>
         ${ayar.qr.icerik === 'ozel' ? html`<label class="alan"><span>QR metni</span><input data-qr-metin value="${ayar.qr.metin || ''}" placeholder="TR00 0000 0000 0000 0000 0000 00 · {firma}" maxlength="300"></label>` : ''}`, ac('QR kod')) : ''}
+      ${bolumHtml('Sabit yazılar', html`<p class="soluk fm-not">Belgede geçen sabit yazılar. Boş bırakılan varsayılanı kullanır.
+          Önizlemede bu yazılara (kesik altı çizili) tıklayıp doğrudan da yazabilirsiniz. Değişken kullanılabilir: <code>{musteri}</code> <code>{tarih}</code> <code>{belge_no}</code>…</p>
+        <label class="alan"><span>Belge başlığı</span><input data-etiket-giris="baslik" value="${ayar.baslik}" placeholder="${baslikVarsayilan(tur, ayar.dil)}" maxlength="80"></label>
+        <div class="fm-etiketler">${etiketlerTur(tur).map((k) => html`<label class="fm-etiket-satir"><span>${etiketVarsayilan('tr', k)}</span>
+          <input data-etiket-giris="${k}" value="${ayar.etiket[k] || ''}" placeholder="${etiketVarsayilan(ayar.dil, k)}" maxlength="${k.startsWith('ekstre_') ? 200 : 80}"></label>`)}</div>
+        <button class="btn ikincil kucuk" data-a="etiket-sifirla" style="margin-top:.5rem">↺ Tümünü varsayılana döndür</button>`, ac('Sabit yazılar'))}
       ${bolumHtml('Metin kutuları', html`<p class="soluk fm-not">Önizlemedeki kesik çizgili kutulara doğrudan yazın. Kutunun içine alan ekleyebilirsiniz
           (araç çubuğundaki "+ Alan ekle"): ${ALANLAR_YER.map(([k]) => html`<code>${k}</code> `)}</p>
         <ul class="fm-liste">${Object.entries(METIN_AD).map(([k, a]) => html`<li><span>${a}</span><span class="soluk">${ayar.metin[k] === null || ayar.metin[k] === undefined ? 'otomatik' : 'özel'}</span>
@@ -209,7 +240,12 @@ export default async function (el, [id], ctx) {
   panel.addEventListener('input', (e) => {
     const t = e.target;
     if (t.matches('[data-ad]')) { ad = t.value.trim() || ad; $('#fm-ad-yazi', el).textContent = ad; kayitGec(); return; }
-    if (t.matches('[data-ayar="baslik"]')) { ayar.baslik = t.value; kayitGec(); onizle(); return; }
+    if (t.matches('[data-etiket-giris]')) {
+      const k = t.dataset.etiketGiris;
+      if (k === 'baslik') ayar.baslik = t.value; else if (t.value.trim()) ayar.etiket[k] = t.value; else delete ayar.etiket[k];
+      $$(`[data-etiket-giris="${k}"]`, panel).forEach((x) => { if (x !== t) x.value = t.value; });
+      kayitGec(); onizle(); return;
+    }
     if (t.matches('[data-ayar-sayi]')) {
       ayar[t.dataset.ayarSayi] = Number(t.value);
       const b = t.closest('label')?.querySelector('b'); if (b) b.textContent = t.value;
@@ -253,6 +289,7 @@ export default async function (el, [id], ctx) {
     const a = e.target.closest('[data-a]')?.dataset.a;
     if (a === 'logo-firma') return degistir(() => { ayar.logo.dosya = null; }, { panelYenile: true });
     if (a === 'logo-renk') return logodanRenk();
+    if (a === 'etiket-sifirla') return degistir(() => { ayar.etiket = {}; ayar.baslik = ''; }, { panelYenile: true });
   });
 
   // Logodaki baskın rengi bul (beyaz / siyah / gri dışı; doygunluk × sıklık en yüksek renk kümesi)

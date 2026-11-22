@@ -1266,3 +1266,11 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
   .fm-ust .fm-ad { flex-basis: 100%; order: -1; font-size: 1.05rem; }
   .fm-ust [data-a="kaydet"] { margin-left: auto; }
 }
+/* Form tasarımı: sabit yazılar */
+.fb-duzenle .fb-sabit, .fb-duzenle [data-etiket="baslik"] { border-bottom: 1px dashed #60a5fa; cursor: text; outline: none; border-radius: 2px; }
+.fb-duzenle .fb-sabit:focus, .fb-duzenle [data-etiket="baslik"]:focus { background: #eff6ff; border-bottom: 2px solid #2563eb; }
+.fb-duzenle .fb-filigran .fb-sabit { border: 0; }
+.fm-etiketler { display: grid; gap: .3rem; max-height: 420px; overflow: auto; padding-right: .2rem; }
+.fm-etiket-satir { display: grid; grid-template-columns: 42% 1fr; gap: .4rem; align-items: center; font-size: .85rem; }
+.fm-etiket-satir span { color: var(--soluk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fm-etiket-satir input { min-height: 34px; padding: .25rem .5rem; font-size: .88rem; }

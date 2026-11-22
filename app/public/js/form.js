@@ -73,7 +73,12 @@ const DIL = {
     tahsil_eden: 'Tahsil eden', sayfa: 'Sayfa', vn: 'VN', vd: 'VD', tel: 'Tel', taslak: 'TASLAK', iptal: 'İPTAL',
     odeme_sekli: 'Ödeme şekli', belge_dekont: 'Belge / dekont no', cihaz: 'Cihaz', seri_no: 'Seri no', ariza: 'Arıza / şikâyet',
     aksesuar: 'Yanında teslim alınanlar', yapilan_is: 'Yapılan iş', ekip: 'Ekip', sure: 'Süre', teknisyen_notu: 'Teknisyen notu',
-    malzemeler: 'Kullanılan / teslim edilen malzemeler', urun: 'Ürün', belge: 'Belge', donem: 'Dönem', musteri: 'Müşteri', adres: 'Adres', telefon: 'Telefon' },
+    malzemeler: 'Kullanılan / teslim edilen malzemeler', urun: 'Ürün', belge: 'Belge', donem: 'Dönem', musteri: 'Müşteri', adres: 'Adres', telefon: 'Telefon',
+    odeme_kasa: 'Nakit', odeme_banka: 'Havale / EFT', odeme_pos: 'Kredi kartı', asil: 'ASIL', suret: 'SURET', musteri_nushasi: 'MÜŞTERİ NÜSHASI',
+    firma_nushasi: 'FİRMA NÜSHASI', belge_dogrulama: 'Belge doğrulama', musteri_notu: 'Müşteri notu', makbuz_bakiye: 'Tahsilat sonrası cari bakiyeniz',
+    makbuz_borc: '(Borç)', makbuz_alacak: '(Alacak)', bakiye_b: '(B)', bakiye_a: '(A)',
+    ekstre_borclu: 'Bakiye: {tutar} tarafınızca firmamıza borçlu görünmektedir.', ekstre_alacakli: 'Bakiye: {tutar} firmamızca tarafınıza borçlu görünmektedir.',
+    ekstre_sifir: 'Hesap bakiyesi sıfırdır.' },
   en: { tarih: 'Date', no: 'No', vade: 'Due date', gecerlilik: 'Valid until', sayin: 'To', aciklama: 'Description', miktar: 'Qty',
     liste_fiyati: 'List price', birim_fiyat: 'Unit price', birim_fiyat_kdvli: 'Unit price (incl. VAT)', iskonto: 'Disc.', kdv_orani: 'VAT (%)',
     tutar: 'Amount (excl. VAT)', tutar_kdvli: 'Amount (incl. VAT)', no_k: '#', resim: 'Image', kod: 'Code', barkod: 'Barcode', raf: 'Shelf',
@@ -82,12 +87,32 @@ const DIL = {
     tahsil_eden: 'Received by', sayfa: 'Page', vn: 'Tax no', vd: 'Tax office', tel: 'Tel', taslak: 'DRAFT', iptal: 'CANCELLED',
     odeme_sekli: 'Payment method', belge_dekont: 'Reference', cihaz: 'Device', seri_no: 'Serial no', ariza: 'Fault / complaint',
     aksesuar: 'Accessories received', yapilan_is: 'Work done', ekip: 'Team', sure: 'Duration', teknisyen_notu: 'Technician note',
-    malzemeler: 'Materials used / delivered', urun: 'Item', belge: 'Document', donem: 'Period', musteri: 'Customer', adres: 'Address', telefon: 'Phone' },
+    malzemeler: 'Materials used / delivered', urun: 'Item', belge: 'Document', donem: 'Period', musteri: 'Customer', adres: 'Address', telefon: 'Phone',
+    odeme_kasa: 'Cash', odeme_banka: 'Bank transfer', odeme_pos: 'Credit card', asil: 'ORIGINAL', suret: 'COPY', musteri_nushasi: 'CUSTOMER COPY',
+    firma_nushasi: 'COMPANY COPY', belge_dogrulama: 'Document verification', musteri_notu: 'Customer note', makbuz_bakiye: 'Your balance after this payment',
+    makbuz_borc: '(Debit)', makbuz_alacak: '(Credit)', bakiye_b: '(D)', bakiye_a: '(C)',
+    ekstre_borclu: 'Balance: {tutar} is owed by you to our company.', ekstre_alacakli: 'Balance: {tutar} is owed by our company to you.',
+    ekstre_sifir: 'The account balance is zero.' },
 };
 const BASLIK_VARSAYILAN = {
   tr: { teklif: 'TEKLİF FORMU', proforma: 'PROFORMA FATURA', satis_fisi: 'SATIŞ FİŞİ', makbuz: 'TAHSİLAT MAKBUZU', teslim: 'SERVİS TESLİM FORMU', dis_servis: 'CİHAZ TESLİM ALINDI', ekstre: 'CARİ HESAP EKSTRESİ' },
   en: { teklif: 'QUOTATION', proforma: 'PROFORMA INVOICE', satis_fisi: 'SALES SLIP', makbuz: 'PAYMENT RECEIPT', teslim: 'SERVICE DELIVERY FORM', dis_servis: 'DEVICE RECEIVED', ekstre: 'ACCOUNT STATEMENT' },
 };
+
+// ---------- Değiştirilebilir sabit yazılar (türe göre) ----------
+const ETIKET_ORTAK = ['sayin', 'tarih', 'no', 'tel', 'vd', 'vn'];
+const ETIKETLER = {
+  kalemli: [...ETIKET_ORTAK, 'vade', 'gecerlilik', 'bakiye', 'bakiye_b', 'bakiye_a', 'brut', 'indirim', 'net', 'kdv', 'toplam', 'tl_karsilik', 'yalniz',
+    'teslim_eden', 'teslim_alan', 'belge_dogrulama', 'taslak', 'iptal', 'sayfa'],
+  makbuz: [...ETIKET_ORTAK, 'odeme_sekli', 'aciklama', 'belge_dekont', 'toplam', 'odeme_kasa', 'odeme_banka', 'odeme_pos', 'yalniz', 'makbuz_bakiye',
+    'makbuz_borc', 'makbuz_alacak', 'odeme_yapan', 'tahsil_eden', 'asil', 'suret'],
+  teslim: [...ETIKET_ORTAK, 'yapilan_is', 'teknisyen_notu', 'ekip', 'sure', 'malzemeler', 'urun', 'miktar', 'musteri_notu', 'teslim_eden', 'teslim_alan'],
+  dis_servis: [...ETIKET_ORTAK, 'cihaz', 'seri_no', 'ariza', 'aksesuar', 'teslim_eden', 'teslim_alan', 'musteri_nushasi', 'firma_nushasi'],
+  ekstre: [...ETIKET_ORTAK, 'donem', 'belge', 'aciklama', 'vade', 'borc', 'alacak', 'bakiye', 'toplam', 'ekstre_borclu', 'ekstre_alacakli', 'ekstre_sifir', 'sayfa'],
+};
+export const etiketlerTur = (tur) => ETIKETLER[kalemliMi(tur) ? 'kalemli' : tur];
+export const etiketVarsayilan = (dil, k) => (DIL[dil] || DIL.tr)[k] ?? DIL.tr[k] ?? k;
+export const baslikVarsayilan = (tur, dil) => BASLIK_VARSAYILAN[dil]?.[tur] || BASLIK_VARSAYILAN.tr[tur];
 
 // ---------- Varsayılan ayar ----------
 export function varsayilanAyar(tur, tema = 'klasik') {
@@ -112,6 +137,7 @@ export function varsayilanAyar(tur, tema = 'klasik') {
     toplam: { brut: false, indirim: false, net: true, kdv: true, toplam: true, tl_karsilik: true },
     metin: { firma_ad: null, firma_bilgi: null, giris: null, notlar: null, banka: '', alt: null },
     qr: { icerik: 'belge', metin: '' },
+    etiket: {},
   };
   if (tur === 'teklif') a.bolumler.find((b) => b.id === 'yazi').goster = false;
   return a;
@@ -122,7 +148,7 @@ export function ayarTamamla(tur, kayitli) {
   const v = varsayilanAyar(tur, kayitli?.tema || 'klasik');
   if (!kayitli || !Object.keys(kayitli).length) return v;
   const a = { ...v, ...kayitli };
-  for (const k of ['logo', 'serit', 'alan', 'toplam', 'metin', 'qr']) a[k] = { ...v[k], ...(kayitli[k] || {}) };
+  for (const k of ['logo', 'serit', 'alan', 'toplam', 'metin', 'qr', 'etiket']) a[k] = { ...v[k], ...(kayitli[k] || {}) };
   const bilinen = new Set(v.bolumler.map((b) => b.id));
   a.bolumler = (kayitli.bolumler || []).filter((b) => bilinen.has(b.id));
   for (const b of v.bolumler) if (!a.bolumler.some((x) => x.id === b.id)) a.bolumler.push(b);
@@ -209,7 +235,6 @@ export function ornekVeri(tur) {
 // ---------- Yardımcılar ----------
 const BIRIM_KISA = { adet: 'ad', metre: 'm', paket: 'pk', kutu: 'kt', takım: 'tk', saat: 'sa' };
 const miktarBirim = (m, b) => `${miktar(m)} ${BIRIM_KISA[b] || b || ''}`.trim();
-const ODEME_SEKLI = { kasa: 'Nakit', banka: 'Havale / EFT', pos: 'Kredi kartı' };
 const BELGE = { devir: 'Devir', satis_fisi: 'Satış fişi', alis_faturasi: 'Alış faturası', tahsilat: 'Tahsilat', odeme: 'Ödeme', duzeltme: 'Düzeltme' };
 
 export function tutarYaziyla(tutar) {
@@ -252,7 +277,14 @@ const VARSAYILAN_METIN = {
 // secenek: { duzenle: true → metin blokları düzenlenebilir, boş bloklar kesik çizgili; kase: bool (yazdırma penceresinden) ; nusha: 1|2 }
 export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
   const a = ayarTamamla(tur, ayarHam);
-  const d = DIL[a.dil] || DIL.tr;
+  const temel = DIL[a.dil] || DIL.tr;
+  const ozel = a.etiket || {};
+  // Sabit yazılar: şablonda değiştirildiyse o, değilse dile göre varsayılan
+  const dget = (k) => (typeof ozel[k] === 'string' && ozel[k].trim() ? doldurDuz(ozel[k]) : temel[k] ?? DIL.tr[k] ?? k);
+  // Tasarım modunda önizlemede tıklanıp yazılabilir
+  const E = (k, ek = '') => (duz
+    ? `<span class="fb-sabit" data-etiket="${k}" contenteditable="true" spellcheck="false">${esc(typeof ozel[k] === 'string' && ozel[k].trim() ? ozel[k] : temel[k] ?? k)}</span>${ek}`
+    : `${esc(dget(k))}${ek}`);
   const al = a.alan; const fa = ctx.ayarlar || {};
   const duz = !!secenek.duzenle;
   const para = (n) => dovizPara(n, v.doviz || 'TRY');
@@ -269,7 +301,8 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
     return `<div class="fb-metin ${sinif}" data-metin="${anahtar}"${duz ? ' contenteditable="true" spellcheck="false"' : ''}>${doldur(icerik)}</div>`;
   };
   const varsayilanMetin = (k) => esc(VARSAYILAN_METIN[tur]?.[k] || '');
-  const baslik = esc(a.baslik || BASLIK_VARSAYILAN[a.dil]?.[tur] || BASLIK_VARSAYILAN.tr[tur]);
+  const baslikVars = BASLIK_VARSAYILAN[a.dil]?.[tur] || BASLIK_VARSAYILAN.tr[tur];
+  const baslik = esc(a.baslik ? (duz ? a.baslik : doldurDuz(a.baslik)) : baslikVars);
 
   // --- Üst bilgi ---
   const logoYol = a.logo.dosya ? `/dosya/${a.logo.dosya}` : fa.firma_logo ? `/logo?v=${encodeURIComponent(fa.firma_logo)}` : '';
@@ -288,23 +321,23 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
   const musteri = () => {
     const m = v.musteri || {};
     const yer = [m.ilce, m.il].filter(Boolean).join(' / ');
-    const sol = `<div class="fb-musteri-kutu"><div class="fb-etiket">${d.sayin}</div><div class="fb-unvan">${esc(m.unvan || '')}</div>
+    const sol = `<div class="fb-musteri-kutu"><div class="fb-etiket">${E('sayin')}</div><div class="fb-unvan">${esc(m.unvan || '')}</div>
       ${al.musteri_adres && (m.adres || yer) ? `<div>${esc(m.adres || '')}${yer ? `<br>${esc(yer)}` : ''}</div>` : ''}
-      ${al.musteri_tel && m.telefon ? `<div>${d.tel}: ${esc(m.telefon)}</div>` : ''}
-      ${al.musteri_vergi && (m.vergi_dairesi || m.vergi_no) ? `<div>${m.vergi_dairesi ? `${d.vd}: ${esc(m.vergi_dairesi)} ` : ''}${m.vergi_no ? `${d.vn}: ${esc(m.vergi_no)}` : ''}</div>` : ''}
-      ${al.bakiye && v.bakiye != null && tur !== 'makbuz' ? `<div class="fb-bakiye">${d.bakiye}: <b>${esc(dovizPara(Math.abs(v.bakiye)))} ${v.bakiye > 0.004 ? '(B)' : v.bakiye < -0.004 ? '(A)' : ''}</b></div>` : ''}</div>`;
+      ${al.musteri_tel && m.telefon ? `<div>${E('tel')}: ${esc(m.telefon)}</div>` : ''}
+      ${al.musteri_vergi && (m.vergi_dairesi || m.vergi_no) ? `<div>${m.vergi_dairesi ? `${E('vd')}: ${esc(m.vergi_dairesi)} ` : ''}${m.vergi_no ? `${E('vn')}: ${esc(m.vergi_no)}` : ''}</div>` : ''}
+      ${al.bakiye && v.bakiye != null && tur !== 'makbuz' ? `<div class="fb-bakiye">${E('bakiye')}: <b>${esc(dovizPara(Math.abs(v.bakiye)))} ${v.bakiye > 0.004 ? E('bakiye_b') : v.bakiye < -0.004 ? E('bakiye_a') : ''}</b></div>` : ''}</div>`;
     let sag = '';
-    if (tur === 'ekstre') sag += bilgiSatir(d.donem, `${tarih(v.ham.bas)} – ${tarih(v.ham.bit)}`);
-    if (al.tarih && v.tarih) sag += bilgiSatir(d.tarih, `<b>${tarih(v.tarih)}</b>`);
-    if (al.belge_no && v.belge_no) sag += bilgiSatir(d.no, `<b>${esc(v.belge_no)}</b>`);
-    if (al.vade && v.vade) sag += bilgiSatir(d.vade, tarih(v.vade));
-    if (al.gecerlilik && v.gecerlilik) sag += bilgiSatir(d.gecerlilik, tarih(v.gecerlilik));
+    if (tur === 'ekstre') sag += bilgiSatir(E('donem'), `${tarih(v.ham.bas)} – ${tarih(v.ham.bit)}`);
+    if (al.tarih && v.tarih) sag += bilgiSatir(E('tarih'), `<b>${tarih(v.tarih)}</b>`);
+    if (al.belge_no && v.belge_no) sag += bilgiSatir(E('no'), `<b>${esc(v.belge_no)}</b>`);
+    if (al.vade && v.vade) sag += bilgiSatir(E('vade'), tarih(v.vade));
+    if (al.gecerlilik && v.gecerlilik) sag += bilgiSatir(E('gecerlilik'), tarih(v.gecerlilik));
     return `<div class="fb-musteri">${sol}<table class="fb-bilgi"><tbody>${sag}</tbody></table></div>`;
   };
 
   // --- Kalem tablosu ---
   const kolonlar = a.kolonlar.filter((k) => k.goster);
-  const kolonBaslik = (k) => esc(k.ad || (k.id === 'no' ? d.no_k : d[k.id] || KOLON_AD[k.id]));
+  const kolonBaslik = (k) => esc(k.ad || (k.id === 'no' ? dget('no_k') : temel[k.id] || KOLON_AD[k.id]));
   const hucre = (k, s, i) => {
     const kdvli = (n) => Number(n) * (1 + Number(s.kdv_orani || 0) / 100);
     switch (k.id) {
@@ -334,25 +367,26 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
     const brut = satirlar.reduce((x, s) => x + Number(s.miktar) * Number(s.birim_fiyat), 0);
     const oranlar = [...new Set(satirlar.map((s) => Number(s.kdv_orani)))];
     const r = [];
-    if (t.brut) r.push([d.brut, para(Math.round(brut * 100) / 100)]);
-    if (t.indirim && brut - v.ara_toplam > 0.004) r.push([d.indirim, para(Math.round((brut - v.ara_toplam) * 100) / 100)]);
-    if (t.net) r.push([d.net, para(v.ara_toplam)]);
-    if (t.kdv) r.push([`${d.kdv}${oranlar.length === 1 ? ` (%${oranlar[0]})` : ''}`, para(v.kdv_toplam)]);
-    if (t.toplam) r.push([d.toplam, para(v.genel_toplam), 'genel']);
+    if (t.brut) r.push([E('brut'), para(Math.round(brut * 100) / 100)]);
+    if (t.indirim && brut - v.ara_toplam > 0.004) r.push([E('indirim'), para(Math.round((brut - v.ara_toplam) * 100) / 100)]);
+    if (t.net) r.push([E('net'), para(v.ara_toplam)]);
+    if (t.kdv) r.push([`${E('kdv')}${oranlar.length === 1 ? ` (%${oranlar[0]})` : ''}`, para(v.kdv_toplam)]);
+    if (t.toplam) r.push([E('toplam'), para(v.genel_toplam), 'genel']);
     const kur = Number(v.kur);
     if (t.tl_karsilik && v.doviz && v.doviz !== 'TRY' && v.tl_karsilik_goster && kur > 0) {
-      r.push([`${d.tl_karsilik}<small>1 ${v.doviz} = ${kur.toLocaleString('tr-TR', { maximumFractionDigits: 4 })} ₺</small>`, dovizPara(Math.round(v.genel_toplam * kur * 100) / 100), 'tl']);
+      r.push([`${E('tl_karsilik')}<small>1 ${v.doviz} = ${kur.toLocaleString('tr-TR', { maximumFractionDigits: 4 })} ₺</small>`, dovizPara(Math.round(v.genel_toplam * kur * 100) / 100), 'tl']);
     }
     return r.length ? `<table class="fb-toplam"><tbody>${r.map(([e, x, c]) => `<tr class="${c || ''}"><td>${e}</td><td>${esc(x)}</td></tr>`).join('')}</tbody></table>` : '';
   };
   const yazi = () => {
     if (tur === 'ekstre') {
       const son = v.ham.satirlar.at(-1)?.bakiye || 0;
-      return `<p class="fb-yazi"><b>${son > 0.004 ? `Bakiye: ${esc(dovizPara(son))} tarafınızca firmamıza borçlu görünmektedir.` : son < -0.004 ? `Bakiye: ${esc(dovizPara(-son))} firmamızca tarafınıza borçlu görünmektedir.` : 'Hesap bakiyesi sıfırdır.'}</b></p>`;
+      const k = son > 0.004 ? 'ekstre_borclu' : son < -0.004 ? 'ekstre_alacakli' : 'ekstre_sifir';
+      return `<p class="fb-yazi"><b>${E(k).replace(/\{tutar\}/g, esc(dovizPara(Math.abs(son))))}</b></p>`;
     }
     if (!v.doviz || v.doviz === 'TRY') {
-      let s = `<div class="fb-yazi"><span>${d.yalniz}:</span> <b>#${esc(tutarYaziyla(v.genel_toplam))}#</b></div>`;
-      if (tur === 'makbuz' && al.bakiye && v.bakiye != null) s += `<div class="fb-yazi">Tahsilat sonrası cari bakiyeniz: <b>${esc(dovizPara(Math.abs(v.bakiye)))}</b> ${v.bakiye > 0.004 ? '(Borç)' : v.bakiye < -0.004 ? '(Alacak)' : ''}</div>`;
+      let s = `<div class="fb-yazi"><span>${E('yalniz')}:</span> <b>#${esc(tutarYaziyla(v.genel_toplam))}#</b></div>`;
+      if (tur === 'makbuz' && al.bakiye && v.bakiye != null) s += `<div class="fb-yazi">${E('makbuz_bakiye')}: <b>${esc(dovizPara(Math.abs(v.bakiye)))}</b> ${v.bakiye > 0.004 ? E('makbuz_borc') : v.bakiye < -0.004 ? E('makbuz_alacak') : ''}</div>`;
       return s;
     }
     return '';
@@ -361,34 +395,34 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
   // --- Türe özel içerik ---
   const govde = () => {
     const h = v.ham || {};
-    if (tur === 'makbuz') return `<table class="fb-tablo"><thead><tr><th>${d.odeme_sekli}</th><th>${d.aciklama}</th><th>${d.belge_dekont}</th><th class="sayi">${d.toplam}</th></tr></thead>
-      <tbody><tr><td>${esc(ODEME_SEKLI[h.hesap_tip] || '')} <span class="fb-soluk">(${esc(h.hesap_ad || '')})</span></td><td>${esc(h.aciklama || '')}</td><td>${esc(h.belge_no || '')}</td>
+    if (tur === 'makbuz') return `<table class="fb-tablo"><thead><tr><th>${E('odeme_sekli')}</th><th>${E('aciklama')}</th><th>${E('belge_dekont')}</th><th class="sayi">${E('toplam')}</th></tr></thead>
+      <tbody><tr><td>${h.hesap_tip ? E(`odeme_${h.hesap_tip}`) : ''} <span class="fb-soluk">(${esc(h.hesap_ad || '')})</span></td><td>${esc(h.aciklama || '')}</td><td>${esc(h.belge_no || '')}</td>
       <td class="sayi"><b>${esc(dovizPara(h.tutar))}</b></td></tr></tbody></table>`;
     if (tur === 'teslim') return `<table class="fb-tablo fb-dikey"><tbody>
-      <tr><th>${d.yapilan_is}</th><td><b>${esc(h.baslik || '')}</b>${h.aciklama ? `<br>${esc(h.aciklama)}` : ''}</td></tr>
-      ${h.teknisyen_notu ? `<tr><th>${d.teknisyen_notu}</th><td>${esc(h.teknisyen_notu)}</td></tr>` : ''}
-      <tr><th>${d.ekip}</th><td>${esc(h.ekip_ad || '')}</td></tr>
-      <tr><th>${d.sure}</th><td>${h.baslama_zamani ? zaman(h.baslama_zamani) : ''} – ${h.bitis_zamani ? zaman(h.bitis_zamani) : ''}</td></tr></tbody></table>`;
+      <tr><th>${E('yapilan_is')}</th><td><b>${esc(h.baslik || '')}</b>${h.aciklama ? `<br>${esc(h.aciklama)}` : ''}</td></tr>
+      ${h.teknisyen_notu ? `<tr><th>${E('teknisyen_notu')}</th><td>${esc(h.teknisyen_notu)}</td></tr>` : ''}
+      <tr><th>${E('ekip')}</th><td>${esc(h.ekip_ad || '')}</td></tr>
+      <tr><th>${E('sure')}</th><td>${h.baslama_zamani ? zaman(h.baslama_zamani) : ''} – ${h.bitis_zamani ? zaman(h.bitis_zamani) : ''}</td></tr></tbody></table>`;
     if (tur === 'dis_servis') return `<table class="fb-tablo fb-dikey"><tbody>
-      <tr><th>${d.cihaz}</th><td>${esc([h.cihaz, h.marka_model].filter(Boolean).join(' · '))}</td></tr>
-      <tr><th>${d.seri_no}</th><td>${esc(h.seri_no || '—')}</td></tr>
-      <tr><th>${d.ariza}</th><td>${esc(h.ariza || '—')}</td></tr>
-      <tr><th>${d.aksesuar}</th><td>${esc(h.aksesuar || '—')}</td></tr></tbody></table>`;
+      <tr><th>${E('cihaz')}</th><td>${esc([h.cihaz, h.marka_model].filter(Boolean).join(' · '))}</td></tr>
+      <tr><th>${E('seri_no')}</th><td>${esc(h.seri_no || '—')}</td></tr>
+      <tr><th>${E('ariza')}</th><td>${esc(h.ariza || '—')}</td></tr>
+      <tr><th>${E('aksesuar')}</th><td>${esc(h.aksesuar || '—')}</td></tr></tbody></table>`;
     if (tur === 'ekstre') {
       const sat = h.satirlar || [];
       const tb = sat.reduce((x, s) => x + Number(s.borc), 0); const ta = sat.reduce((x, s) => x + Number(s.alacak), 0); const son = sat.at(-1)?.bakiye || 0;
       const bk = (b) => `${esc(dovizPara(Math.abs(b)))} ${b > 0.004 ? 'B' : b < -0.004 ? 'A' : ''}`;
-      return `<table class="fb-tablo"><thead><tr><th>${d.tarih}</th><th>${d.belge}</th><th>${d.aciklama}</th><th>${d.vade}</th><th class="sayi">${d.borc}</th><th class="sayi">${d.alacak}</th><th class="sayi">${d.bakiye}</th></tr></thead>
+      return `<table class="fb-tablo"><thead><tr><th>${E('tarih')}</th><th>${E('belge')}</th><th>${E('aciklama')}</th><th>${E('vade')}</th><th class="sayi">${E('borc')}</th><th class="sayi">${E('alacak')}</th><th class="sayi">${E('bakiye')}</th></tr></thead>
         <tbody>${sat.map((s) => `<tr><td>${tarih(s.tarih)}</td><td>${esc(BELGE[s.belge_tip] || s.belge_tip || '')} ${esc(s.belge_no || '')}</td><td>${esc(s.aciklama || '')}</td>
           <td>${s.vade ? tarih(s.vade) : ''}</td><td class="sayi">${s.borc ? esc(dovizPara(s.borc)) : ''}</td><td class="sayi">${s.alacak ? esc(dovizPara(s.alacak)) : ''}</td><td class="sayi">${bk(s.bakiye)}</td></tr>`).join('')}</tbody>
-        <tfoot><tr><td colspan="4" class="sayi">${d.toplam}</td><td class="sayi">${esc(dovizPara(tb))}</td><td class="sayi">${esc(dovizPara(ta))}</td><td class="sayi">${bk(son)}</td></tr></tfoot></table>`;
+        <tfoot><tr><td colspan="4" class="sayi">${E('toplam')}</td><td class="sayi">${esc(dovizPara(tb))}</td><td class="sayi">${esc(dovizPara(ta))}</td><td class="sayi">${bk(son)}</td></tr></tfoot></table>`;
     }
     return '';
   };
   const malzeme = () => {
     const m = v.ham?.malzemeler || [];
     if (!m.length) return '';
-    return `<h3 class="fb-ara-baslik">${d.malzemeler}</h3><table class="fb-tablo"><thead><tr><th>#</th><th>${d.urun}</th><th class="sayi">${d.miktar}</th></tr></thead>
+    return `<h3 class="fb-ara-baslik">${E('malzemeler')}</h3><table class="fb-tablo"><thead><tr><th>#</th><th>${E('urun')}</th><th class="sayi">${E('miktar')}</th></tr></thead>
       <tbody>${m.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.ad)}</td><td class="sayi">${esc(miktarBirim(x.miktar, x.birim))}</td></tr>`).join('')}</tbody></table>`;
   };
 
@@ -398,13 +432,13 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
     if (tur === 'teslim') oto = esc(fa.teslim_metni || '');
     if (tur === 'satis_fisi' && fa.fis_notu) oto = esc(fa.fis_notu);
     const belgeAciklama = al.aciklama && v.aciklama ? `<p class="fb-aciklama">${esc(v.aciklama).replace(/\n/g, '<br>')}</p>` : '';
-    const musteriNotu = tur === 'teslim' && v.ham?.teslim?.musteri_notu ? `<p><b>Müşteri notu:</b> ${esc(v.ham.teslim.musteri_notu)}</p>` : '';
+    const musteriNotu = tur === 'teslim' && v.ham?.teslim?.musteri_notu ? `<p><b>${E('musteri_notu')}:</b> ${esc(v.ham.teslim.musteri_notu)}</p>` : '';
     return belgeAciklama + musteriNotu + blok('notlar', oto, 'fb-notlar');
   };
   const qr = () => {
     const metin = a.qr.icerik === 'ozel' ? doldurDuz(a.qr.metin || '') : [fa.firma_adi, TUR_AD[tur], v.belge_no, v.tarih ? tarih(v.tarih) : '', v.genel_toplam != null ? dovizPara(v.genel_toplam, v.doviz) : ''].filter(Boolean).join(' · ');
     if (!metin) return duz ? '<div class="fb-qr fb-bos">QR içeriği boş</div>' : '';
-    try { return `<div class="fb-qr">${qrSvg(metin)}<small>${esc(a.qr.icerik === 'ozel' ? '' : 'Belge doğrulama')}</small></div>`; } catch { return ''; }
+    try { return `<div class="fb-qr">${qrSvg(metin)}<small>${a.qr.icerik === 'ozel' ? '' : E('belge_dogrulama')}</small></div>`; } catch { return ''; }
   };
   function doldurDuz(s) {
     return String(s).replace(/\{musteri\}/g, v.musteri?.unvan || '').replace(/\{tarih\}/g, v.tarih ? tarih(v.tarih) : '').replace(/\{belge_no\}/g, v.belge_no || '')
@@ -415,10 +449,10 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
   const imza = () => {
     if (al.imza_kutulari) {
       const t = v.ham?.teslim;
-      const [solE, sagE, solA, sagA] = tur === 'makbuz' ? [d.odeme_yapan, d.tahsil_eden, esc(v.musteri?.unvan || ''), esc(fa.firma_adi || '')]
-        : tur === 'dis_servis' ? [d.teslim_eden, d.teslim_alan, esc(v.musteri?.unvan || ''), esc(fa.firma_adi || '')]
-          : tur === 'teslim' ? [d.teslim_eden, d.teslim_alan, esc(t?.teknisyen || ''), `${esc(t?.teslim_alan_ad || '')}${t?.teslim_alan_tel ? ' · ' + esc(t.teslim_alan_tel) : ''}${t?.imza_dosya ? `<br><img src="/dosya/${esc(t.imza_dosya)}" alt="İmza">` : ''}`]
-            : [d.teslim_eden, d.teslim_alan, '', ''];
+      const [solE, sagE, solA, sagA] = tur === 'makbuz' ? [E('odeme_yapan'), E('tahsil_eden'), esc(v.musteri?.unvan || ''), esc(fa.firma_adi || '')]
+        : tur === 'dis_servis' ? [E('teslim_eden'), E('teslim_alan'), esc(v.musteri?.unvan || ''), esc(fa.firma_adi || '')]
+          : tur === 'teslim' ? [E('teslim_eden'), E('teslim_alan'), esc(t?.teknisyen || ''), `${esc(t?.teslim_alan_ad || '')}${t?.teslim_alan_tel ? ' · ' + esc(t.teslim_alan_tel) : ''}${t?.imza_dosya ? `<br><img src="/dosya/${esc(t.imza_dosya)}" alt="İmza">` : ''}`]
+            : [E('teslim_eden'), E('teslim_alan'), '', ''];
       return `<div class="fb-imzalar"><div><b>${solE}</b><br>${solA}</div><div><b>${sagE}</b><br>${sagA}${kaseImg ? `<br>${kaseImg}` : ''}</div></div>`;
     }
     return kaseImg ? `<div class="fb-kase-alan">${kaseImg}</div>` : '';
@@ -430,7 +464,7 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
   };
 
   const CIZ = {
-    ust, baslik: () => `<div class="fb-baslik">${baslik}</div>`, musteri,
+    ust, baslik: () => `<div class="fb-baslik"${duz ? ' data-etiket="baslik" contenteditable="true" spellcheck="false"' : ''}>${baslik}</div>`, musteri,
     giris: () => blok('giris', tur === 'makbuz' ? varsayilanMetin('giris') : esc(v.giris || ''), 'fb-giris'),
     kalemler, toplam, yazi, govde, malzeme, notlar, banka: () => blok('banka', '', 'fb-banka'), qr, imza, alt,
   };
@@ -440,14 +474,14 @@ export function belgeHtml(ctx, tur, ayarHam, v, secenek = {}) {
     return `<section class="fb-b fb-b-${b.id}" data-bolum="${b.id}">${ic || (duz ? `<div class="fb-bos">${BOLUM_AD[b.id]}</div>` : '')}</section>`;
   }).join('') + (nusha ? `<div class="fb-nusha">${nusha}</div>` : '');
 
-  const filigran = al.filigran && (v.durum === 'iptal' || (tur === 'satis_fisi' && v.durum === 'taslak')) ? `<div class="fb-filigran">${v.durum === 'iptal' ? d.iptal : d.taslak}</div>` : '';
+  const filigran = al.filigran && (v.durum === 'iptal' || (tur === 'satis_fisi' && v.durum === 'taslak')) ? `<div class="fb-filigran">${v.durum === 'iptal' ? E('iptal') : E('taslak')}</div>` : '';
   const nushaSay = secenek.nusha || a.nusha || 1;
-  const nushaAd = tur === 'dis_servis' ? ['MÜŞTERİ NÜSHASI', 'FİRMA NÜSHASI'] : ['ASIL', 'SURET'];
+  const nushaAd = tur === 'dis_servis' ? [E('musteri_nushasi'), E('firma_nushasi')] : [E('asil'), E('suret')];
   const ic = nushaSay === 2
     ? `${sayfaIci(nushaAd[0])}${al.kesme !== false ? '<div class="fb-kesme"></div>' : '<div class="fb-ara"></div>'}${sayfaIci(nushaAd[1])}`
     : sayfaIci('');
   const stil = `--fb-renk:${esc(a.renk)};--fb-yazi:'${esc(a.yazi_tipi)}', Arial, sans-serif;--fb-boy:${Number(a.yazi_boyu) || 12.5}px;`;
-  return `<div class="fb fb-tema-${esc(a.tema)} fb-kagit-${esc(a.kagit)}${nushaSay === 2 ? ' fb-iki-nusha' : ''}${duz ? ' fb-duzenle' : ''}" style="${stil}" data-sayfa-etiket="${d.sayfa}">${filigran}${ic}</div>`;
+  return `<div class="fb fb-tema-${esc(a.tema)} fb-kagit-${esc(a.kagit)}${nushaSay === 2 ? ' fb-iki-nusha' : ''}${duz ? ' fb-duzenle' : ''}" style="${stil}" data-sayfa-etiket="${esc(dget('sayfa'))}">${filigran}${ic}</div>`;
 }
 
 // Yazdırma sayfası ayarı (kâğıt ve kenar boşluğu)
@@ -456,7 +490,8 @@ export function sayfaStili(tur, ayarHam) {
   const boyut = { A4: 'A4 portrait', A4Y: 'A4 landscape', A5: 'A5 portrait' }[a.kagit] || 'A4 portrait';
   const k = Math.max(4, Math.min(30, Number(a.kenar) || 12));
   const d = DIL[a.dil] || DIL.tr;
-  const no = a.alan.sayfa_no ? `@bottom-right { content: "${d.sayfa} " counter(page) " / " counter(pages); font: 9px Arial, sans-serif; color: #555; }` : '';
+  const sayfaYazi = typeof a.etiket?.sayfa === 'string' && a.etiket.sayfa.trim() ? a.etiket.sayfa.trim().replace(/["\\]/g, '') : d.sayfa;
+  const no = a.alan.sayfa_no ? `@bottom-right { content: "${sayfaYazi} " counter(page) " / " counter(pages); font: 9px Arial, sans-serif; color: #555; }` : '';
   return `@page { size: ${boyut}; margin: ${k}mm; ${no} }`;
 }
 export { ham, html };

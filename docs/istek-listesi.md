@@ -4,17 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Form tasarımı: belgedeki sabit yazıları değiştirebileyim (23.11.2026)
-Kullanıcı: "Belgenin içindeki PROFORMA FATURA, TAHSİLAT MAKBUZU vs. — tasarımda değiştirebileceğim sabit değişkenler lazım."
-- **Başlık önizlemede doğrudan düzenlenir** (şu an yalnız sağ paneldeki "Başlık" kutusundan): "PROFORMA FATURA" yazısına tıklayıp yazılır.
-- **"Sabit yazılar" ayar grubu:** o belge türünde geçen tüm sabit yazılar tek listede, her birinin yanında kutu (boş = varsayılan):
-  Sayın · Tarih · No · Vade · Geçerlilik · Dönem · Cari bakiye · Tel · VD / VN · Yalnız · Net · Brüt · İndirim · KDV · Toplam ·
-  TL karşılığı · Teslim eden / Teslim alan · Ödeme yapan / Tahsil eden · Ödeme şekli · Belge / dekont no · Cihaz · Seri no ·
-  Arıza / şikâyet · Yanında teslim alınanlar · Yapılan iş · Ekip · Süre · Teknisyen notu · Malzemeler · Borç / Alacak / Bakiye ·
-  ASIL / SURET · MÜŞTERİ / FİRMA NÜSHASI · TASLAK / İPTAL · Sayfa · ödeme şekli adları (Nakit, Havale / EFT, Kredi kartı)…
-- Önizlemedeki bu etiketlere de **tıklayıp doğrudan yazılabilir** (kesik çizgiyle gösterilir).
-- Dil İngilizce seçiliyse varsayılanlar İngilizce gelir; değiştirilen yazı her iki dilde de kullanıcının yazdığıdır.
-- "Tümünü varsayılana döndür" düğmesi. Değişkenler ({musteri}, {tarih}…) bu kutularda da kullanılabilir.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -23,6 +13,17 @@ Kullanıcı: "Belgenin içindeki PROFORMA FATURA, TAHSİLAT MAKBUZU vs. — tasa
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 23.11.2026 — 15. derleme: Form tasarımında sabit yazılar
+- **Belge başlığı önizlemede tıklanıp yazılır** (PROFORMA FATURA, TAHSİLAT MAKBUZU…); Enter ile biter, boş bırakılırsa varsayılana döner.
+- **Sabit yazılar** ayar grubu: o belge türündeki tüm sabit yazılar listede (Sayın, Tarih, No, Vade, Geçerlilik, Tel, VD/VN, Cari bakiye,
+  (B)/(A), Brüt, İndirim, Net, KDV, Toplam, TL karşılığı, Yalnız, Teslim eden/alan, Ödeme yapan / Tahsil eden, Ödeme şekli adları
+  (Nakit, Havale / EFT, Kredi kartı), Belge / dekont no, Tahsilat sonrası bakiye cümlesi, (Borç)/(Alacak), ASIL/SURET,
+  MÜŞTERİ/FİRMA NÜSHASI, Cihaz, Seri no, Arıza, Aksesuar, Yapılan iş, Ekip, Süre, Teknisyen notu, Malzemeler, Müşteri notu,
+  Dönem, Belge, Borç/Alacak/Bakiye, ekstre bakiye cümleleri ({tutar} ile), TASLAK/İPTAL, Belge doğrulama, Sayfa).
+  Boş = varsayılan (dil İngilizceyse İngilizce varsayılan). Değişkenler kullanılabilir.
+- Önizlemede bu yazılar kesik altı çizili; **tıklanıp doğrudan yazılır**, panel ile eşlenir. "↺ Tümünü varsayılana döndür".
+- Test: form_testi.js'e sabit yazı kontrolleri (önizlemede yazma, panelden yazma, kayıt, yazdırma çıktısı).
 
 ### 22.11.2026 — 14. derleme: Form tasarımı
 - **Menü:** kişisel menüde Ayarlar'ın altında "Form tasarımı" (ve Ayarlar'da sekme). Yalnız yönetici.
