@@ -14,6 +14,9 @@ tarayıcının kendi okuyucusu var görünüp çalışmıyor ve yedeğe geçilmi
 - Sadece çerçevenin içi taranır ve büyütülür (küçük barkodlar için); yan duran barkodlar için döndürülmüş tarama.
 - Yanlış okumaya karşı: EAN/UPC sağlama haneli kontrol; aynı kod iki kez üst üste okununca kabul. Okununca bip sesi + titreşim.
 - Ekranda hangi okuyucunun çalıştığı küçük yazıyla görünür (sorun olursa tanı için).
+- Kullanıcı bildirimi (22.11.2026 21:06): kamera açılıyor, "çerçevenin içine tutun" yazıyor, barkod çerçevede ama okumuyor →
+  okuyucu çalışıyor fakat çözemiyor: çözünürlük/odak ve çerçeve kırpma/büyütme maddeleri öncelikli; ayrıca Android yerleşik
+  okuyucu sonuç vermezse ZXing'e geçiş.
 - Kamera hiç açılmazsa nedeni açık yazılır (izin yok / HTTPS / başka uygulama kullanıyor); elle yazma ve USB/Bluetooth okuyucu yine çalışır.
 
 ## İsteğe bağlı fikirler
