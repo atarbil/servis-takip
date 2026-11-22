@@ -4,7 +4,17 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. Kameradan barkod okuma iyileştirmesi (22.11.2026)
+Sorun: kamerayla barkod okunmuyor. Olası nedenler: iPhone/bilgisayarda okuma kütüphanesi dış sunucudan (CDN) iniyor; bazı Android'lerde
+tarayıcının kendi okuyucusu var görünüp çalışmıyor ve yedeğe geçilmiyor; kamera düşük çözünürlük ve sabit odakla açılıyor.
+- Okuma kütüphanesi (ZXing) **kendi sunucumuzdan** gelir (Docker kurulumunda indirilir); CDN sadece yedek.
+- Android'in kendi okuyucusu biçim desteklemiyor / hata veriyorsa veya birkaç saniyede bir şey bulamazsa **otomatik ZXing'e geçer**.
+- Kamera yüksek çözünürlükte (1920×1080) ve **sürekli odakla** açılır; **🔦 fener** ve **yakınlaştırma** düğmeleri (destekleyen telefonda);
+  ekrana dokununca odaklanır; arka kamera seçimi (birden çok arka kamerası olan telefonlar için "kamera değiştir").
+- Sadece çerçevenin içi taranır ve büyütülür (küçük barkodlar için); yan duran barkodlar için döndürülmüş tarama.
+- Yanlış okumaya karşı: EAN/UPC sağlama haneli kontrol; aynı kod iki kez üst üste okununca kabul. Okununca bip sesi + titreşim.
+- Ekranda hangi okuyucunun çalıştığı küçük yazıyla görünür (sorun olursa tanı için).
+- Kamera hiç açılmazsa nedeni açık yazılır (izin yok / HTTPS / başka uygulama kullanıyor); elle yazma ve USB/Bluetooth okuyucu yine çalışır.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
