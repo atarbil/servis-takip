@@ -4,7 +4,17 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_Şu an bekleyen istek yok._
+### 1. Havuzdaki işi "Teslim edildi / ben tamamladım" olarak kapatma (22.11.2026)
+Sorun: havuzdaki her iş sahaya (ekip + takvim) gitmiyor; bazısı sadece malzeme teslimi, bazısı hizmet + malzeme. Şu an bir işi
+kapatmanın tek yolu planla → teknisyen başlat → imza → tamamla.
+- Havuz kartında ve iş detayında yeni düğme: **✓ Teslim et / Tamamla**. (Planlı işlerde de olur.)
+- Açılan pencere "+ İş ekle → İşi ben yaptım" ile aynıdır (geniş, iki sütun): iş ve cari dolu gelir; **Hizmet / İşçilik / Malzeme**
+  satırları girilir (ürün arama, barkod). Sadece malzeme de olabilir, sadece hizmet de.
+- İsteğe bağlı **teslim alan adı** ve **imza** (telefon/tablette parmakla) — malzeme tesliminde tutanak için; zorunlu değil.
+- Kaydedince: iş **tamamlandı** olur (takvimde o güne düşer), o cariye **taslak satış fişi** açılır ve fiş ekranına gidilir;
+  fiyatlar yazılıp **Onayla** deyince müşteri borçlanır, malzeme stoktan düşer. İşte daha önce sahada eklenmiş malzeme varsa
+  o da fişe gelir (mevcut kural).
+- İşin carisi yoksa pencerede seçtirilir. İmza alındıysa teslim formu yazdırılabilir (mevcut teslim formu).
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
