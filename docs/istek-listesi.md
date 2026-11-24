@@ -41,6 +41,20 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Alttaki denklem satırı (Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden) sonuç şeridinin hemen altına, iki sütunun üstüne
   taşınır; altta tekrar edilmez.
 
+### 4. Cari ekranında resmi faturalar programa işlendiği hâliyle: ne kesmişiz, ne almışız (24.11.2026)
+- Kullanıcı: "Resmi faturaları programa işlenen hâli ile hem tedarikçide hem de alıcıda görelim; ne kesmişiz ne almışız göremiyoruz".
+- Cari → **Resmi faturalar** sekmesi iki bölüm (yıl seçimi, ay ay ara toplam, genel toplam):
+  - **Kestiğimiz faturalar (satış)** — bu cariye kesilen resmi satış faturaları.
+  - **Aldığımız faturalar (alış)** — bu cariden gelen faturalar, işlendiği hâliyle:
+    - **Stoklu alış (yeşil):** programdaki alış faturaları (taslak / onaylı / iptal durumu ile; tıklayınca alış faturası açılır).
+    - **Gider – yalnız KDV (açık mavi):** gider kayıtları (gider türü ile; tıklayınca ayrıntı).
+  - Her satır: tarih, fatura no, nasıl işlendiği (rozet), fatura tutarı, KDV tutarı, toplam tutar. Üstte özet kutuları:
+    Kestiğimiz toplam / Aldığımız toplam (stoklu + gider) / KDV farkı.
+- Gider kayıtları da cariyle eşleşir: kaydedilirken tedarikçinin vergi no'su programdaki bir cariye aitse ona bağlanır (bakiye yine
+  oluşmaz); daha önce kaydedilmiş gider kayıtları vergi no'dan bir kez bağlanır. Eşleşen cari yoksa "cari bağla / yeni cari aç"
+  (Resmi faturalar listesinden) — cari açmak bakiye oluşturmaz.
+- Sekme hem müşteri hem tedarikçi carilerinde görünür (bir cari ikisi de olabilir).
+
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
   çekip "Fatura yükle" akışına düşürme; onaylı satış fişinden e-Fatura / e-Arşiv kesme. Gerekenler: Mysoft'tan API kullanıcısı
