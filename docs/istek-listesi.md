@@ -4,7 +4,21 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Sahadaki ekiplerin konumu (24.11.2026)
+- Kullanıcı: "sahadaki ekiplerin konumu" (yöneticiye açılan konum bilgisi).
+- Önerilen tasarım: **İşler → Ekip konumları** haritası (OpenStreetMap; ek ücret yok): her ekip / teknisyen için son konum
+  işareti, ne zaman alındığı ("3 dk önce"), üzerinde olduğu iş ve müşteri adresi; işe tıklayınca iş kartı. Konum geçmişi
+  (o günün rotası) isteğe bağlı.
+- Konumun alınma yolları (karar bekliyor):
+  1. **İş adımlarında konum:** teknisyen "Yola çıktım / Vardım / Tamamladım" dediğinde telefon konumu kaydedilir. En güvenilir,
+     pil dostu; arada canlı takip yok.
+  2. **Uygulama açıkken canlı:** teknisyen ekranı açıkken 1–2 dakikada bir konum gönderilir (web uygulaması kapalıyken /
+     arka planda konum alınamaz — özellikle iPhone).
+  3. **Telegram canlı konum:** teknisyen sabah bota "canlı konum paylaş"ı açar (8 saate kadar); telefon kilitliyken de güncellenir.
+     Bot zaten kurulu olduğu için ek uygulama gerekmez.
+- Gizlilik / KVKK: yalnız çalışma saatlerinde ve iş sırasında; teknisyen ekranında "konum paylaşılıyor" göstergesi; çalışanlara
+  aydınlatma metni (Ayarlar'da metin + teknisyenin bir kez onayı); konum kayıtları 30 gün sonra silinir; yalnız yönetici görür.
+
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
