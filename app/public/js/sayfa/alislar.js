@@ -6,7 +6,7 @@ export default async function (el, _p, ctx) {
   const f = { q: '', durum: '', bas: '', bit: '' };
   el.innerHTML = String(html`
     <div class="sayfa-ust"><h2>Alış Faturaları</h2><span class="alt">Ürün maliyetleri buradan oluşur</span><span class="bosluk"></span>
-      <button class="btn ikincil" id="csv">Excel'e aktar</button><a class="btn ikincil" href="#/efatura">📄 e-Fatura XML'den aktar</a><a class="btn birincil" href="#/alis/yeni">+ Alış faturası gir</a></div>
+      <button class="btn ikincil" id="csv">Excel'e aktar</button><a class="btn ikincil" href="#/resmi-yukle">📄 Resmi fatura yükle (XML)</a><a class="btn birincil" href="#/alis/yeni">+ Alış faturası gir</a></div>
     <div class="filtre"><input type="search" id="q" placeholder="Fatura no veya tedarikçi…">
       <select id="durum"><option value="">Tüm durumlar</option><option value="taslak">Taslak</option><option value="onaylandi">Onaylandı</option><option value="iptal">İptal</option></select>
       <label>Başlangıç <input type="date" id="bas"></label><label>Bitiş <input type="date" id="bit"></label></div>

@@ -115,7 +115,7 @@ export default async function (el, [id], ctx) {
             <button class="btn ikincil kucuk" data-ekle>+ Satır</button>
             <button class="btn ikincil kucuk" data-stok-listesi title="F4">📦 Stok listesi</button>
             <button class="btn ikincil kucuk" data-barkod title="Ctrl+B">📷 Barkod</button>
-            ${!a.id ? html`<a class="btn ikincil kucuk" href="#/efatura">📄 e-Fatura XML'den aktar</a>` : ''}</div>` : html`<span></span>`}
+            ${!a.id ? html`<a class="btn ikincil kucuk" href="#/resmi-yukle">📄 XML'den aktar</a>` : ''}</div>` : html`<span></span>`}
           <span class="bosluk"></span>
           ${taslak ? html`<label class="kutu-sec enter-yeni" style="margin:0" title="İşaretliyse son hücrede Enter yeni satır açar"><input type="checkbox" id="enter-yeni-satir" ${enterYeniSatir() ? 'checked' : ''}> Enter ile yeni satır aç</label>
             <label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatlar KDV dahil</label>` : ''}

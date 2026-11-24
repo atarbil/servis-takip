@@ -129,8 +129,8 @@ const b64 = (s) => Buffer.from(s).toString('base64');
   kontrol('Alış: kaydedildi', yeniA && Number(yeniA.ara_toplam) === 3000, yeniA);
 
   // e-Fatura sayfası
-  await p.goto(`${TABAN}/#/alislar`); await p.waitForSelector('#sayfa a.btn[href="#/efatura"]');
-  await p.click('#sayfa a.btn[href="#/efatura"]'); await p.waitForSelector('#birak');
+  await p.goto(`${TABAN}/#/alislar`); await p.waitForSelector('#sayfa a.btn[href="#/resmi-yukle"]');
+  await p.click('#sayfa a.btn[href="#/resmi-yukle"]'); await p.waitForSelector('#birak');
   const yeniXml = ornekXml({ no: 'XYZ2026000000001', ettn: '99999999-0000-0000-0000-000000000009', vkn: '5555555555', unvan: 'Yeni Güvenlik Ltd. Şti.',
     satirlar: [
       { ad: 'Hikvision DS-2CD1043G2-I 4MP IP Kamera', satici: 'Y-1', miktar: 4, birim: 'C62', fiyat: 1300, isk: 0, kdv: 20 },

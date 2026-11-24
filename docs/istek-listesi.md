@@ -4,75 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 2. Resmi faturalar: kesilen satış faturaları carilerle eşleşsin, cari ekranında görünsün (24.11.2026)
-- Kullanıcı: "satış faturaları ile carileri de eşleştirelim; yaptığımız işle müşteriye kestiğimiz faturalar farklı oluyor, kime ne
-  fatura kestiğimizi bilmek için yükleyeceğim faturalar cari ekranında **'Resmi faturalar'** diye bir başlıkta olsun; KDV hesaplama
-  hariç hiçbir yerde kullanılmayacak satış faturaları olsun".
-- **Önceki kararı değiştirir:** KDV ekranındaki "hiçbir şey kaydedilmesin" yerine artık yüklenen satış faturalarının **bilgileri**
-  kaydedilir (XML / PDF dosyası yine saklanmaz). Bir kez yüklenen fatura kalır; her seferinde ayın hepsini yüklemek gerekmez.
-- Kayıt: fatura no, ETTN, tarih, tür (SATIS/İADE/TEVKİFAT…), müşteri ünvanı + VKN/TCKN, fatura tutarı (KDV hariç), KDV (oran
-  bazında), tevkifat, toplam, para birimi/kur, kalemler (ad, miktar, birim, fiyat, KDV) — yalnız görüntülemek için.
-- **Hiçbir yere etkisi yok:** cari bakiyesi / ekstre, stok, satış fişi, kasa, raporlar değişmez. Yalnız KDV durumu ekranında
-  "hesaplanan KDV" buradan gelir.
-- Eşleştirme: alıcı VKN/TCKN → programdaki cari; yoksa ünvan. Eşleşmeyenler "Eşleşmeyen faturalar" listesinde; tek tıkla mevcut
-  cariye bağla ya da faturadaki bilgilerle yeni cari aç. Sonradan cari değiştirilebilir.
-- Aynı fatura (ETTN) ikinci kez eklenmez; yanlış yüklenen fatura silinebilir. Satıcı VKN firma değilse kabul edilmez (alış XML'i).
-- **Cari ekranı → "Resmi faturalar" sekmesi:** tarih, fatura no, tür, fatura tutarı, KDV, toplam; yıl/ay filtresi ve toplam satırı;
-  satıra tıklayınca kalemleri gösteren pencere. Not: "Bilgi amaçlı; cari bakiyesini etkilemez."
-- Yükleme yeri: istek 3'teki tek ekran (Finans → Resmi fatura yükleme). Finans → **Resmi faturalar** listesi: tüm kesilen faturalar, arama, eşleşmeyenler.
-
-### 3. Tek menü: Finans → "Resmi fatura yükleme" — alış / satış ayrımını program yapsın (24.11.2026)
-- Kullanıcı: "finansın altına resmi fatura yükleme diye tek bir menü açalım, alış ve satış faturasını kendi ayırt etsin".
-- Tek yükleme ekranı (XML / zip, çoklu; dosya saklanmaz). Her fatura için yön kendiliğinden:
-  - **Satıcı VKN = firma VKN → SATIŞ:** resmi fatura olarak kaydedilir (istek 2), müşteriyle eşleştirilir, cari ekranındaki
-    "Resmi faturalar"da görünür; yalnız KDV hesabında kullanılır.
-  - **Alıcı VKN = firma VKN → ALIŞ:** bugünkü e-Fatura aktar akışı (tedarikçi + ürün eşleştirme → taslak alış faturası →
-    Onayla ile stok/maliyet/cari). Alış KDV'si onaylı alış faturalarından.
-  - İkisi de değilse: "Bu fatura firmanıza ait değil" — reddedilir.
-- Firma vergi no'su (Ayarlar) zorunlu; boşsa ekran önce onu ister (kutu orada).
-- Yükleme sonucu özet: "x satış faturası kaydedildi (y'si cariyle eşleşti, z eşleşmeyen) · a alış faturası eşleştirme bekliyor ·
-  b daha önce yüklenmiş · c reddedildi". Altta iki sekme: **Alış faturaları (eşleştir → taslak oluştur)** ve **Eşleşmeyen satış faturaları**.
-- Menü: Finans → **Resmi fatura yükleme** tek giriş; Stok altındaki ayrı "e-Fatura aktar" menüsü kalkar (Alış faturaları listesindeki
-  düğme bu ekrana gider). KDV durumu ekranı ve Resmi faturalar listesi ayrı menülerde kalır, yükleme düğmeleri bu ekrana yönlendirir.
-
-### 4. Stoksuz, cariye işlenmeyen alış faturaları da KDV'ye girsin (24.11.2026)
-- Kullanıcı: "stoksuz ve cariye işlenmeyecek faturalar var; stok ve cari bakiye oluşturmadan onları nasıl KDV listesine dahil edeceğiz".
-  (ör. akaryakıt, telefon/internet, kira, kargo, yemek, peşin ödenmiş masraflar)
-- Çözüm: Resmi fatura yükleme ekranında her **alış** faturası için seçim:
-  - **Stoklu alış** → bugünkü akış (ürün eşleştirme → taslak alış faturası → Onayla: stok + maliyet + cari).
-  - **Yalnız KDV (gider)** → **resmi alış faturası** olarak kaydedilir (satış resmi faturalarıyla aynı tablo, yön = alış):
-    stok yok, cari bakiyesi yok, kasa yok; yalnız KDV durumu ekranında **indirilecek KDV**'ye girer. İsteğe bağlı gider türü
-    (Akaryakıt, Telefon / internet, Kira, Kargo, Yemek, Diğer). Tedarikçi cari olarak açılmaz (istenirse eşleştirilir, yalnız bilgi).
-  - Tedarikçi bazında hatırlanır: o tedarikçiden gelen sonraki faturalar aynı seçimle gelir (ör. akaryakıt firması hep "Yalnız KDV").
-  - Yalnız KDV kaydı sonradan "Stoklu alışa çevir" ile alış akışına alınabilir (kayıt silinir, taslak alış açılır).
-- **Elle KDV kaydı:** e-Fatura olmayan kâğıt fatura / fiş için küçük form (tarih, firma, belge no, KDV hariç tutar, KDV oranı → KDV,
-  toplam; yön alış ya da satış). Aynı listede "elle" etiketiyle.
-- KDV durumu: indirilecek KDV = onaylı alış faturaları + resmi alış (yalnız KDV) kayıtları; sol sütunda ikisi birlikte, türü etiketli
-  ("Stoklu" / "Gider"). Aynı ETTN iki yerde sayılmaz (alış faturası olarak aktarılmışsa yalnız KDV kaydı açılamaz, tersi de).
-- Finans → Resmi faturalar listesinde Satış / Alış (gider) sekmeleri.
-- Kullanıcı ek (21:46): **renkle ayrılsın — stoklu fatura yeşil, stoksuz (yalnız KDV / gider) açık mavi.** Yükleme ekranındaki
-  seçim düğmeleri, KDV ekranının alış sütunundaki satırlar (sol kenar şeridi + açık zemin) ve etiketleri, Resmi faturalar listesi
-  hep bu renklerle; ekranda küçük renk açıklaması ("■ Stoklu  ■ Stoksuz / gider").
-
-### 1. KDV durumu: iki sütunlu ekran — solda alış, sağda satış (24.11.2026)
-- Kullanıcı: "2 sütunlu bir ekran olsun, sol alış sağ satış gibi; fatura tutarı, KDV tutarı, toplam tutar şeklinde".
-- Tasarım:
-  - Üstte dönem (ay) seçimi ve ince sonuç şeridi: "Bu ay KDV ÇIKIYOR — ödenecek ≈ X ₺" / "ÇIKMIYOR — devreden ≈ Y ₺"
-    (+ önceki aydan devreden kutusu).
-  - **Sol sütun — ALIŞ (indirilecek KDV):** o ayın onaylı alış faturaları tek tek: tarih, fatura no, tedarikçi,
-    **Fatura tutarı** (KDV hariç), **KDV tutarı**, **Toplam tutar**; altta toplam satırı. Taslak bekleyenler soluk ve "sayılmadı" etiketli
-    (bağlantılı). Satıra tıklayınca alış faturası açılır.
-  - **Sağ sütun — SATIŞ (hesaplanan KDV):** (istek 2'den sonra: kayıtlı resmi faturalardan) faturalar tek tek: tarih, fatura no, müşteri, **Fatura tutarı**,
-    **KDV tutarı**, **Toplam tutar**; altta toplam satırı. Sütunun üstünde yükleme alanı (dosyalar kaydedilmez, kural aynı).
-    Sayılmayanlar (başka ay / başka firma / tekrar) listede soluk ve nedeni yazılı; tevkifatlı faturada tevkifat ayrıca görünür.
-  - İki sütunun altında karşılaştırma: Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden.
-  - Telefonda sütunlar alt alta (önce sonuç, sonra Alış, sonra Satış).
-  - Kullanıcı ek (21:35): **"tutarların hangi cariden geldiği de yazsın"** →
-    - Her satırda cari adı belirgin (alışta tedarikçi, satışta müşteri) + küçük vergi no. Satış XML'indeki alıcı, programdaki
-      cariyle vergi no'dan (yoksa ünvandan) eşleştirilir; eşleşen cari adı cari kartına bağlantılı, eşleşmeyen "programda kayıtlı değil" etiketli.
-    - Her sütunda **"Cariye göre"** görünümü: faturalar cari bazında toplanır (cari, fatura sayısı, fatura tutarı, KDV, toplam);
-      tıklayınca o carinin faturaları açılır. Varsayılan görünüm: fatura fatura liste.
-
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
@@ -84,6 +16,29 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 23. derleme: Resmi faturalar, tek yükleme ekranı, gider faturaları, iki sütunlu KDV
+- **Finans → Resmi fatura yükleme** (tek menü; Stok altındaki "e-Fatura aktar" kalktı): alış ve satış XML'leri / zip karışık
+  yüklenir, yönü program **vergi numarasından** ayırır (satıcı = firma → satış, alıcı = firma → alış, ikisi de değil → alınmaz).
+  Firma vergi no yoksa ekran önce onu sorar. Dosyalar saklanmaz. Yükleme özeti + "Alış faturaları" / "Satış faturaları" görünümleri.
+- **Satış faturaları = resmi faturalar:** fatura bilgileri kaydedilir (dosya değil), müşteriyle vergi no / ünvandan eşleşir;
+  eşleşmeyenler listede cari ara-bağla ya da "Yeni cari aç" (aynı vergi no'lu diğer faturalar da bağlanır). Tekrar yüklenen
+  sayılmaz. Cari bakiyesini, ekstreyi, stoğu, satış fişlerini, kasayı **etkilemez** — yalnız KDV durumunda kullanılır.
+- **Alış faturası için seçim (renkli):** **📦 Stoklu alış (yeşil)** → ürün eşleştirme → taslak alış faturası;
+  **🧾 Yalnız KDV – gider (açık mavi)** → stok / cari olmadan gider kaydı, gider türü (Akaryakıt, Telefon / internet, Kira,
+  Kargo, Yemek, Elektrik / su / doğalgaz, Kırtasiye, Diğer). Seçim tedarikçinin vergi no'suna göre hatırlanır. Aynı fatura
+  iki tarafta da kaydedilemez. Gider kaydı "Stoklu alışa çevir" ile silinip tedarikçi stoklu olarak işaretlenir (XML yeniden yüklenir).
+- **Elle KDV kaydı:** e-Fatura olmayan belge için (alış / satış, tarih, firma, tutar, oran → KDV ve toplam hesaplanır).
+- **Finans → Resmi faturalar:** Kesilen (satış) / Gider (yalnız KDV alış) sekmeleri, ay filtresi, arama, "yalnız eşleşmeyenler",
+  toplam satırı; satıra tıklayınca ayrıntı (kalemler, KDV dökümü, tevkifat, cari bağla / değiştir / yeni cari, sil).
+- **Cari ekranı → Resmi faturalar** sekmesi: yıl seçimi, o cariye kesilen faturalar (fatura tutarı, KDV, toplam), elle kayıt.
+- **KDV durumu iki sütun:** üstte ay ve sonuç şeridi (ÇIKIYOR kırmızı / ÇIKMIYOR yeşil, devreden kutusu); **solda ALIŞ**
+  (onaylı stoklu alışlar yeşil + gider kayıtları açık mavi, taslaklar soluk "sayılmadı"), **sağda SATIŞ** (resmi satış faturaları);
+  her satırda fatura no + tarih, **cari adı** (bağlantılı) + vergi no, **Fatura tutarı · KDV tutarı · Toplam tutar**, alt toplam;
+  "Fatura fatura / Cariye göre" görünümü (cariye tıklayınca o carinin faturaları). Altta denklem: Satış KDV − Alış KDV − Devreden
+  = Ödenecek / Devreden. Telefonda kart görünümü.
+- Renk açıklaması ekranlarda: ■ Stoklu ■ Stoksuz / gider.
+- Test: kdv_testi.js yeniden yazıldı (yön ayrımı, eşleştirme, gider, tercih hafızası, mükerrer, elle kayıt, cari sekmesi, iki sütun).
 
 ### 24.11.2026 — 22. derleme: KDV durumu ("bu ay KDV çıkıyor mu?")
 - Finans → **KDV durumu**. Dönem (ay) seçilir; büyük sonuç kartı: **"Bu ay KDV ÇIKIYOR — ödenecek ≈ X ₺"** (kırmızı) ya da

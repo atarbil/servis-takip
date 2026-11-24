@@ -2,12 +2,14 @@ import { api } from '../api.js';
 import { html, $, $$, para, paraSade, tarih, bakiyeHucre, bakiyeAciklama, durumRozet, telLink, csvIndir, pencere, bildir, sayiCoz, bugunStr } from '../ui.js';
 import { cariFormu, finansPenceresi, yeniIsPenceresi, silOnay } from '../bilesen.js';
 import { ekstreYazdir, BELGE } from '../belgeler.js';
+import { resmiTablo, resmiDetay, elleKayit } from '../resmi.js';
 
 export default async function (el, [id], ctx) {
   const c = await api.get(`/cariler/${id}`);
   ctx.baslik(c.unvan);
   const yil = new Date().getFullYear();
   let sekme = ctx.sorgu.sekme || 'ekstre';
+  let resmiYil = '';
   const aralik = { bas: `${yil}-01-01`, bit: bugunStr() };
 
   el.innerHTML = String(html`
@@ -30,7 +32,7 @@ export default async function (el, [id], ctx) {
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
       <button class="btn tehlike-cizgi" data-a="sil" title="Cari ve tüm hareketleri silinir (30 gün geri alınabilir)">🗑 Sil</button>
     </div>
-    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
+    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['resmi', 'Resmi faturalar'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
       .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
     <div id="icerik"></div>`);
 
@@ -97,6 +99,16 @@ export default async function (el, [id], ctx) {
         ${fl.length ? fl.map((f) => html`<tr class="tikla ${f.durum === 'iptal' ? 'iptal' : ''}" data-git="fis/${f.id}"><td class="ana-hucre" data-et="">${f.fis_no}</td><td data-et="Tarih">${tarih(f.tarih)}</td>
           <td data-et="Durum">${durumRozet(f.durum)}</td><td class="sayi" data-et="Tutar">${para(f.genel_toplam)}</td><td class="sayi" data-et="Kâr">${para(f.ara_toplam - f.maliyet_toplam)}</td></tr>`)
           : html`<tr><td colspan="5" class="bos-durum">Fiş yok</td></tr>`}</tbody></table></div></div>`);
+    } else if (sekme === 'resmi') {
+      const yil = resmiYil || String(new Date().getFullYear());
+      const [satis, gider] = await Promise.all([api.get('/resmi', { cari_id: c.id, yon: 'satis', yil }), api.get('/resmi', { cari_id: c.id, yon: 'alis', yil })]);
+      const yillar = Array.from({ length: 6 }, (_, i) => String(new Date().getFullYear() - i));
+      k.innerHTML = String(html`<div class="rf-cari-ust"><label>Yıl <select id="rf-yil">${yillar.map((y) => html`<option ${y === yil ? 'selected' : ''}>${y}</option>`)}</select></label>
+          <span class="soluk">Bu cariye kestiğiniz resmi faturalar. Bilgi amaçlıdır; cari bakiyesini etkilemez, yalnız KDV hesabında kullanılır.</span>
+          <span class="bosluk"></span><a class="btn ikincil kucuk" href="#/resmi-yukle">📄 XML yükle</a><button class="btn ikincil kucuk" data-resmi-elle>+ Elle kayıt</button></div>
+        <div class="kart">${resmiTablo(satis, { yon: 'satis', cariGoster: false, bos: `${yil} yılında bu cariye yüklenmiş resmi fatura yok.` })}</div>
+        ${gider.length ? html`<h3 class="kdv-baslik" style="margin-top:1rem">Gider faturaları (yalnız KDV)</h3><div class="kart">${resmiTablo(gider, { yon: 'alis', cariGoster: false })}</div>` : ''}`);
+      $('#rf-yil', k).onchange = (e) => { resmiYil = e.target.value; ciz(); };
     } else if (sekme === 'yillik') {
       k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Yıl</th><th class="sayi">İş</th><th class="sayi">Ciro (KDV hariç)</th><th class="sayi">Maliyet</th><th class="sayi">Kâr</th><th class="sayi">Tahsilat</th><th class="sayi">Yıl sonu bakiye</th></tr></thead><tbody>
         ${c.yillik.length ? c.yillik.map((y) => html`<tr><td class="ana-hucre" data-et="">${y.yil}</td><td class="sayi" data-et="İş">${y.is_sayisi}</td><td class="sayi" data-et="Ciro">${para(y.ciro_kdv_haric)}</td>
@@ -116,6 +128,9 @@ export default async function (el, [id], ctx) {
   el.addEventListener('click', async (e) => {
     const s = e.target.closest('[data-sekme]');
     if (s) { sekme = s.dataset.sekme; return ciz(); }
+    const rs = e.target.closest('[data-resmi]');
+    if (rs) { if (await resmiDetay(Number(rs.dataset.resmi))) ciz(); return; }
+    if (e.target.closest('[data-resmi-elle]')) { if (await elleKayit({ yon: 'satis', cari: c })) { bildir('Kaydedildi.', 'basari'); ciz(); } return; }
     const g = e.target.closest('[data-git]');
     if (g) return ctx.git(g.dataset.git);
     const a = e.target.closest('[data-a]')?.dataset.a;

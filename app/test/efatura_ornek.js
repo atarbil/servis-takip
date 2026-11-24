@@ -3,7 +3,7 @@
 const zlib = require('zlib');
 
 function ornekXml({ no = 'ABC2026000000123', ettn = '6f1c2b8e-3d4a-4b5c-9e7f-0a1b2c3d4e5f', vkn = '1234567890', unvan = 'Teknoloji Dağıtım A.Ş.', aliciVkn = '9876543210',
-  doviz = 'TRY', kur = null, tip = 'SATIS', satirlar, tarih = '2026-11-20', tevkifat = 0 } = {}) {
+  doviz = 'TRY', kur = null, tip = 'SATIS', satirlar, tarih = '2026-11-20', tevkifat = 0, aliciUnvan = 'Atar Bilişim' } = {}) {
   const s = satirlar || [
     { ad: 'Hikvision DS-2CD1043G2-I 4MP IP Kamera', satici: 'HKV-1043G2', barkod: '6941264012345', miktar: 10, birim: 'C62', fiyat: 1250, isk: 10, kdv: 20 },
     { ad: 'CAT6 UTP Kablo 305m', satici: 'KBL-C6-305', miktar: 2, birim: 'C62', fiyat: 3400, isk: 0, kdv: 20 },
@@ -56,7 +56,7 @@ function ornekXml({ no = 'ABC2026000000123', ettn = '6f1c2b8e-3d4a-4b5c-9e7f-0a1
   </cac:Party></cac:AccountingSupplierParty>
   <cac:AccountingCustomerParty><cac:Party>
     <cac:PartyIdentification><cbc:ID schemeID="VKN">${aliciVkn}</cbc:ID></cac:PartyIdentification>
-    <cac:PartyName><cbc:Name>Atar Bilişim</cbc:Name></cac:PartyName>
+    <cac:PartyName><cbc:Name>${aliciUnvan}</cbc:Name></cac:PartyName>
   </cac:Party></cac:AccountingCustomerParty>
   <cac:PaymentMeans><cbc:PaymentMeansCode>42</cbc:PaymentMeansCode><cbc:PaymentDueDate>2026-12-20</cbc:PaymentDueDate></cac:PaymentMeans>
   ${kur ? `<cac:PricingExchangeRate><cbc:SourceCurrencyCode>${doviz}</cbc:SourceCurrencyCode><cbc:TargetCurrencyCode>TRY</cbc:TargetCurrencyCode><cbc:CalculationRate>${kur}</cbc:CalculationRate></cac:PricingExchangeRate>` : ''}

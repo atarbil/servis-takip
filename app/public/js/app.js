@@ -24,10 +24,11 @@ export const YONETICI_MENU = [
   { grup: 'stok', ad: 'Stok', ikon: 'kutu', alt: [
     { yol: 'urunler', ad: 'Ürünler / Stok', ikon: 'kutu' },
     { yol: 'alislar', ad: 'Alış Faturaları', ikon: 'alis' },
-    { yol: 'efatura', ad: 'e-Fatura aktar (XML)', ikon: 'belge' },
   ] },
   { grup: 'finans', ad: 'Finans', ikon: 'kasa', alt: [
     { yol: 'kasa', ad: 'Kasa / Banka', ikon: 'kasa' },
+    { yol: 'resmi-yukle', ad: 'Resmi fatura yükleme', ikon: 'belge' },
+    { yol: 'resmi-faturalar', ad: 'Resmi faturalar', ikon: 'belge' },
     { yol: 'kdv', ad: 'KDV durumu', ikon: 'rapor' },
     { yol: 'raporlar', ad: 'Raporlar', ikon: 'rapor' },
   ] },
@@ -465,12 +466,12 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura', kdv: 'kdv',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura', 'resmi-yukle': 'efatura', 'resmi-faturalar': 'resmifaturalar', kdv: 'kdv',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 // Her girişte yeniden yüklenen sayfalar (canlı döngüsü olanlar)
 const HEP_YENILE = new Set(['guncelleme']);
-const MENU_ESLES = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', efatura: 'efatura', urun: 'urunler', teklif: 'teklifler', form: 'formlar' };
+const MENU_ESLES = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', efatura: 'resmi-yukle', urun: 'urunler', teklif: 'teklifler', form: 'formlar' };
 
 // ---------- Program içi sekmeler ----------
 // Açılan her sayfa bir sekmedir; sekmeler arasında geçişte sayfa yeniden yüklenmez (yazılanlar, kaydırma yeri kalır).
