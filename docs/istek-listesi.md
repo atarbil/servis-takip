@@ -19,7 +19,21 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Aynı fatura (ETTN) ikinci kez eklenmez; yanlış yüklenen fatura silinebilir. Satıcı VKN firma değilse kabul edilmez (alış XML'i).
 - **Cari ekranı → "Resmi faturalar" sekmesi:** tarih, fatura no, tür, fatura tutarı, KDV, toplam; yıl/ay filtresi ve toplam satırı;
   satıra tıklayınca kalemleri gösteren pencere. Not: "Bilgi amaçlı; cari bakiyesini etkilemez."
-- Yükleme yerleri: KDV durumu ekranının satış sütunu ve Finans → **Resmi faturalar** listesi (tüm kesilen faturalar, arama, eşleşmeyenler).
+- Yükleme yeri: istek 3'teki tek ekran (Finans → Resmi fatura yükleme). Finans → **Resmi faturalar** listesi: tüm kesilen faturalar, arama, eşleşmeyenler.
+
+### 3. Tek menü: Finans → "Resmi fatura yükleme" — alış / satış ayrımını program yapsın (24.11.2026)
+- Kullanıcı: "finansın altına resmi fatura yükleme diye tek bir menü açalım, alış ve satış faturasını kendi ayırt etsin".
+- Tek yükleme ekranı (XML / zip, çoklu; dosya saklanmaz). Her fatura için yön kendiliğinden:
+  - **Satıcı VKN = firma VKN → SATIŞ:** resmi fatura olarak kaydedilir (istek 2), müşteriyle eşleştirilir, cari ekranındaki
+    "Resmi faturalar"da görünür; yalnız KDV hesabında kullanılır.
+  - **Alıcı VKN = firma VKN → ALIŞ:** bugünkü e-Fatura aktar akışı (tedarikçi + ürün eşleştirme → taslak alış faturası →
+    Onayla ile stok/maliyet/cari). Alış KDV'si onaylı alış faturalarından.
+  - İkisi de değilse: "Bu fatura firmanıza ait değil" — reddedilir.
+- Firma vergi no'su (Ayarlar) zorunlu; boşsa ekran önce onu ister (kutu orada).
+- Yükleme sonucu özet: "x satış faturası kaydedildi (y'si cariyle eşleşti, z eşleşmeyen) · a alış faturası eşleştirme bekliyor ·
+  b daha önce yüklenmiş · c reddedildi". Altta iki sekme: **Alış faturaları (eşleştir → taslak oluştur)** ve **Eşleşmeyen satış faturaları**.
+- Menü: Finans → **Resmi fatura yükleme** tek giriş; Stok altındaki ayrı "e-Fatura aktar" menüsü kalkar (Alış faturaları listesindeki
+  düğme bu ekrana gider). KDV durumu ekranı ve Resmi faturalar listesi ayrı menülerde kalır, yükleme düğmeleri bu ekrana yönlendirir.
 
 ### 1. KDV durumu: iki sütunlu ekran — solda alış, sağda satış (24.11.2026)
 - Kullanıcı: "2 sütunlu bir ekran olsun, sol alış sağ satış gibi; fatura tutarı, KDV tutarı, toplam tutar şeklinde".
