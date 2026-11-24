@@ -23,6 +23,22 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
   4. İleride Mysoft bağlantısı açılırsa (beklemede): entegratörün mükellef sorgusuyla ünvan + e-Fatura kullanıcısı mı bilgisi otomatik.
 
 
+### 3. Cari → Detaylı ekstre (24.11.2026)
+- Kullanıcı: "Şimdilik bu dediklerim kalsın (1–2 bekliyor); cari listesinden cari seçtiğimiz zaman ekstrenin yanına bir de **detaylı
+  ekstre** ekleyelim; oradan müşterinin **ne aldığı, ne kadar ödeme yaptığı, kalan bakiyesi** **borç / alacak / bakiye** şeklinde
+  **kurumsal** bir şekilde çıksın; istenilen **2 tarih arası** alınabilsin; **vade tarihi çıkmasın**."
+- Tasarım: Cari ekranında "Ekstre"nin yanında **"Detaylı ekstre"** sekmesi.
+  - Üstte başlangıç – bitiş tarihi (hazır seçenekler: Bu ay, Geçen ay, Bu yıl, Tümü) + **Yazdır / PDF** + Excel.
+  - **Kurumsal görünüm** (ekranda ve çıktıda aynı): firma logosu / ünvan / iletişim; "CARİ HESAP EKSTRESİ (DETAYLI)", cari ünvan,
+    adres, VD / VN, dönem; sayfa altı numara.
+  - **Devir (açılış) bakiyesi:** başlangıç tarihinden önceki bakiye ilk satırda.
+  - Hareketler tarih sırasıyla: Tarih · Belge (Satış fişi / Tahsilat / Ödeme / Alış faturası / İade / Devir…) + belge no · Açıklama ·
+    **Borç · Alacak · Bakiye** (yürüyen; B / A işaretli). **Vade sütunu yok.**
+  - Satış fişi (ve alış faturası) satırının altında **aldığı kalemler** girintili: ürün / hizmet, miktar, birim, birim fiyat, tutar
+    (KDV dahil toplam belge satırında). Tahsilatlarda ödeme şekli (nakit / banka / kart) açıklamada.
+  - Altta özet kutusu: Devir · Dönem borç toplamı (aldıkları) · Dönem alacak toplamı (ödedikleri) · **Kalan bakiye** (borçlu / alacaklı).
+  - Çıktı A4 dikey, kalemler sayfa arasında bölünebilir, başlık her sayfada tekrar.
+
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
   çekip "Fatura yükle" akışına düşürme; onaylı satış fişinden e-Fatura / e-Arşiv kesme. Gerekenler: Mysoft'tan API kullanıcısı
