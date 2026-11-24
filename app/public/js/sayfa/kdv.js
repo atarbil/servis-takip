@@ -98,16 +98,16 @@ export default async function (el, _p, ctx) {
         <span class="bosluk"></span>
         <label class="kdv-serit-devreden">Önceki aydan devreden KDV <input id="kdv-devreden" inputmode="decimal" value="${devreden ? sayiGiris(devreden) : ''}" placeholder="0,00"></label>
       </div>
-      ${veri.taslaklar.length ? html`<div class="uyari-kutu">⚠ <b>${veri.taslaklar.length}</b> taslak alış faturası onaylanmadığı için sayılmadı (sol sütunda soluk).</div>` : ''}
-
-      <div class="kdv-iki">${sutun('alis')}${sutun('satis')}</div>
-
-      <div class="kdv-denklem">
+      <div class="kdv-denklem ust">
         <span><small>Satış KDV</small><b>${para(satisK)}</b></span><i>−</i>
         <span><small>Alış KDV</small><b>${para(alisK)}</b></span><i>−</i>
         <span><small>Devreden</small><b>${para(devreden)}</b></span><i>=</i>
         <span class="${cikiyor ? 'negatif' : 'pozitif'}"><small>${cikiyor ? 'Ödenecek' : 'Devreden'}</small><b>${para(Math.abs(fark))}</b></span>
       </div>
+      ${veri.taslaklar.length ? html`<div class="uyari-kutu">⚠ <b>${veri.taslaklar.length}</b> taslak alış faturası onaylanmadığı için sayılmadı (sol sütunda soluk).</div>` : ''}
+
+      <div class="kdv-iki">${sutun('alis')}${sutun('satis')}</div>
+
       <p class="soluk kdv-not">Alış: onaylı alış faturaları ve yalnız KDV gider kayıtları · Satış: yüklenen resmi satış faturaları. Müşteriden gelen iade faturaları, ÖTV, istisnalar ve KDV-2 hesaba katılmaz. Sonuç bilgi amaçlıdır; kesin tutar için mali müşavirinize danışın.</p>`);
     $('#kdv-ay', el).onchange = async (e) => {
       if (!/^\d{4}-\d{2}$/.test(e.target.value)) return;

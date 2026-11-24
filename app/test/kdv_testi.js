@@ -107,7 +107,9 @@ const FIRMA = '9876543210';
   await p.click('[data-tur-sec="gider"]'); await p.waitForTimeout(100);
   await p.screenshot({ path: `${EKRAN}/rf-gider.png`, fullPage: true });
   await p.click('[data-gider-kaydet]'); await p.waitForTimeout(700);
-  kontrol('Gider kaydedildi bilgisi', /Yalnız KDV \(gider\) olarak kaydedildi/.test(await p.textContent('#sayfa')));
+  kontrol('İşlenen fatura listeden düştü, özet ve "tümü işlendi"', /1 fatura işlendi \(0 taslak alış, 1 gider\)/.test(await p.textContent('.rf-ozet')) && !!(await p.$('.rf-bitti')) && !(await p.$('.fatura')));
+  await p.click('[data-islenen-ac]'); await p.waitForTimeout(100);
+  kontrol('İşlenenler açılınca bağlantı', !!(await p.$('.rf-islenen a[href*="resmi-faturalar"]')));
   await p.click('[data-gorunum="satis"]'); await p.waitForSelector('.rf-satis');
   await p.click('[data-satis-cari]'); await p.keyboard.type('Müşteri A', { delay: 20 });
   await p.waitForSelector('.secici-liste .secici-oge'); await p.keyboard.press('Enter'); await p.waitForTimeout(600);
@@ -151,17 +153,33 @@ const FIRMA = '9876543210';
   await p.evaluate((id) => { location.hash = `#/cari/${id}?sekme=resmi`; }, musA.id); await p.waitForSelector('#icerik .rf-cari-ust');
   await p.selectOption('#rf-yil', '2026'); await p.waitForTimeout(400);
   const rc = (await p.textContent('#icerik')).replace(/\s+/g, ' ');
-  kontrol('Cari → Resmi faturalar: 2 fatura, toplamlar', /ATR2026000000001/.test(rc) && /ATR2026000000003/.test(rc) && /2 fatura/.test(rc) && /bakiyesini etkilemez/.test(rc), rc.slice(0, 300));
+  kontrol('Cari → Resmi faturalar: 2 satış faturası, işlem tipi', /ATR2026000000001/.test(rc) && /ATR2026000000003/.test(rc) && /2 fatura/.test(rc) && /Satış faturası/.test(rc) && /bakiyesini etkilemez/.test(rc), rc.slice(0, 300));
+  await p.selectOption('#rf-tip', 'alis'); await p.waitForTimeout(400);
+  kontrol('İşlem tipi filtresi: Alış → yok', /Bu seçimde resmi fatura yok/.test(await p.textContent('#icerik')));
+  await p.selectOption('#rf-tip', 'tum'); await p.waitForTimeout(300);
   await p.screenshot({ path: `${EKRAN}/cari-resmi.png`, fullPage: true });
+
+  // Gider faturası vergi no'dan cariye bağlanır; tedarikçi carisinde "Alış faturası" (gider) görünür
+  const akr = (await y('POST', '/cariler', { unvan: 'Akaryakıt A.Ş.', tip: 'tedarikci', vergi_no: '4445556667' })).veri;
+  const G3 = ornekXml({ no: 'AKR2026000000079', ettn: 'c0000000-0000-0000-0000-000000000079', tarih: '2026-10-18', vkn: '4445556667', unvan: 'Akaryakıt A.Ş.', aliciVkn: FIRMA,
+    satirlar: [{ ad: 'Motorin', miktar: 5, birim: 'LTR', fiyat: 50, isk: 0, kdv: 20 }] });
+  const g3 = (await y('POST', '/resmi/yukle', { dosyalar: [{ ad: 'g3.xml', veri: b64(G3) }] })).veri.alis[0];
+  await y('POST', '/resmi/gider', { fatura: { no: g3.no, ettn: g3.ettn, tarih: g3.tarih, doviz: 'TRY', tedarikci: g3.tedarikci, kdvDokum: g3.kdvDokum, satirlar: g3.satirlar } });
+  const akrListe = (await y('GET', `/resmi/cari/${akr.id}?yil=2026`)).veri;
+  kontrol('Gider faturası vergi no ile cariye bağlandı', akrListe.length === 1 && akrListe[0].tur === 'gider' && akrListe[0].belge_no === 'AKR2026000000079', akrListe);
+  kontrol('Gider cari bakiyesi oluşturmadı', Number((await y('GET', `/cariler/${akr.id}`)).veri.bakiye || 0) === 0);
+  await p.evaluate((id) => { location.hash = `#/cari/${id}?sekme=resmi`; }, akr.id); await p.waitForSelector('#icerik .rf-cari-ust');
+  await p.selectOption('#rf-yil', '2026'); await p.waitForTimeout(400);
+  kontrol('Tedarikçi carisinde işlem tipi Alış faturası (açık mavi)', /Alış faturası/.test(await p.textContent('#icerik')) && (await p.$$('#icerik tr.rf-satir-gider')).length === 1);
 
   // Resmi faturalar listesi: gider sekmesi, sil
   await p.evaluate(() => { location.hash = '#/resmi-faturalar?ay=2026-10'; }); await p.waitForSelector('.rf-tablo');
   kontrol('Liste: satış 3 fatura', (await p.$$('.rf-tablo tbody tr')).length === 3);
   await p.click('[data-yon="alis"]'); await p.waitForTimeout(400);
-  kontrol('Gider sekmesi açık mavi satırlar', (await p.$$('.rf-tablo tr.rf-satir-gider')).length === 3);
+  kontrol('Gider sekmesi açık mavi satırlar', (await p.$$('.rf-tablo tr.rf-satir-gider')).length === 4);
   await p.click('.rf-tablo tr.rf-satir-gider:has-text("Kırtasiye") td:first-child'); await p.waitForSelector('dialog[open] [data-sil]');
   await p.click('dialog[open] [data-sil]'); await p.waitForTimeout(300); await p.click('dialog[open] button[type=submit]'); await p.waitForTimeout(600);
-  kontrol('Elle kayıt silindi', (await p.$$('.rf-tablo tr.rf-satir-gider')).length === 2);
+  kontrol('Elle kayıt silindi', (await p.$$('.rf-tablo tr.rf-satir-gider')).length === 3);
   await p.setViewportSize({ width: 390, height: 844 }); await p.evaluate(() => { location.hash = '#/kdv?ay=2026-10'; }); await p.waitForTimeout(600);
   kontrol('Telefonda KDV ekranı taşmıyor', !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2)));
   await p.screenshot({ path: `${EKRAN}/kdv-telefon.png`, fullPage: true });

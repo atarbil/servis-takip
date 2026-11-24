@@ -10,6 +10,7 @@ export default async function (el, [id], ctx) {
   const yil = new Date().getFullYear();
   let sekme = ctx.sorgu.sekme || 'ekstre';
   let resmiYil = '';
+  let resmiTip = 'tum';
   const aralik = { bas: `${yil}-01-01`, bit: bugunStr() };
 
   el.innerHTML = String(html`
@@ -101,14 +102,28 @@ export default async function (el, [id], ctx) {
           : html`<tr><td colspan="5" class="bos-durum">Fiş yok</td></tr>`}</tbody></table></div></div>`);
     } else if (sekme === 'resmi') {
       const yil = resmiYil || String(new Date().getFullYear());
-      const [satis, gider] = await Promise.all([api.get('/resmi', { cari_id: c.id, yon: 'satis', yil }), api.get('/resmi', { cari_id: c.id, yon: 'alis', yil })]);
+      const hepsi = await api.get(`/resmi/cari/${c.id}`, { yil: yil === 'tum' ? undefined : yil });
+      const liste = resmiTip === 'tum' ? hepsi : hepsi.filter((x) => (resmiTip === 'satis' ? x.tur === 'satis' : x.tur !== 'satis'));
       const yillar = Array.from({ length: 6 }, (_, i) => String(new Date().getFullYear() - i));
-      k.innerHTML = String(html`<div class="rf-cari-ust"><label>Yıl <select id="rf-yil">${yillar.map((y) => html`<option ${y === yil ? 'selected' : ''}>${y}</option>`)}</select></label>
-          <span class="soluk">Bu cariye kestiğiniz resmi faturalar. Bilgi amaçlıdır; cari bakiyesini etkilemez, yalnız KDV hesabında kullanılır.</span>
+      const top = liste.reduce((t, x) => { t.m += x.matrah; t.k += x.kdv; t.t += x.toplam; return t; }, { m: 0, k: 0, t: 0 });
+      const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+      const TIP = { satis: 'Satış faturası', stoklu: 'Alış faturası', gider: 'Alış faturası' };
+      k.innerHTML = String(html`<div class="rf-cari-ust">
+          <label>İşlem tipi <select id="rf-tip"><option value="tum" ${resmiTip === 'tum' ? 'selected' : ''}>Tümü</option><option value="alis" ${resmiTip === 'alis' ? 'selected' : ''}>Alış faturası</option><option value="satis" ${resmiTip === 'satis' ? 'selected' : ''}>Satış faturası</option></select></label>
+          <label>Yıl <select id="rf-yil">${yillar.map((y) => html`<option ${y === yil ? 'selected' : ''}>${y}</option>`)}<option value="tum" ${yil === 'tum' ? 'selected' : ''}>Tüm yıllar</option></select></label>
+          <span class="rf-renk"><i class="stoklu"></i>Stoklu <i class="gider"></i>Stoksuz / gider</span>
           <span class="bosluk"></span><a class="btn ikincil kucuk" href="#/resmi-yukle">📄 XML yükle</a><button class="btn ikincil kucuk" data-resmi-elle>+ Elle kayıt</button></div>
-        <div class="kart">${resmiTablo(satis, { yon: 'satis', cariGoster: false, bos: `${yil} yılında bu cariye yüklenmiş resmi fatura yok.` })}</div>
-        ${gider.length ? html`<h3 class="kdv-baslik" style="margin-top:1rem">Gider faturaları (yalnız KDV)</h3><div class="kart">${resmiTablo(gider, { yon: 'alis', cariGoster: false })}</div>` : ''}`);
+        <div class="kart"><div class="tablo-kap"><table class="tablo rf-tablo rf-cari-tablo"><thead><tr><th>Tarih</th><th>Fatura no</th><th>İşlem tipi</th><th class="sayi">Fatura tutarı</th><th class="sayi">KDV tutarı</th><th class="sayi">Toplam tutar</th></tr></thead>
+          <tbody>${liste.map((x) => html`<tr class="tikla ${x.tur === 'gider' ? 'rf-satir-gider' : x.tur === 'stoklu' ? 'rf-satir-stoklu' : ''}" ${x.tur === 'stoklu' ? html`data-git="alis/${x.id}"` : html`data-resmi="${x.id}"`}>
+              <td>${tarih(x.tarih)}</td>
+              <td>${x.belge_no || '—'}${x.kaynak === 'elle' ? html` <span class="rozet">elle</span>` : ''}${x.tip && x.tip !== 'SATIS' ? html` <span class="rozet">${x.tip}</span>` : ''}</td>
+              <td><b>${TIP[x.tur]}</b>${x.tur === 'stoklu' ? html`<small class="rf-vkn-yazi">stoklu${x.durum ? ` · ${x.durum === 'onaylandi' ? 'onaylı' : x.durum}` : ''}</small>` : x.tur === 'gider' ? html`<small class="rf-vkn-yazi">gider${x.gider_turu ? ` · ${x.gider_turu}` : ''}</small>` : ''}</td>
+              <td class="sayi">${para(x.matrah)}</td><td class="sayi">${para(x.kdv)}</td><td class="sayi"><b>${para(x.toplam)}</b></td></tr>`)}
+            ${!liste.length ? html`<tr><td colspan="6" class="bos-durum">Bu seçimde resmi fatura yok.</td></tr>` : ''}</tbody>
+          <tfoot><tr><td colspan="3"><b>${liste.length} fatura</b></td><td class="sayi"><b>${para(r2(top.m))}</b></td><td class="sayi"><b>${para(r2(top.k))}</b></td><td class="sayi"><b>${para(r2(top.t))}</b></td></tr></tfoot></table></div></div>
+        <p class="soluk" style="font-size:.8rem">Resmi faturalar bilgi amaçlıdır; ekstreyi ve cari bakiyesini etkilemez.</p>`);
       $('#rf-yil', k).onchange = (e) => { resmiYil = e.target.value; ciz(); };
+      $('#rf-tip', k).onchange = (e) => { resmiTip = e.target.value; ciz(); };
     } else if (sekme === 'yillik') {
       k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Yıl</th><th class="sayi">İş</th><th class="sayi">Ciro (KDV hariç)</th><th class="sayi">Maliyet</th><th class="sayi">Kâr</th><th class="sayi">Tahsilat</th><th class="sayi">Yıl sonu bakiye</th></tr></thead><tbody>
         ${c.yillik.length ? c.yillik.map((y) => html`<tr><td class="ana-hucre" data-et="">${y.yil}</td><td class="sayi" data-et="İş">${y.is_sayisi}</td><td class="sayi" data-et="Ciro">${para(y.ciro_kdv_haric)}</td>

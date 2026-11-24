@@ -11,6 +11,7 @@ export const YONETICI_MENU = [
     { yol: 'takvim', ad: 'Takvim', ikon: 'takvim' },
     { yol: 'isler', ad: 'Tüm İşler', ikon: 'liste' },
     { yol: 'dis-servis', ad: 'Dış Servis', ikon: 'anahtar', sayac: 'dis_servis' },
+    { yol: 'ekip-konum', ad: 'Ekip konumları', ikon: 'konum' },
   ] },
   { grup: 'satis', ad: 'Satış', ikon: 'fis', alt: [
     { yol: 'fiyatlandirma', ad: 'Fiyatlandırma', ikon: 'etiket', sayac: 'fiyatlandirma' },
@@ -61,6 +62,7 @@ const IKON = {
   yenile: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
   ev: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
   havuz: 'M4 6h16M4 12h16M4 18h10',
+  konum: 'M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 12.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2z',
   takvim: 'M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
   liste: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01',
   kisi: 'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1m15-8a3 3 0 1 0 0-6m3 14v-1a4 4 0 0 0-3-3.9M9.5 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
@@ -119,6 +121,7 @@ async function basla() {
   mobilBaslat();
   seritBagla();
   sekmeleriGeriYukle();
+  konumBaslat();
   window.addEventListener('hashchange', yonlendir);
   yonlendir();
 }
@@ -466,12 +469,31 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura', 'resmi-yukle': 'efatura', 'resmi-faturalar': 'resmifaturalar', kdv: 'kdv',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura', 'resmi-yukle': 'efatura', 'resmi-faturalar': 'resmifaturalar', kdv: 'kdv', 'ekip-konum': 'konum',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 // Her girişte yeniden yüklenen sayfalar (canlı döngüsü olanlar)
 const HEP_YENILE = new Set(['guncelleme']);
 const MENU_ESLES = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', efatura: 'resmi-yukle', urun: 'urunler', teklif: 'teklifler', form: 'formlar' };
+
+// ---------- Saha ekibi konumu ----------
+// Teknisyen programı açtığında ve açık tuttuğu sürece birkaç dakikada bir son konum gönderilir (yalnız son konum tutulur).
+function konumBaslat() {
+  if (ctx.yonetici) return;
+  if (!('geolocation' in navigator)) { api.post('/konum', { izin: 'desteklenmiyor' }).catch(() => {}); return; }
+  let son = 0;
+  const gonder = () => {
+    if (document.hidden || Date.now() - son < 60000) return;
+    son = Date.now();
+    navigator.geolocation.getCurrentPosition(
+      (p) => api.post('/konum', { enlem: p.coords.latitude, boylam: p.coords.longitude, dogruluk: p.coords.accuracy }).catch(() => {}),
+      (e) => { if (e.code === 1) api.post('/konum', { izin: 'yok' }).catch(() => {}); },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+  };
+  gonder();
+  setInterval(gonder, 3 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) gonder(); });
+}
 
 // ---------- Program içi sekmeler ----------
 // Açılan her sayfa bir sekmedir; sekmeler arasında geçişte sayfa yeniden yüklenmez (yazılanlar, kaydırma yeri kalır).

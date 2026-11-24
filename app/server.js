@@ -40,7 +40,7 @@ const telegram = process.env.TELEGRAM_TOKEN
   : null;
 
 const ctx = { db, AYAR, web, oturum, telegram, G: girisGerekli, Y: yonetici };
-for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram', 'teklifler', 'envanter', 'silme', 'disservis', 'guncelleme', 'sablonlar', 'efatura', 'kdv', 'resmi']) {
+for (const modul of ['giris', 'isler', 'takvim', 'cariler', 'urunler', 'fisler', 'alis', 'finans', 'raporlar', 'ayarlar', 'telegram', 'teklifler', 'envanter', 'silme', 'disservis', 'guncelleme', 'sablonlar', 'efatura', 'kdv', 'resmi', 'konum']) {
   require(`./routes/${modul}`)(r, ctx);
 }
 

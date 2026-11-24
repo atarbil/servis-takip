@@ -36,7 +36,8 @@ module.exports = (r, { db, web, Y }) => {
     const t = tutarlar(f);
     const karsi = (yon === 'satis' ? f.alici : f.tedarikci) || {};
     const vkn = vknSade(karsi.vkn || karsi.tckn);
-    const cari = cari_id !== undefined ? (cari_id ? { id: cari_id } : null) : (yon === 'satis' ? await cariBul(q, vkn, karsi.unvan) : null);
+    // Satışta vergi no / ünvan, alışta (gider) yalnız vergi no ile programdaki cariye bağlanır (bakiye oluşmaz)
+    const cari = cari_id !== undefined ? (cari_id ? { id: cari_id } : null) : await cariBul(q, vkn, yon === 'satis' ? karsi.unvan : null);
     const x = await q.bir(`INSERT INTO resmi_faturalar (yon, kaynak, ettn, belge_no, tarih, tip, profil, karsi_unvan, karsi_vkn, karsi_vergi_dairesi,
         karsi_adres, karsi_il, karsi_ilce, karsi_telefon, karsi_eposta, cari_id, doviz, kur, matrah, kdv, tevkifat, toplam, kdv_dokum, kalemler,
         gider_turu, aciklama, olusturan_id)
@@ -104,7 +105,7 @@ module.exports = (r, { db, web, Y }) => {
       if (ettn && await q.bir('SELECT 1 AS v FROM alis_faturalari WHERE ettn IS NOT NULL AND lower(ettn) = $1', [ettn])) throw web.hata(409, 'Bu fatura stoklu alış faturası olarak girilmiş.', 'MUKERRER');
       f.ettn = ettn;
       const gt = GIDER_TURLERI.includes(req.body.gider_turu) ? req.body.gider_turu : null;
-      const e = await resmiEkle(q, { yon: 'alis', f, kullanici: req.kullanici.id, gider_turu: gt, cari_id: req.body.cari_id ? Number(req.body.cari_id) : null });
+      const e = await resmiEkle(q, { yon: 'alis', f, kullanici: req.kullanici.id, gider_turu: gt, cari_id: req.body.cari_id ? Number(req.body.cari_id) : undefined });
       const vkn = vknSade(f.tedarikci?.vkn || f.tedarikci?.tckn);
       if (vkn) await q(`INSERT INTO tedarikci_tercih (vkn, secim, gider_turu) VALUES ($1, 'gider', $2)
         ON CONFLICT (vkn) DO UPDATE SET secim = 'gider', gider_turu = excluded.gider_turu, guncelleme = now()`, [vkn, gt]);
@@ -143,6 +144,22 @@ module.exports = (r, { db, web, Y }) => {
         r.doviz, r.matrah, r.kdv, r.tevkifat, r.toplam, r.gider_turu
       FROM resmi_faturalar r LEFT JOIN cariler c ON c.id = r.cari_id
       ${k.length ? 'WHERE ' + k.join(' AND ') : ''} ORDER BY r.tarih DESC, r.id DESC LIMIT 2000`, p)).rows;
+  });
+
+  // Cari → Resmi faturalar: resmi satış + gider kayıtları + XML'den aktarılmış stoklu alış faturaları (işlem tipiyle)
+  r.get('/resmi/cari/:id', Y, async (req) => {
+    const cari = Number(req.params.id);
+    const yil = /^\d{4}$/.test(String(req.query.yil || '')) ? Number(req.query.yil) : null;
+    const yk = yil ? 'AND extract(year FROM tarih) = $2' : '';
+    const p = yil ? [cari, yil] : [cari];
+    const resmi = (await db.query(`SELECT id, yon, kaynak, belge_no, tarih, tip, matrah, kdv, tevkifat, toplam, gider_turu,
+        CASE yon WHEN 'satis' THEN 'satis' ELSE 'gider' END AS tur
+      FROM resmi_faturalar WHERE cari_id = $1 ${yk}`, p)).rows;
+    const stoklu = (await db.query(`SELECT id, 'alis' AS yon, 'xml' AS kaynak, belge_no, tarih, NULL AS tip, ara_toplam AS matrah, kdv_toplam AS kdv,
+        0 AS tevkifat, genel_toplam AS toplam, NULL AS gider_turu, 'stoklu' AS tur, durum
+      FROM alis_faturalari WHERE cari_id = $1 AND ettn IS NOT NULL ${yk}`, p)).rows;
+    return [...resmi, ...stoklu].map((x) => ({ ...x, matrah: Number(x.matrah), kdv: Number(x.kdv), toplam: Number(x.toplam), tevkifat: Number(x.tevkifat || 0) }))
+      .sort((a, b) => (a.tarih < b.tarih ? 1 : a.tarih > b.tarih ? -1 : b.id - a.id));
   });
 
   r.get('/resmi/:id', Y, async (req) => {

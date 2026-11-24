@@ -23,7 +23,7 @@ function dosyaOku(f) {
 export default async function (el, _p, ctx) {
   ctx.baslik('Resmi fatura yükleme');
   let faturalar = []; let hatalar = []; let secili = 0;
-  let satisSonuc = null; let reddedilen = []; let gorunum = 'alis'; let vknIste = false; let bekleyenDosyalar = null;
+  let satisSonuc = null; let reddedilen = []; let islenenAcik = false; let gorunum = 'alis'; let vknIste = false; let bekleyenDosyalar = null;
   let giderTurleri = ['Akaryakıt', 'Telefon / internet', 'Kira', 'Kargo', 'Yemek', 'Elektrik / su / doğalgaz', 'Kırtasiye', 'Diğer'];
   const piyasa = await kurAl(ctx).catch(() => null);
 
@@ -46,10 +46,20 @@ export default async function (el, _p, ctx) {
     const bekleyen = faturalar.filter((x) => x._durum === 'bekliyor').length;
     const parca = [];
     if (sat.length) parca.push(html`<span><b>${sat.length}</b> satış faturası kaydedildi (${eslesen} cariyle eşleşti${sat.length - eslesen ? html`, <b>${sat.length - eslesen}</b> eşleşmeyen` : ''})</span>`);
-    if (faturalar.length) parca.push(html`<span><b>${faturalar.length}</b> alış faturası${bekleyen ? html` · <b>${bekleyen}</b> bekliyor` : ' · tamamlandı'}</span>`);
+    const islenen = faturalar.filter((x) => x._durum === 'aktarildi');
+    const muk = faturalar.filter((x) => x._durum === 'mukerrer').length;
+    if (faturalar.length) parca.push(html`<span><b>${faturalar.length}</b> alış faturası${bekleyen ? html` · <b>${bekleyen}</b> bekliyor` : ''}</span>`);
+    if (islenen.length) {
+      const st = islenen.filter((x) => x._tur !== 'gider').length;
+      parca.push(html`<button class="btn-metin rf-islenen-ac" data-islenen-ac><b>${islenen.length}</b> fatura işlendi (${st} taslak alış, ${islenen.length - st} gider) ▾</button>`);
+    }
+    if (muk) parca.push(html`<span>${muk} alış faturası daha önce girilmiş</span>`);
     if (satisSonuc?.tekrar.length) parca.push(html`<span>${satisSonuc.tekrar.length} satış faturası daha önce yüklenmiş</span>`);
     if (reddedilen.length) parca.push(html`<span class="kirmizi-yazi">${reddedilen.length} fatura firmanıza ait değil, alınmadı</span>`);
     return html`<div class="rf-ozet">${parca.map((x, i) => html`${i ? html`<i>·</i>` : ''}${x}`)}</div>
+      ${islenenAcik && islenen.length ? html`<div class="rf-islenen">${islenen.map((x) => html`<div class="${x._tur === 'gider' ? 'gider' : 'stoklu'}">
+        ${x._tur === 'gider' ? html`<a href="#/resmi-faturalar?yon=alis&id=${x._giderId}">${x.no}</a> · ${x.tedarikci?.unvan || ''} <span class="rozet rf-gider-rozet">gider</span>`
+          : html`<a href="#/alis/${x._alisId}">${x.no}</a> · ${x.tedarikci?.unvan || ''} <span class="rozet yesil">taslak alış</span>`}</div>`)}</div>` : ''}
       ${reddedilen.length ? html`<details class="kdv-hatalar"><summary>Alınmayan faturalar</summary>${reddedilen.map((x) => html`<div><b>${x.no}</b> ${x.satici} — ${x.neden}</div>`)}</details>` : ''}
       <div class="rf-gorunum">
         <button class="${gorunum === 'alis' ? 'aktif' : ''}" data-gorunum="alis">Alış faturaları <b>${faturalar.length}</b></button>
@@ -61,14 +71,16 @@ export default async function (el, _p, ctx) {
   function satisHtml() {
     const sat = satisSonuc?.eklenen || [];
     if (!sat.length) return html`<div class="bos-durum">Bu yüklemede satış faturası yok.</div>`;
+    const sirali = [...sat.filter((x) => !x.cari), ...sat.filter((x) => x.cari)];
     return html`<div class="kart"><table class="tablo rf-satis"><thead><tr><th>Tarih</th><th>Fatura no</th><th>Müşteri (faturadan)</th><th>Cari</th></tr></thead>
-      <tbody>${sat.map((x) => html`<tr>
+      <tbody>${sirali.map((x) => html`<tr class="${x.cari ? 'rf-bagli' : ''}">
         <td>${tarihYaz(x.tarih)}</td><td><a href="#/resmi-faturalar?id=${x.id}">${x.no}</a>${x.tip && x.tip !== 'SATIS' ? html` <span class="rozet">${x.tip}</span>` : ''}</td><td>${x.musteri}</td>
         <td>${x.cari ? html`<a href="#/cari/${x.cari.id}?sekme=resmi">✓ ${x.cari.unvan}</a>`
           : html`<div class="rf-bagla"><input data-satis-cari="${x.id}" placeholder="Cari ara ve bağla…"><button class="btn ikincil kucuk" data-satis-yeni="${x.id}">Yeni cari aç</button></div>`}</td></tr>`)}</tbody></table>
       <p class="soluk" style="padding:0 1rem .8rem;font-size:.8rem">Satış faturaları yalnız KDV durumunda kullanılır; cari bakiyesini, stoğu ve satış fişlerini etkilemez.</p></div>`;
   }
 
+  const gorunur = () => faturalar.map((x, i) => ({ x, i })).filter(({ x }) => x._durum === 'bekliyor' || x._durum === 'atlandi');
   function ciz() {
     const f = faturalar[secili];
     el.innerHTML = String(html`
@@ -86,10 +98,12 @@ export default async function (el, _p, ctx) {
       ${hatalar.length ? html`<div class="uyari-kutu">${hatalar.map((h) => html`<div><b>${h.dosya}</b>: ${h.hata}</div>`)}</div>` : ''}
       ${ozetHtml()}
       ${gorunum === 'satis' && satisSonuc ? satisHtml() : html`
-      ${faturalar.length > 1 ? html`<div class="efatura-sekmeler">${faturalar.map((x, i) => html`<button class="efatura-sekme ${i === secili ? 'secili' : ''} ${x._durum} tur-${x._tur}" data-sekme="${i}">
+      ${gorunur().length > 1 ? html`<div class="efatura-sekmeler">${gorunur().map(({ x, i }) => html`<button class="efatura-sekme ${i === secili ? 'secili' : ''} ${x._durum} tur-${x._tur}" data-sekme="${i}">
           <b>${x.tedarikci?.unvan || '—'}</b><small>${x.no} · ${x.doviz === 'TRY' ? para(x.toplam.odenecek || x.toplam.genel) : dovizPara(x.toplam.odenecek || x.toplam.genel, x.doviz)}</small>
           <span class="efatura-durum">${x._durum === 'aktarildi' ? (x._tur === 'gider' ? '✓ gider kaydedildi' : '✓ aktarıldı') : x._durum === 'mukerrer' ? 'daha önce girilmiş' : x._durum === 'atlandi' ? 'atlandı' : x._tur === 'gider' ? 'bekliyor · gider' : 'bekliyor · stoklu'}</span></button>`)}</div>` : ''}
-      ${f ? faturaHtml(f) : ''}`}`);
+      ${f && ['bekliyor', 'atlandi'].includes(f._durum) ? faturaHtml(f)
+        : faturalar.length && !gorunur().length ? html`<div class="bilgi-kutu rf-bitti"><b>✓ Tüm alış faturaları işlendi.</b>
+            <div class="btn-grup" style="margin-top:.5rem"><a class="btn ikincil kucuk" href="#/alislar">Alış faturaları</a><a class="btn ikincil kucuk" href="#/resmi-faturalar">Resmi faturalar</a><a class="btn ikincil kucuk" href="#/kdv">KDV durumu</a></div></div>` : ''}`}`);
     bagla();
   }
 
@@ -123,7 +137,7 @@ export default async function (el, _p, ctx) {
 
   function faturaHtml(f) {
     const t = f.tedarikci || {};
-    const kilitli = f._durum !== 'bekliyor';
+    const kilitli = !['bekliyor', 'atlandi'].includes(f._durum);
     const yer = [t.ilce, t.il].filter(Boolean).join(' / ');
     const dv = f.doviz;
     const tutar = (n) => (dv === 'TRY' ? para(n) : dovizPara(n, dv));
@@ -210,8 +224,9 @@ export default async function (el, _p, ctx) {
   }
 
   function sonraki() {
-    const i = faturalar.findIndex((x) => x._durum === 'bekliyor');
-    if (i >= 0) secili = i;
+    let i = faturalar.findIndex((x) => x._durum === 'bekliyor');
+    if (i < 0) i = faturalar.findIndex((x) => x._durum === 'atlandi');
+    secili = i >= 0 ? i : 0;
     ciz();
   }
 
@@ -246,7 +261,7 @@ export default async function (el, _p, ctx) {
       cariSecici(inp, async (c) => { try { await satisCari(Number(inp.dataset.satisCari), { cari_id: c.id }); } catch (err) { bildir(err.message, 'hata'); } }, { yeniIzin: false });
     });
     const f = faturalar[secili];
-    if (!f || f._durum !== 'bekliyor') return;
+    if (!f || !['bekliyor', 'atlandi'].includes(f._durum)) return;
     const gt = $('#rf-gider-turu', el);
     if (gt) gt.onchange = () => { f._giderTuru = gt.value; };
     const ci = $('#ef-cari', el);
@@ -273,6 +288,7 @@ export default async function (el, _p, ctx) {
   el.addEventListener('click', async (e) => {
     const sek = e.target.closest('[data-sekme]');
     if (sek) { secili = Number(sek.dataset.sekme); return ciz(); }
+    if (e.target.closest('[data-islenen-ac]')) { islenenAcik = !islenenAcik; return ciz(); }
     const gr = e.target.closest('[data-gorunum]');
     if (gr) { gorunum = gr.dataset.gorunum; return ciz(); }
     if (e.target.closest('[data-vkn-kaydet]')) {
@@ -285,7 +301,7 @@ export default async function (el, _p, ctx) {
     if (sy) { try { await satisCari(Number(sy.dataset.satisYeni), { yeni_cari: true }); } catch (err) { bildir(err.message, 'hata'); } return; }
     const f = faturalar[secili]; if (!f) return;
     const ts = e.target.closest('[data-tur-sec]');
-    if (ts && f._durum === 'bekliyor') { f._tur = ts.dataset.turSec; return ciz(); }
+    if (ts && ['bekliyor', 'atlandi'].includes(f._durum)) { f._tur = ts.dataset.turSec; return ciz(); }
     const gk = e.target.closest('[data-gider-kaydet]');
     if (gk) {
       gk.disabled = true;

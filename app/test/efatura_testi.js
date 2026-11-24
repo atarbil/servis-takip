@@ -139,9 +139,8 @@ const b64 = (s) => Buffer.from(s).toString('base64');
     ] });
   await p.setInputFiles('#dosya', [{ name: 'yeni.xml', mimeType: 'application/xml', buffer: Buffer.from(yeniXml) },
     { name: 'paket.zip', mimeType: 'application/zip', buffer: z }]);
-  await p.waitForSelector('.efatura-sekmeler');
-  const sek = await p.$$eval('.efatura-sekme', (x2) => x2.map((s) => s.textContent.replace(/\s+/g, ' ').trim()));
-  kontrol('e-Fatura: üç fatura sekmesi (ikisi daha önce girilmiş)', sek.length === 3 && sek.filter((s) => /daha önce girilmiş/.test(s)).length === 2 && /bekliyor/.test(sek[0]), sek);
+  await p.waitForSelector('.rf-ozet');
+  kontrol('e-Fatura: daha önce girilmiş iki fatura listede yok, özette', (await p.$$('.efatura-sekme')).length === 0 && /2 alış faturası daha önce girilmiş/.test(await p.textContent('.rf-ozet')), await p.textContent('.rf-ozet'));
   kontrol('e-Fatura: ilk bekleyen fatura açık', /Yeni Güvenlik/.test(await p.textContent('.fatura-cari')) && /Kayıtlı değil/.test(await p.textContent('.fatura-cari')));
   const es = await p.$$eval('.ef-tablo tbody tr', (rs) => rs.map((r) => r.querySelector('.ef-eslesme').textContent.replace(/\s+/g, ' ').trim()));
   kontrol('e-Fatura: ad benzerliğiyle eşleşti, adaptör yeni kart', /Hikvision 4MP/.test(es[0]) && /Ad benzerliği/.test(es[0]) && /Yeni stok kartı/.test(es[2]), es);

@@ -5,52 +5,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. Sahadaki ekiplerin konumu (24.11.2026)
-- Kullanıcı: "sahadaki ekiplerin konumu" (yöneticiye açılan konum bilgisi).
-- Önerilen tasarım: **İşler → Ekip konumları** haritası (OpenStreetMap; ek ücret yok): her ekip / teknisyen için son konum
-  işareti, ne zaman alındığı ("3 dk önce"), üzerinde olduğu iş ve müşteri adresi; işe tıklayınca iş kartı. Konum geçmişi
-  (o günün rotası) isteğe bağlı.
-- Konumun alınma yolları (karar bekliyor):
-  1. **İş adımlarında konum:** teknisyen "Yola çıktım / Vardım / Tamamladım" dediğinde telefon konumu kaydedilir. En güvenilir,
-     pil dostu; arada canlı takip yok.
-  2. **Uygulama açıkken canlı:** teknisyen ekranı açıkken 1–2 dakikada bir konum gönderilir (web uygulaması kapalıyken /
-     arka planda konum alınamaz — özellikle iPhone).
-  3. **Telegram canlı konum:** teknisyen sabah bota "canlı konum paylaş"ı açar (8 saate kadar); telefon kilitliyken de güncellenir.
-     Bot zaten kurulu olduğu için ek uygulama gerekmez.
-- **Karar (kullanıcı 22:15): "uygulamayı açtığı yerden son görülme olarak".** → Teknisyen programı (telefonda) açtığında ve
-  açık tuttuğu sürece birkaç dakikada bir konumu alınır; haritada her teknisyen için **son görülme** yeri ve zamanı
-  ("Ali Usta · 14:32'de · 12 dk önce"). İş adımı / Telegram yok. Varsayım (cevaplanmadı): **yalnız son konum**, geçmiş/rota tutulmaz.
-  Telefon konum izni vermezse "konum izni yok" görünür. Haritada son görülme 1 saatten eskiyse soluk.
-- **Karar (kullanıcı 22:16):** teknisyen ekranında **onay penceresi ya da "konum paylaşılıyor" işareti olmayacak.** (Telefonun /
-  tarayıcının kendi konum izni sorusu programdan bağımsızdır, bir kez çıkar.) Yasal not kullanıcıya iletildi: çalışan konumu
-  kişisel veri; KVKK aydınlatması program dışında (ör. yazılı bildirim / iş sözleşmesi eki) yapılmalı. Konumları yalnız yönetici
-  görür; yalnız son konum tutulur, eskisinin üzerine yazılır.
-
-
-### 2. Resmi fatura yüklemede işlenen faturalar üstteki listeden düşsün (24.11.2026)
-- Kullanıcı: "Resmi fatura yüklemede onaylanan faturalar yukarıdaki listeden düşsün".
-- Üstteki alış faturası kartlarından (sekme şeridi) **taslak alış faturası oluşturulanlar** ve **yalnız KDV (gider) olarak
-  kaydedilenler** kaldırılır; sıradaki bekleyen fatura kendiliğinden açılır. "Daha önce girilmiş" (işlem yapılamayan) faturalar da
-  listede durmaz, yalnız özet satırında sayıları yazar. "Atla" denilenler listede kalır (sonra dönülebilsin).
-- Özet satırında: "x fatura işlendi (y taslak alış, z gider)" — tıklanınca işlenenlerin bağlantıları açılır.
-- Satış görünümünde cariye bağlanan faturalar da "eşleşmeyen" sayısından düşer (bağlananlar listenin altına iner, soluk).
-- Hepsi bitince: "Tüm faturalar işlendi" kutusu + Alış faturaları / Resmi faturalar / KDV durumu bağlantıları.
-
-### 3. KDV durumu: devreden kutusu siyah yazı, alttaki toplamlar yukarı (24.11.2026)
-- Kullanıcı: "Önceki aydan devreden KDV yazı rengi beyaz, onu siyah yapalım; en alttaki toplamları yukarı alalım".
-- Devreden KDV kutusuna yazılan rakam şeritten beyaz renk alıyordu → kutu içi yazı siyah (kalın, okunur).
-- Alttaki denklem satırı (Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden) sonuç şeridinin hemen altına, iki sütunun üstüne
-  taşınır; altta tekrar edilmez.
-
-### 4. Cari → Resmi faturalar: tek liste, işlem tipi Alış / Satış faturası (24.11.2026, son hâli)
-- Kullanıcı (22:35, öncekileri iptal etti): "resmi olan faturalar **Resmi faturalar** altında gelsin; işlem tipinde **alış ve satış
-  faturası** yazsın; gerekirse biz **kutudan alış veya satış olarak seçebilelim**; **ekstreye karışmayalım**."
-- Cari → Resmi faturalar sekmesi **tek liste** (ikiye bölünmez, ekstre değişmez): tarih, fatura no, **İşlem tipi**
-  (Alış faturası / Satış faturası), fatura tutarı, KDV tutarı, toplam tutar; alt toplam. Üstte **filtre kutusu: Tümü / Alış / Satış**
-  ve yıl seçimi.
-- Listeye girenler: bu cariye kesilen resmi satış faturaları; bu cariden gelen gider (yalnız KDV) faturaları; XML'den aktarılmış
-  stoklu alış faturaları (yeşil, alış faturasına bağlantılı). Renkler: stoklu yeşil, gider açık mavi.
-- Gider faturaları vergi no'dan cariyle eşleşir (kaydederken; eskiler bir kez). Bakiye / ekstre değişmez.
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
@@ -62,6 +17,25 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 24. derleme: Ekip konumları, yükleme listesi, KDV düzeltmeleri, cari resmi faturalar
+- **İşler → Ekip konumları:** teknisyen programı telefonda açtığında ve açık tuttuğu sürece (3 dk'da bir, ekran açıkken) son
+  konumu kaydedilir; **yalnız son konum** tutulur (üzerine yazılır). Teknisyen ekranında bilgi / onay / işaret **yok** (telefonun kendi
+  konum izni sorusu bir kez çıkar). OpenStreetMap haritası (ek kütüphane yok): her teknisyen işaretli, son görülme saati ve
+  "x dk önce", 1 saatten eskiler soluk; sürükle, tekerlek / +− ile yakınlaştır, "hepsini göster". Yanda liste: son görülme,
+  doğruluk, "Konum izni yok" / "Henüz programı telefonda açmadı", ekibin sahadaki / bugünkü işi ve müşterisi, Haritada göster,
+  Google Haritalar bağlantısı, telefon. Sayfa açıkken dakikada bir yenilenir. Yalnız yönetici görür.
+- **Resmi fatura yükleme:** taslak alış oluşturulan ve gider olarak kaydedilen faturalar üstteki listeden düşer, sıradaki açılır;
+  daha önce girilmiş olanlar listede görünmez (özette sayısı). Özette "x fatura işlendi (y taslak alış, z gider)" — tıklanınca
+  bağlantılar. Atlananlar listede kalır ve sonra işlenebilir. Hepsi bitince "Tüm alış faturaları işlendi" + bağlantılar.
+  Satış görünümünde cariye bağlananlar alta iner (soluk), eşleşmeyenler üstte.
+- **KDV durumu:** devreden KDV kutusundaki yazı siyah ve kalın; denklem satırı (Satış KDV − Alış KDV − Devreden = …) sonuç
+  şeridinin hemen altına alındı.
+- **Cari → Resmi faturalar** tek liste: **İşlem tipi** sütunu (Alış faturası / Satış faturası), üstte **Tümü / Alış / Satış** kutusu
+  ve yıl (tüm yıllar dahil); bu cariye kesilen satışlar, bu cariden gelen gider faturaları (açık mavi) ve XML'den aktarılmış stoklu
+  alışlar (yeşil, durumuyla; tıklayınca alış faturası). Ekstre ve bakiye değişmez.
+- Gider faturaları tedarikçinin vergi no'su programdaki bir cariye aitse ona bağlanır (bakiye oluşmaz); eski kayıtlar bir kez eşleştirildi.
+- Testler: yeni konum_testi.js; efatura_testi ve kdv_testi güncellendi.
 
 ### 24.11.2026 — 23. derleme: Resmi faturalar, tek yükleme ekranı, gider faturaları, iki sütunlu KDV
 - **Finans → Resmi fatura yükleme** (tek menü; Stok altındaki "e-Fatura aktar" kalktı): alış ve satış XML'leri / zip karışık

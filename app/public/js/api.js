@@ -24,7 +24,7 @@ async function istek(yontem, yol, govde) {
     throw new ApiHatasi(veri?.hata || `Hata (${r.status})`, r.status, veri?.kod);
   }
   // Veri değişti: diğer sekmeler gösterildiklerinde kendini yeniler
-  if (yontem !== 'GET' && !/^\/(giris|cikis|durum|efatura\/oku|kdv\/|sil\/onizleme)/.test(yol)) window.dispatchEvent(new Event('veri-degisti'));
+  if (yontem !== 'GET' && !/^\/(giris|cikis|durum|efatura\/oku|kdv\/|konum|sil\/onizleme)/.test(yol)) window.dispatchEvent(new Event('veri-degisti'));
   return veri;
 }
 

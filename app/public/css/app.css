@@ -1497,3 +1497,41 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
 .kdv-tablo th, .kdv-tablo td { padding: .5rem .55rem; }
 .kdv-tablo td.sayi { white-space: nowrap; }
 .kdv-tablo td.kdv-no { white-space: nowrap; } .kdv-tablo td.kdv-no .rozet { margin-left: 0; }
+
+/* 24. derleme: ekip konumları */
+.konum-duzen { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1rem; align-items: start; }
+@media (max-width: 960px) { .konum-duzen { grid-template-columns: 1fr; } }
+.harita { position: relative; height: calc(100vh - 230px); min-height: 380px; border-radius: 14px; overflow: hidden; background: #dfe7ef; border: 1px solid var(--cizgi); touch-action: none; cursor: grab; user-select: none; }
+.harita.suruklenior { cursor: grabbing; }
+.harita-ic { position: absolute; inset: 0; }
+.harita-karo { position: absolute; width: 256px; height: 256px; pointer-events: none; }
+.harita-isaret { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; border: 0; background: none; padding: 0; cursor: pointer; z-index: 2; }
+.harita-nokta { order: 2; width: 18px; height: 18px; border-radius: 50%; background: var(--ana); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.harita-ad { order: 1; background: #fff; border-radius: 8px; padding: .15rem .5rem; font-size: .78rem; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.2); margin-bottom: 3px; color: var(--yazi); }
+.harita-ad small { display: block; font-weight: 500; color: var(--soluk); font-size: .68rem; }
+.harita-isaret.eski { opacity: .55; } .harita-isaret.eski .harita-nokta { background: var(--soluk2); }
+.harita-isaret.secili { z-index: 3; } .harita-isaret.secili .harita-nokta { background: #dc2626; transform: scale(1.2); }
+.harita-dugmeler { position: absolute; right: .6rem; top: .6rem; display: grid; gap: 4px; z-index: 4; }
+.harita-dugmeler button { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--cizgi); background: #fff; font-size: 1.1rem; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+.harita-telif { position: absolute; right: 0; bottom: 0; background: rgba(255,255,255,.85); font-size: .68rem; padding: .1rem .4rem; z-index: 4; }
+.konum-liste { display: grid; gap: .5rem; max-height: calc(100vh - 230px); overflow: auto; }
+.konum-kart { background: #fff; border: 1px solid var(--cizgi); border-radius: 12px; padding: .7rem .8rem; display: grid; gap: .3rem; }
+.konum-kart.secili { border-color: var(--ana); box-shadow: 0 0 0 2px var(--ana-acik); }
+.konum-kart.eski .konum-zaman { color: var(--soluk); }
+.konum-kart-ust { display: flex; gap: .4rem; align-items: center; justify-content: space-between; }
+.konum-zaman { color: var(--yesil); font-weight: 600; font-size: .85rem; }
+.konum-durum small, .konum-is small { color: var(--soluk); }
+.konum-is { font-size: .85rem; }
+.konum-arac { display: flex; flex-wrap: wrap; gap: .4rem .9rem; font-size: .82rem; }
+.konum-arac .btn-metin, .konum-arac a { color: var(--ana); }
+@media (max-width: 860px) { .harita { height: 55vh; } .konum-liste { max-height: none; } }
+
+/* 24. derleme: KDV devreden kutusu okunur */
+.kdv-serit-devreden input { color: var(--yazi); font-weight: 700; font-size: 1rem; }
+.kdv-denklem.ust { margin: 0 0 1rem; }
+.rf-islenen-ac { color: var(--yesil); font: inherit; }
+.rf-islenen { display: grid; gap: .25rem; background: #fff; border: 1px solid var(--cizgi); border-radius: 12px; padding: .6rem .9rem; margin: -.4rem 0 .8rem; font-size: .88rem; }
+.rf-islenen > div { padding-left: .5rem; } .rf-islenen > .stoklu { box-shadow: inset 3px 0 0 var(--stoklu); } .rf-islenen > .gider { box-shadow: inset 3px 0 0 var(--gider); }
+.rf-satis tr.rf-bagli td { opacity: .6; }
+.rf-tablo tr.rf-satir-stoklu td { background: var(--stoklu-acik); } .rf-tablo tr.rf-satir-stoklu td:first-child { box-shadow: inset 4px 0 0 var(--stoklu); }
+.rf-cari-ust label { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; }
