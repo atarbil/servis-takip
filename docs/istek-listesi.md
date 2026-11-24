@@ -4,13 +4,24 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Satış fişi: bulunamayan ürün için "yeni stok kartı açılsın mı?" (24.11.2026)
-- Satış fişinde ürün hücresine bir ad yazılıp stokta eşleşen ürün yoksa (Enter / hücreden çıkınca) sorulsun:
-  **"'…' stokta bulunamadı. Yeni stok kartı açılsın mı?"** — Evet: ürün kartı penceresi yazılan adla dolu açılır (birim, KDV, satış
-  fiyatı, barkod sorulur); kaydedince satıra o ürün bağlanır, fiyatı gelir. Hayır: satır stoksuz serbest açıklama olarak kalır
-  (bugünkü gibi) ya da yazı silinir — iki seçenek pencerede.
-- Aynı davranış alış faturası ve teklif ekranındaki ürün hücresinde de (tutarlılık için).
-- Barkod okutulup bulunamazsa da aynı soru (barkod alanı dolu gelir).
+### 1. Tüm kalemler stok kartlı olsun; açıklama (serbest metin) satırı hiçbir yerde olmasın (24.11.2026)
+Kullanıcı: "Stok kartı olmayan ürünü açıklama satırı olarak işlemesin. Satış fişine yazılan ya da müşteriye kayıt olarak işlenecek
+tüm kalemler stok olarak açılmak zorunda olsun. Açıklama olayı hiçbir yerde olmasın."
+- **Kural:** satış fişi, alış faturası, teklif / proforma, "✓ Teslim et / Tamamla", "+ İş ekle → İşi ben yaptım" satırları ve
+  iş malzemeleri — hepsinde her satır bir **stok kartına bağlı** olmak zorunda. Kartsız (yalnız yazı) satır kaydedilemez; hem ekranda
+  hem veritabanında (kayıt kuralı) engellenir.
+- **Bulunamayan ürün:** ürün hücresine yazılan ad stokta yoksa (Enter / hücreden çıkınca / barkod okutunca) sorulur:
+  **"'…' stokta bulunamadı. Yeni stok kartı açılsın mı?"** — **Evet:** ürün kartı yazılan adla (barkodla okutulduysa barkodla) dolu
+  açılır; birim, KDV, satış fiyatı girilip kaydedilince satıra bağlanır, fiyatı gelir. **Hayır:** yazı silinir, satır boş kalır
+  (açıklama satırı seçeneği yok).
+- **İşçilik / hizmet de kart olur:** ürün kartına **"Tür: Ürün / Hizmet"** eklenir. Hizmet kartı (ör. "Kamera montaj işçiliği",
+  "Servis ücreti") stok miktarı tutmaz, stok düşmez, kritik stok uyarısı vermez; ama fiyatı, KDV'si, raporlarda satış adedi/cirosu olur.
+  Satır tipi (ürün / işçilik / hizmet) seçimi kalkar; kartın türünden gelir.
+- **Satır notu** (seri no, garanti vb.) kalemin altına yazılan ek not olarak kalır — bu bir "açıklama satırı" değil, kartlı kaleme ek bilgidir.
+  (İstenirse bu da kaldırılabilir — sorulacak.)
+- **Eski kayıtlar:** daha önce kaydedilmiş kartsız satırlar geçmişte olduğu gibi kalır (onaylı fiş / cari bakiyesi bozulmasın).
+  Taslak fiş / teklifte kartsız satır varsa kaydederken "kart aç ya da sil" istenir. Ayarlar'da "kartsız eski kalemleri karta
+  dönüştür" yardımcısı: aynı yazılı kalemleri gruplar, tek tıkla hizmet/ürün kartı açıp bağlar.
 
 ### 2. Satış fişi: Enter ile yeni satır açılması onaya bağlı olsun (24.11.2026)
 - Bugün: birim fiyat → Enter → miktar → Enter (son hücre) yeni satırı **kendiliğinden** açıyor.
