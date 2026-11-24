@@ -4,13 +4,14 @@ import { cariFormu } from '../bilesen.js';
 
 export default async function (el, _p, ctx) {
   ctx.baslik('Cariler');
-  const f = { q: '', tip: '', bakiyeli: '', pasif: '' };
+  // Açılışta Müşteriler (müşteri + her ikisi) seçili gelir
+  const f = { q: '', tip: 'musteri', bakiyeli: '', pasif: '' };
   el.innerHTML = String(html`
     <div class="sayfa-ust"><h2>Cariler</h2><span class="bosluk"></span>
       <button class="btn ikincil" id="csv">Excel'e aktar</button><button class="btn birincil" id="yeni">+ Yeni cari</button></div>
     <div class="filtre">
       <input type="search" id="q" placeholder="Ara: ad, telefon, kod…" autofocus>
-      <select id="tip"><option value="">Tümü</option><option value="musteri">Müşteriler</option><option value="tedarikci">Tedarikçiler</option></select>
+      <select id="tip"><option value="">Tümü</option><option value="musteri" selected>Müşteriler</option><option value="tedarikci">Tedarikçiler</option></select>
       <label class="kutu-sec" style="margin:0"><input type="checkbox" id="bakiyeli"> Sadece bakiyesi olanlar</label>
       <label class="kutu-sec" style="margin:0"><input type="checkbox" id="pasif"> Pasifleri göster</label>
     </div>

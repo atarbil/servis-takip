@@ -75,6 +75,48 @@ module.exports = (r, { db, web, Y }) => {
     return { cari, bas, bit, satirlar };
   });
 
+  // Detaylı ekstre: devir + hareketler (borç / alacak / yürüyen bakiye) + satış fişi ve alış faturası kalemleri + ödeme şekli. Vade yok.
+  r.get('/cariler/:id/detayli-ekstre', Y, async (req) => {
+    const yil = new Date().getFullYear();
+    const bas = tarih(req.query.bas) || `${yil}-01-01`;
+    const bit = tarih(req.query.bit) || `${yil}-12-31`;
+    const cari = (await db.query('SELECT id, kod, unvan, tip, telefon, eposta, adres, il, ilce, vergi_dairesi, vergi_no FROM cariler WHERE id = $1', [req.params.id])).rows[0];
+    if (!cari) throw web.hata(404, 'Cari bulunamadı.');
+    const devir = Number((await db.query(`SELECT coalesce(sum(borc - alacak), 0) AS b FROM cari_hareketler
+      WHERE cari_id = $1 AND NOT iptal AND tarih < $2::date`, [cari.id, bas])).rows[0].b);
+    const hareket = (await db.query(`SELECT h.id, h.tarih, h.belge_tip::text AS belge_tip, h.belge_id, h.belge_no, h.aciklama, h.borc, h.alacak
+      FROM cari_hareketler h WHERE h.cari_id = $1 AND NOT h.iptal AND h.tarih BETWEEN $2::date AND $3::date ORDER BY h.tarih, h.id`, [cari.id, bas, bit])).rows;
+    const idler = (t) => hareket.filter((h) => h.belge_tip === t && h.belge_id).map((h) => Number(h.belge_id));
+    const grupla = (rows, k) => rows.reduce((m, x) => { (m[x[k]] ||= []).push(x); return m; }, {});
+    const fisK = idler('satis_fisi').length ? grupla((await db.query(`SELECT s.fis_id, s.aciklama AS ad, s.miktar, s.birim, s.birim_fiyat, s.iskonto_orani, s.kdv_orani,
+        round(s.miktar * s.birim_fiyat * (1 - s.iskonto_orani / 100), 2) AS tutar
+      FROM satis_fisi_satirlari s WHERE s.fis_id = ANY(string_to_array($1, ',')::bigint[]) ORDER BY s.fis_id, s.sira, s.id`, [idler('satis_fisi').join(',')])).rows, 'fis_id') : {};
+    const alisK = idler('alis_faturasi').length ? grupla((await db.query(`SELECT s.fatura_id, u.ad, s.miktar, u.birim, s.birim_fiyat, 0 AS iskonto_orani, s.kdv_orani,
+        round(s.miktar * s.birim_fiyat, 2) AS tutar
+      FROM alis_faturasi_satirlari s JOIN urunler u ON u.id = s.urun_id WHERE s.fatura_id = ANY(string_to_array($1, ',')::bigint[]) ORDER BY s.fatura_id, s.id`, [idler('alis_faturasi').join(',')])).rows, 'fatura_id') : {};
+    const finIdler = [...idler('tahsilat'), ...idler('odeme')];
+    const fin = finIdler.length ? Object.fromEntries((await db.query(`SELECT f.id, h.ad AS hesap, h.tip::text AS hesap_tip FROM finans_hareketleri f JOIN hesaplar h ON h.id = f.hesap_id
+      WHERE f.id = ANY(string_to_array($1, ',')::bigint[])`, [finIdler.join(',')])).rows.map((x) => [x.id, x])) : {};
+    let bakiye = devir; let borc = 0; let alacak = 0;
+    const satirlar = hareket.map((h) => {
+      const b = Number(h.borc); const a = Number(h.alacak);
+      bakiye += b - a; borc += b; alacak += a;
+      const kalemler = (h.belge_tip === 'satis_fisi' ? fisK[h.belge_id] : h.belge_tip === 'alis_faturasi' ? alisK[h.belge_id] : null) || [];
+      return {
+        tarih: h.tarih, belge_tip: h.belge_tip, belge_id: h.belge_id, belge_no: h.belge_no, aciklama: h.aciklama, borc: b, alacak: a,
+        bakiye: Math.round(bakiye * 100) / 100,
+        odeme: fin[h.belge_id] && ['tahsilat', 'odeme'].includes(h.belge_tip) ? fin[h.belge_id] : null,
+        kalemler: kalemler.map((k) => {
+          const net = Number(k.tutar);
+          return { ad: k.ad, miktar: Number(k.miktar), birim: k.birim, birim_fiyat: Number(k.birim_fiyat), iskonto_orani: Number(k.iskonto_orani), kdv_orani: Number(k.kdv_orani),
+            tutar: net, kdvli: Math.round(net * (1 + Number(k.kdv_orani) / 100) * 100) / 100 };
+        }),
+      };
+    });
+    const r2 = (n) => Math.round(n * 100) / 100;
+    return { cari, bas, bit, devir: r2(devir), satirlar, toplam: { borc: r2(borc), alacak: r2(alacak), bakiye: r2(bakiye) } };
+  });
+
   r.post('/cariler/:id/devir', Y, async (req) => {
     const tutar = sayi(req.body.tutar, 'Tutar');
     if (!tutar) throw web.hata(400, 'Tutar sıfır olamaz.');

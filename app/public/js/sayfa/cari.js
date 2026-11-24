@@ -1,7 +1,7 @@
 import { api } from '../api.js';
 import { html, $, $$, para, paraSade, tarih, bakiyeHucre, bakiyeAciklama, durumRozet, telLink, csvIndir, pencere, bildir, sayiCoz, bugunStr } from '../ui.js';
 import { cariFormu, finansPenceresi, yeniIsPenceresi, silOnay } from '../bilesen.js';
-import { ekstreYazdir, BELGE } from '../belgeler.js';
+import { ekstreYazdir, BELGE, detayliEkstreHtml, detayliEkstreYazdir } from '../belgeler.js';
 import { resmiTablo, resmiDetay, elleKayit } from '../resmi.js';
 
 export default async function (el, [id], ctx) {
@@ -12,6 +12,7 @@ export default async function (el, [id], ctx) {
   let resmiYil = '';
   let resmiTip = 'tum';
   const aralik = { bas: `${yil}-01-01`, bit: bugunStr() };
+  const aralikD = { bas: `${yil}-01-01`, bit: bugunStr() };
 
   el.innerHTML = String(html`
     <div class="detay-ust">
@@ -33,7 +34,7 @@ export default async function (el, [id], ctx) {
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
       <button class="btn tehlike-cizgi" data-a="sil" title="Cari ve tüm hareketleri silinir (30 gün geri alınabilir)">🗑 Sil</button>
     </div>
-    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['resmi', 'Resmi faturalar'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
+    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['detayli', 'Detaylı ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['resmi', 'Resmi faturalar'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
       .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
     <div id="icerik"></div>`);
 
@@ -73,6 +74,34 @@ export default async function (el, [id], ctx) {
       $('#e-yazdir', k).onclick = () => ekstreYazdir(ctx, e);
       $('#e-csv', k).onclick = () => csvIndir(`ekstre-${c.unvan}`, ['Tarih', 'Belge', 'Belge no', 'Açıklama', 'Vade', 'Borç', 'Alacak', 'Bakiye'],
         e.satirlar.map((s) => [tarih(s.tarih), BELGE[s.belge_tip] || s.belge_tip, s.belge_no, s.aciklama, s.vade ? tarih(s.vade) : '', Number(s.borc), Number(s.alacak), Number(s.bakiye)]));
+    } else if (sekme === 'detayli') {
+      const e = await api.get(`/cariler/${c.id}/detayli-ekstre`, aralikD);
+      const bugun = bugunStr(); const ay = bugun.slice(0, 7);
+      const oncekiAy = (() => { const d = new Date(`${ay}-01T12:00:00`); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 7); })();
+      const ayBitis = (m) => { const d = new Date(`${m}-01T12:00:00`); d.setMonth(d.getMonth() + 1); d.setDate(0); return d.toISOString().slice(0, 10); };
+      k.innerHTML = String(html`<div class="filtre dek-filtre">
+        <label>Başlangıç <input type="date" id="d-bas" value="${aralikD.bas}"></label><label>Bitiş <input type="date" id="d-bit" value="${aralikD.bit}"></label>
+        <button class="btn ikincil kucuk" data-dar="${ay}-01|${ayBitis(ay)}">Bu ay</button><button class="btn ikincil kucuk" data-dar="${oncekiAy}-01|${ayBitis(oncekiAy)}">Geçen ay</button>
+        <button class="btn ikincil kucuk" data-dar="${yil}-01-01|${yil}-12-31">Bu yıl</button><button class="btn ikincil kucuk" data-dar="2000-01-01|${yil + 1}-12-31">Tümü</button>
+        <span class="bosluk"></span><button class="btn ikincil" id="d-yazdir">🖨 Yazdır / PDF</button><button class="btn ikincil" id="d-csv">Excel</button></div>
+        <div class="dek-kagit">${detayliEkstreHtml(ctx, e)}</div>`);
+      const yeni = () => { aralikD.bas = $('#d-bas', k).value; aralikD.bit = $('#d-bit', k).value; ciz(); };
+      $('#d-bas', k).onchange = yeni; $('#d-bit', k).onchange = yeni;
+      k.onclick = (ev) => {
+        const d = ev.target.closest('[data-dar]');
+        if (d) { const [b1, b2] = d.dataset.dar.split('|'); Object.assign(aralikD, { bas: b1, bit: b2 }); ciz(); return; }
+        const f = ev.target.closest('[data-fis]'); if (f) { ctx.git(`fis/${f.dataset.fis}`); return; }
+        const al = ev.target.closest('[data-alis]'); if (al) ctx.git(`alis/${al.dataset.alis}`);
+      };
+      $('#d-yazdir', k).onclick = () => detayliEkstreYazdir(ctx, e);
+      $('#d-csv', k).onclick = () => {
+        const sat = [['', 'Devir', '', '', e.devir > 0 ? e.devir : 0, e.devir < 0 ? -e.devir : 0, e.devir]];
+        for (const s of e.satirlar) {
+          sat.push([tarih(s.tarih), BELGE[s.belge_tip] || s.belge_tip, s.belge_no || '', s.aciklama || '', s.borc, s.alacak, s.bakiye]);
+          for (const kl of s.kalemler) sat.push(['', '', '', `   ${kl.ad} — ${kl.miktar} ${kl.birim || ''} × ${kl.birim_fiyat} (KDV %${kl.kdv_orani}) = ${kl.kdvli}`, '', '', '']);
+        }
+        csvIndir(`detayli-ekstre-${c.unvan}`, ['Tarih', 'Belge', 'Belge no', 'Açıklama', 'Borç', 'Alacak', 'Bakiye'], sat);
+      };
     } else if (sekme === 'isler') {
       k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>No</th><th>İş</th><th>Durum</th><th>Tarih</th><th class="sayi">Satış</th><th class="sayi">Kâr</th></tr></thead><tbody>
         ${c.isler.length ? c.isler.map((i) => html`<tr class="tikla" data-git="is/${i.id}"><td data-et="No">#${i.id}</td><td class="ana-hucre" data-et="">${i.baslik}</td><td data-et="Durum">${durumRozet(i.durum)}</td>

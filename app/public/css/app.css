@@ -1535,3 +1535,42 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
 .rf-satis tr.rf-bagli td { opacity: .6; }
 .rf-tablo tr.rf-satir-stoklu td { background: var(--stoklu-acik); } .rf-tablo tr.rf-satir-stoklu td:first-child { box-shadow: inset 4px 0 0 var(--stoklu); }
 .rf-cari-ust label { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; }
+
+/* 25. derleme: detaylı cari ekstre (ekranda kâğıt görünümü, çıktıda aynı) */
+.dek-kagit { background: #fff; border: 1px solid var(--cizgi); border-radius: 12px; padding: 1.4rem 1.6rem; box-shadow: 0 1px 3px rgba(15,23,42,.06); overflow-x: auto; }
+.dekstre { font-size: 12px; color: #111; min-width: 640px; }
+.dekstre .belge-ust h1 { letter-spacing: .04em; }
+.dek-cari { display: flex; justify-content: space-between; gap: 1rem; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.45; }
+.dek-etiket { font-size: 10px; letter-spacing: .08em; color: #64748b; font-weight: 700; }
+.dek-unvan { font-size: 14px; font-weight: 800; }
+.dek-cari-sag { text-align: right; white-space: nowrap; }
+.dekstre table.dek-tablo { width: 100%; border-collapse: collapse; }
+.dekstre .dek-tablo > thead th { background: #1e293b; color: #fff; border: 1px solid #1e293b; padding: 5px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+.dekstre .dek-tablo > tbody > tr > td, .dekstre .dek-tablo > tfoot td { border: 0; border-bottom: 1px solid #e2e8f0; padding: 5px 6px; vertical-align: top; }
+.dekstre .dek-t { width: 78px; } .dekstre .dek-b { width: 120px; } .dekstre .dek-p { width: 108px; }
+.dekstre .dek-tablo td.sayi { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dekstre tr.dek-devir td { background: #f1f5f9; font-style: italic; }
+.dekstre tr.dek-satir.kalemli > td { border-bottom: 0; }
+.dekstre tr.dek-satir[data-fis], .dekstre tr.dek-satir[data-alis] { cursor: pointer; }
+.dekstre .dek-no { font-size: 10.5px; color: #64748b; }
+.dekstre tr.dek-kalem-satir > td { padding: 0 6px 6px !important; }
+.dekstre table.dek-kalem { width: 100%; margin: 0; border-collapse: collapse; font-size: 11px; background: #f8fafc; }
+.dekstre .dek-kalem th, .dekstre .dek-kalem td { border: 0; border-bottom: 1px dotted #cbd5e1; padding: 2px 6px; background: transparent; font-weight: 400; color: #334155; }
+.dekstre .dek-kalem th { font-size: 10px; color: #64748b; text-transform: uppercase; }
+.dekstre .dek-tablo > tfoot td { font-weight: 800; background: #f1f5f9; border-top: 2px solid #1e293b; }
+.dekstre .dek-bos { text-align: center; color: #64748b; padding: 14px !important; }
+.dek-ozet { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.dek-ozet > div { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; display: grid; gap: 2px; }
+.dek-ozet span { font-size: 10.5px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.dek-ozet small { display: block; text-transform: none; font-weight: 400; letter-spacing: 0; color: #64748b; }
+.dek-ozet b { font-size: 14px; font-variant-numeric: tabular-nums; }
+.dek-ozet .dek-kalan { border: 2px solid #1e293b; } .dek-ozet .dek-kalan.borclu b { color: #b91c1c; } .dek-ozet .dek-kalan.alacakli b { color: #15803d; }
+.dek-not { font-size: 10px; color: #64748b; margin-top: 10px; }
+@media print {
+  #yazdir-alani .dekstre { min-width: 0; }
+  #yazdir-alani .dekstre .dek-tablo > thead { display: table-header-group; }
+  #yazdir-alani .dekstre .dek-tablo > thead th { background: #1e293b !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #yazdir-alani .dekstre tr { break-inside: avoid; }
+  #yazdir-alani .dek-ozet { break-inside: avoid; }
+}
+@media (max-width: 860px) { .dek-kagit { padding: .8rem; } .dek-ozet { grid-template-columns: 1fr 1fr; } }

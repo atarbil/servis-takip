@@ -5,26 +5,18 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. Cari → Detaylı ekstre (24.11.2026)
-- Kullanıcı: "Cari listesinden cari seçtiğimiz zaman ekstrenin yanına bir de **detaylı
-  ekstre** ekleyelim; oradan müşterinin **ne aldığı, ne kadar ödeme yaptığı, kalan bakiyesi** **borç / alacak / bakiye** şeklinde
-  **kurumsal** bir şekilde çıksın; istenilen **2 tarih arası** alınabilsin; **vade tarihi çıkmasın**."
-- Tasarım: Cari ekranında "Ekstre"nin yanında **"Detaylı ekstre"** sekmesi.
-  - Üstte başlangıç – bitiş tarihi (hazır seçenekler: Bu ay, Geçen ay, Bu yıl, Tümü) + **Yazdır / PDF** + Excel.
-  - **Kurumsal görünüm** (ekranda ve çıktıda aynı): firma logosu / ünvan / iletişim; "CARİ HESAP EKSTRESİ (DETAYLI)", cari ünvan,
-    adres, VD / VN, dönem; sayfa altı numara.
-  - **Devir (açılış) bakiyesi:** başlangıç tarihinden önceki bakiye ilk satırda.
-  - Hareketler tarih sırasıyla: Tarih · Belge (Satış fişi / Tahsilat / Ödeme / Alış faturası / İade / Devir…) + belge no · Açıklama ·
-    **Borç · Alacak · Bakiye** (yürüyen; B / A işaretli). **Vade sütunu yok.**
-  - Satış fişi (ve alış faturası) satırının altında **aldığı kalemler** girintili: ürün / hizmet, miktar, birim, birim fiyat, tutar
-    (KDV dahil toplam belge satırında). Tahsilatlarda ödeme şekli (nakit / banka / kart) açıklamada.
-  - Altta özet kutusu: Devir · Dönem borç toplamı (aldıkları) · Dönem alacak toplamı (ödedikleri) · **Kalan bakiye** (borçlu / alacaklı).
-  - Çıktı A4 dikey, kalemler sayfa arasında bölünebilir, başlık her sayfada tekrar.
+### 1. "Muhasebe" yetki grubu (24.11.2026)
+- Kullanıcı: "Muhasebe diye bir yetki grubu daha açalım".
+- Öneri (kullanıcıyla netleşecek): yeni rol **Muhasebe** — görür ve işlem yapar: Cariler (ekstre, detaylı ekstre, tahsilat / ödeme),
+  Satış fişleri ve Alış faturaları (onay dahil), Teklif / proforma, Kasa / banka, Resmi fatura yükleme, Resmi faturalar, KDV durumu,
+  Raporlar. Görmez / değiştiremez: Ayarlar, kullanıcılar, form tasarımı, program güncelleme, ekip konumları, iş havuzu / takvim
+  planlama (yalnız okuma?), stok kartı fiyat / maliyet düzenleme (?). Kullanıcı ekleme penceresinde rol seçeneği.
 
-### 2. Cari listesi açılınca varsayılan "Müşteriler" (24.11.2026)
-- Kullanıcı: "Cari listesine girdiğim zaman varsayılan olarak müşteriler ekranı gelsin".
-- Cariler listesindeki tür kutusu açılışta **Müşteriler** seçili gelir (müşteri + "her ikisi" olan cariler). Tümü / Tedarikçiler
-  elle seçilebilir; aynı sekme içinde seçim korunur.
+### 2. Teknisyenler de iş ekleyebilsin (24.11.2026)
+- Kullanıcı: "Teknisyenler de iş ekleyebilsin".
+- Öneri: teknisyen ekranında (İşlerim) **"+ İş ekle"** düğmesi — yöneticideki hızlı iş penceresinin sade hâli: mesaj / ne istendi,
+  cari (ara ya da telefondan bulunur), öncelik. Varsayılan: iş **havuza** düşer, yöneticiye bildirim (Telegram açıksa). İsteğe bağlı
+  "Bu işi ben yapıyorum" → kendi ekibine bugün planlanır. Teknisyen fiyat / cari bakiye görmez (mevcut kural).
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
@@ -38,6 +30,19 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 25. derleme: Cari detaylı ekstre, cari listesi varsayılan Müşteriler
+- Cari ekranında **"Ekstre"nin yanında "Detaylı ekstre"** sekmesi: başlangıç – bitiş tarihi (Bu ay, Geçen ay, Bu yıl, Tümü),
+  **Yazdır / PDF** ve Excel.
+- **Kurumsal görünüm** (ekranda kâğıt gibi, çıktıda aynı): firma logosu / bilgileri, "CARİ HESAP EKSTRESİ", dönem, düzenleme tarihi;
+  "Sayın" kutusunda cari ünvan, adres, VD / VN, telefon.
+- Tablo: Tarih · Belge (+ no) · Açıklama · **Borç · Alacak · Bakiye** (yürüyen, B / A); **vade yok**. İlk satır devir (başlangıç
+  öncesi bakiye). Satış fişlerinin (ve alış faturalarının) altında **aldığı ürün / hizmetler**: miktar, birim fiyat, iskonto, KDV,
+  tutar (KDV dahil). Tahsilat / ödemede ödeme şekli ve hesap (Nakit · Merkez Kasa vb.).
+- Altta özet kutuları: Devir bakiyesi · Dönem borç toplamı (aldıkları) · Dönem alacak toplamı (ödedikleri) · **Kalan bakiye**
+  (cari borçlu / alacaklı). Mutabakat notu. Satıra tıklayınca fiş / alış faturası açılır.
+- **Cariler listesi açılışta "Müşteriler"** seçili (müşteri + her ikisi); Tümü / Tedarikçiler elle seçilir.
+- Test: yeni ekstre_testi.js.
 
 ### 24.11.2026 — 24. derleme: Ekip konumları, yükleme listesi, KDV düzeltmeleri, cari resmi faturalar
 - **İşler → Ekip konumları:** teknisyen programı telefonda açtığında ve açık tuttuğu sürece (3 dk'da bir, ekran açıkken) son
