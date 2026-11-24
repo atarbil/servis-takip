@@ -50,6 +50,9 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - KDV durumu: indirilecek KDV = onaylı alış faturaları + resmi alış (yalnız KDV) kayıtları; sol sütunda ikisi birlikte, türü etiketli
   ("Stoklu" / "Gider"). Aynı ETTN iki yerde sayılmaz (alış faturası olarak aktarılmışsa yalnız KDV kaydı açılamaz, tersi de).
 - Finans → Resmi faturalar listesinde Satış / Alış (gider) sekmeleri.
+- Kullanıcı ek (21:46): **renkle ayrılsın — stoklu fatura yeşil, stoksuz (yalnız KDV / gider) açık mavi.** Yükleme ekranındaki
+  seçim düğmeleri, KDV ekranının alış sütunundaki satırlar (sol kenar şeridi + açık zemin) ve etiketleri, Resmi faturalar listesi
+  hep bu renklerle; ekranda küçük renk açıklaması ("■ Stoklu  ■ Stoksuz / gider").
 
 ### 1. KDV durumu: iki sütunlu ekran — solda alış, sağda satış (24.11.2026)
 - Kullanıcı: "2 sütunlu bir ekran olsun, sol alış sağ satış gibi; fatura tutarı, KDV tutarı, toplam tutar şeklinde".
