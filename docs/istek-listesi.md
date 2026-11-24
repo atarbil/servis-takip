@@ -17,6 +17,24 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Alışta kalemler stok kartlı kalır (bulunamayan ürün → yeni stok kartı sorusu); mevcut işlemler (kaydet, onayla, iptal, sil,
   döviz) aynen korunur.
 
+### 2. Gelen faturayı yükle → yapay zeka okusun → taslak alış faturası (24.11.2026)
+- Kullanıcı: gelen faturayı PDF olarak yükleyebileceğim bir ekran; tedarikçi var mı, fatura tarihi / no, faturadaki ürünleri
+  tanısın, aynı stok varsa stok değeri olarak girsin. "Küçük bir yapay zeka sayfası".
+- Önerilen akış (Stok / Alış altında "Fatura yükle" sayfası):
+  1. PDF (ve varsa e-Fatura XML / UBL) sürükle-bırak veya telefondan fotoğraf.
+  2. Okuma: XML varsa doğrudan (kesin, ücretsiz); yoksa PDF yapay zekaya (Claude API) gönderilir → tedarikçi ünvanı, VKN/TCKN,
+     fatura no, tarih, vade, para birimi, satırlar (kod, ad, miktar, birim, birim fiyat, iskonto, KDV), toplamlar.
+  3. Tedarikçi eşleşmesi: önce VKN/TCKN, sonra ünvan. Yoksa "faturadaki bilgilerle yeni tedarikçi açılsın mı?".
+  4. Aynı tedarikçi + fatura no daha önce girildiyse uyarı (mükerrer engeli).
+  5. Ürün eşleşmesi: barkod → tedarikçinin ürün kodu (hatırlanan eşleşme) → ad benzerliği. Her satırda önerilen stok kartı ve
+     güven göstergesi; kullanıcı değiştirebilir / "yeni stok kartı aç". Onaylanan eşleşme tedarikçi koduyla saklanır,
+     bir sonraki faturada otomatik gelir.
+  6. Toplam kontrolü: okunan satırların toplamı faturadaki genel toplamla tutmuyorsa uyarı.
+  7. Sonuç **taslak alış faturası** olur; kullanıcı kontrol edip Onayla'ya basınca stok ve maliyet girer. Otomatik onay yok.
+  8. Yüklenen PDF alış faturasına ek olarak saklanır.
+- Açık kararlar: Claude API kullanımı (ücretli API anahtarı, fatura içeriği Anthropic'e gider) mi, yalnız XML/metin okuma mı?
+  Anahtar sunucuda .env'e `read -s` ile girilir, sohbete yazılmaz.
+
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
 - Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
