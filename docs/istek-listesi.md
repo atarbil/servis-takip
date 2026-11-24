@@ -4,7 +4,22 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. KDV durumu ekranı: alış ve kesilen faturaları yükleyip KDV durumunu görme (24.11.2026)
+- Kullanıcı: "KDV durumumu görebilmem için alış faturalarımı ve kestiğim faturaları yükleyip mevcut durumu görebileceğim bir ekran".
+- Önerilen tasarım (Finans → **KDV durumu**):
+  - Üstte dönem seçimi (ay; çeyrek / yıl özet) ve iki yükleme alanı: **Gelen faturalar (alış)** ve **Kestiğim faturalar (satış)** —
+    e-Fatura / e-Arşiv XML ya da zip, çoklu. Dosya saklanmaz; faturadan yalnız KDV özeti kaydedilir (tarih, no, ETTN, karşı taraf,
+    VKN, KDV oranı bazında matrah ve KDV, tevkifat, iade/istisna türü). Aynı fatura iki kez sayılmaz (ETTN).
+  - Fatura yönü kendiliğinden bulunur: satıcı VKN = firma VKN ise "kesilen", alıcı VKN = firma VKN ise "gelen".
+  - Özet kartlar: **Hesaplanan KDV** (satış) − **İndirilecek KDV** (alış) − **Önceki dönemden devreden KDV** (elle girilir ya da bir
+    önceki aydan aktarılır) = **Ödenecek KDV** ya da **Sonraki döneme devreden KDV**. Tevkifatlı satışlarda alıcının ödediği kısım ayrı.
+  - Oran bazında tablo (%1 / %10 / %20 … matrah + KDV, satış ve alış yan yana); İADE faturaları ilgili taraftan düşülür.
+  - Altta iki liste (kesilen / gelen): tarih, no, karşı taraf, matrah, KDV, tür; arama, Excel'e aktar, satır silme.
+  - Programdaki onaylı alış faturaları ve (e-Fatura no'su girilmiş) satış fişleriyle karşılaştırma: "XML'de olup programda olmayan"
+    ve tersi uyarısı. Grafik: son 12 ayın hesaplanan / indirilecek KDV'si.
+  - Not: ekran bilgi amaçlıdır; beyanname için mali müşavir kontrolü gerekir (KDV-2, ÖTV, istisnalar kapsanmaz).
+- Açık kararlar: kesilen faturalar yalnız XML'den mi (başka programdan kesiliyorsa) yoksa programdaki satış fişlerinden de mi;
+  yüklenen alış XML'leri aynı anda taslak alış faturası da açsın mı, yoksa yalnız KDV kaydı mı?
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
