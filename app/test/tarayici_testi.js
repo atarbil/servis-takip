@@ -89,7 +89,7 @@ async function sec(p, inputSec, metin, secim) {
   await y.goto(T + '/#/alis/yeni');
   await y.fill('#a-cari', 'Güvenlik Dağıtım');
   await y.waitForTimeout(600);
-  await y.locator('[data-yeni-cari]').first().dispatchEvent('mousedown');
+  await y.locator('.secici-liste [data-yeni-kart]').first().dispatchEvent('mousedown');
   await y.waitForSelector(pen);
   await penKaydet(y);
   await bekleYok(y, pen);

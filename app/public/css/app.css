@@ -60,14 +60,35 @@ input[type=color] { padding: 2px; height: 40px; }
 .satir3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 .8rem; }
 .form-hata, .pencere-hata { background: var(--kirmizi-acik); color: var(--kirmizi); border-radius: 8px; padding: .6rem .8rem; margin: .5rem 0; font-weight: 500; }
 .pencere-hata { margin: 0 1.2rem .8rem; }
-.secici-kap { position: relative; }
-.secici-liste { position: absolute; z-index: 50; left: 0; right: 0; top: calc(100% + 2px); background: #fff; border: 1px solid var(--cizgi); border-radius: 8px;
-  box-shadow: 0 8px 24px rgb(15 23 42 / .12); max-height: 280px; overflow: auto; }
-.secici-oge { padding: .55rem .75rem; cursor: pointer; border-bottom: 1px solid var(--cizgi2); }
-.secici-oge.aktif, .secici-oge:hover { background: var(--ana-acik); }
-.secici-oge small { display: block; }
-.secici-bos { padding: .6rem .75rem; color: var(--soluk); }
-.secici-ekstra { display: block; padding: .6rem .75rem; color: var(--ana); font-weight: 600; cursor: pointer; border-top: 1px solid var(--cizgi); }
+/* Açılır seçim listesi: sayfanın / pencerenin üst katmanında, kesilmez (konum JS ile) */
+.secici-liste { position: fixed; z-index: 1000; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--cizgi);
+  border-radius: 12px; box-shadow: 0 16px 40px rgb(15 23 42 / .22), 0 2px 6px rgb(15 23 42 / .08); overflow: hidden; min-width: 0; max-height: 440px; }
+.secici-liste.yukari { box-shadow: 0 -16px 40px rgb(15 23 42 / .2); }
+.secici-ogeler { overflow: auto; flex: 1 1 auto; min-height: 0; overscroll-behavior: contain; }
+.secici-oge { padding: .6rem .85rem; cursor: pointer; border-bottom: 1px solid var(--cizgi2); }
+.secici-oge:last-child { border-bottom: 0; }
+.secici-oge.aktif { background: var(--ana-acik); box-shadow: inset 3px 0 0 var(--ana); }
+.secici-oge:hover { background: #f3f7ff; }
+.secici-satir { display: flex; gap: .9rem; align-items: center; }
+.secici-satir .ss-ana { flex: 1; min-width: 0; }
+.secici-satir .ss-ana b { font-size: 1.02rem; font-weight: 650; color: var(--yazi); line-height: 1.3; overflow-wrap: anywhere; }
+.secici-satir .ss-ana small { display: block; color: var(--soluk); font-size: .82rem; margin-top: .1rem; overflow-wrap: anywhere; }
+.secici-satir .ss-deger { text-align: right; white-space: nowrap; font-size: .88rem; flex: 0 0 auto; }
+.secici-satir .ss-deger small { display: block; color: var(--soluk); font-size: .78rem; }
+.secici-liste mark { background: #fde68a; color: inherit; border-radius: 2px; padding: 0 1px; }
+.secici-grup { padding: .35rem .85rem; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); background: #f8fafc; border-bottom: 1px solid var(--cizgi2); position: sticky; top: 0; z-index: 1; }
+.secici-bos { padding: .8rem .85rem; color: var(--soluk); }
+.secici-yeni { color: var(--ana); font-weight: 650; border-top: 1px solid var(--cizgi); flex: 0 0 auto; background: #fbfcff; }
+.secici-ekstra { display: block; padding: .6rem .85rem; color: var(--ana); font-weight: 600; cursor: pointer; border-top: 1px solid var(--cizgi); }
+.secici-ipucu { display: flex; justify-content: space-between; gap: .5rem; padding: .35rem .85rem; font-size: .74rem; color: var(--soluk); background: #f8fafc; border-top: 1px solid var(--cizgi2); flex: 0 0 auto; }
+.stok-rozet { display: inline-block; border-radius: 99px; padding: .05rem .5rem; font-weight: 700; font-size: .8rem; }
+.stok-rozet.var { background: var(--yesil-acik); color: var(--yesil); }
+.stok-rozet.az { background: var(--turuncu-acik); color: var(--turuncu); }
+.stok-rozet.yok { background: var(--kirmizi-acik); color: var(--kirmizi); }
+/* Telefon: ekranın altından açılan panel */
+.secici-liste.alt-panel { border-radius: 16px 16px 0 0; border-left: 0; border-right: 0; border-bottom: 0; box-shadow: 0 -12px 32px rgb(15 23 42 / .25); }
+.secici-liste.alt-panel .secici-oge { padding: .85rem 1rem; }
+.secici-liste.alt-panel .secici-ipucu { display: none; }
 
 /* ---------- Kabuk ---------- */
 .kabuk { display: flex; min-height: 100vh; }
@@ -472,19 +493,18 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
 @media (max-width: 860px) { .izgara.uc { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- Ürün önerisi ve stok listesi (v3) ---------- */
-.urun-oneri { display: flex; gap: .8rem; align-items: center; }
+.urun-oneri { display: flex; gap: .8rem; align-items: center; } /* eski */
 .urun-oneri .ad { flex: 1; min-width: 0; }
 .urun-oneri .ad b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .urun-oneri .deger { text-align: right; white-space: nowrap; font-size: .86rem; }
 .urun-oneri .deger small { display: block; color: var(--soluk); }
 .urun-oneri .stokta { color: var(--yesil); font-weight: 700; } .urun-oneri .stok-yok { color: var(--kirmizi); font-weight: 700; }
-.secici-liste { max-height: 340px; min-width: 340px; }
 .stok-filtre { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: .5rem; align-items: center; margin-bottom: .7rem; }
 .stok-liste { max-height: min(55vh, 520px); overflow: auto; border: 1px solid var(--cizgi); border-radius: 8px; }
 .stok-liste .tablo td { vertical-align: middle; padding: .45rem .6rem; }
 .stok-liste tr[data-u] { cursor: pointer; }
 .stok-liste tr.secili td { background: var(--ana-acik); }
-@media (max-width: 860px) { .stok-filtre { grid-template-columns: 1fr 1fr; } .stok-filtre input[type=search] { grid-column: 1 / -1; } .secici-liste { min-width: 0; } }
+@media (max-width: 860px) { .stok-filtre { grid-template-columns: 1fr 1fr; } .stok-filtre input[type=search] { grid-column: 1 / -1; } }
 .metin-cifti textarea { min-height: 64px; height: 64px; font-size: .92rem; resize: vertical; }
 
 /* ---------- Canlı giriş ekranı (v3) ---------- */
@@ -1276,4 +1296,3 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
 .fm-etiket-satir input { min-height: 34px; padding: .25rem .5rem; font-size: .88rem; }
 .benzer-urunler { display: flex; flex-wrap: wrap; gap: .35rem; }
 .enter-yeni { font-size: .88rem; white-space: nowrap; }
-.secici-yeni { color: var(--ana); font-weight: 600; border-top: 1px solid var(--cizgi2); }

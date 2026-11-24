@@ -155,32 +155,126 @@ export function formVerisi(form) {
 
 // ---------- Otomatik tamamlamalı seçici ----------
 // getir(q) -> Promise<dizi>, goster(oge) -> html, sec(oge)
-// bulunamadi(metin, input): yazılan metin listeden seçilmeden kutudan çıkılırsa çağrılır (ör. "stokta yok, kart açılsın mı?")
-export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', ekstra, bulunamadi }) {
+// Aranan kelimeyi metinde vurgular (Türkçe büyük/küçük harf duyarsız)
+export function vurgula(metin, q) {
+  const m = String(metin ?? '');
+  const kelimeler = String(q || '').trim().split(/\s+/).filter((k) => k.length >= 1).slice(0, 5);
+  if (!kelimeler.length) return esc(m);
+  const kucuk = m.toLocaleLowerCase('tr');
+  const isaret = new Array(m.length).fill(false);
+  for (const k of kelimeler) {
+    const kk = k.toLocaleLowerCase('tr');
+    for (let i = kucuk.indexOf(kk); i >= 0; i = kucuk.indexOf(kk, i + kk.length)) for (let j = i; j < i + kk.length && j < m.length; j++) isaret[j] = true;
+  }
+  let o = ''; let acik = false;
+  for (let i = 0; i < m.length; i++) {
+    if (isaret[i] && !acik) { o += '<mark>'; acik = true; } else if (!isaret[i] && acik) { o += '</mark>'; acik = false; }
+    o += esc(m[i]);
+  }
+  return acik ? o + '</mark>' : o;
+}
+
+// Açılır seçim listesi (cari, ürün…).
+// Liste sayfanın / pencerenin en üst katmanında, kutunun altında (yer yoksa üstünde) açılır; tablo ya da pencere içinde kesilmez.
+// Telefonda ekranın altından açılan panel olur.
+//  goster(o, q)        satır içeriği
+//  yeni(q)             "+ Yeni …" seçeneği: oluşturulan kaydı döndürür (seçilmiş sayılır); yeniMetin: düğme yazısı
+//  bulunamadi(metin)   yazılan metin listeden seçilmeden bırakılırsa (Enter / kutudan çıkma) çağrılır
+//  sonKullanilan       anahtar: kutu boşken son seçilenler üstte gösterilir
+//  genislik            en az liste genişliği (px)
+export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', ekstra, bulunamadi, yeni, yeniMetin, sonKullanilan, genislik = 420 }) {
   const kutu = document.createElement('div');
   kutu.className = 'secici-liste';
-  kutu.hidden = true;
-  input.parentElement.classList.add('secici-kap');
-  input.after(kutu);
+  kutu.setAttribute('role', 'listbox');
   input.setAttribute('autocomplete', 'off');
-  let ogeler = []; let aktif = -1; let zmn; let sira = 0;
+  input.setAttribute('aria-autocomplete', 'list');
+  let ogeler = []; let aktif = -1; let zmn; let sira = 0; let sonSayi = 0;
   let yukleniyor = false; let enterBekliyor = false; // yazıp hemen Enter'a basılırsa güncel sonuç gelince seçilir
-  const ciz = () => {
-    kutu.innerHTML = String(html`${ogeler.map((o, i) => html`<div class="secici-oge ${i === aktif ? 'aktif' : ''}" data-i="${i}">${goster(o)}</div>`)}
-      ${!ogeler.length ? html`<div class="secici-bos">${bosMetin}</div>` : ''}${ekstra ? ekstra(input.value) : ''}
-      ${bulunamadi && input.value.trim() ? html`<div class="secici-oge secici-yeni ${aktif === ogeler.length ? 'aktif' : ''}" data-yeni-kart>+ "${input.value.trim()}" için yeni stok kartı aç</div>` : ''}`);
-    kutu.hidden = false;
-    // Kaydırılan bir alanın içindeyse (ör. iş ekle penceresinin satır listesi) liste kesilmesin: ekrana sabitlenir
-    if (input.closest('[data-secici-sabit]') && matchMedia('(min-width: 861px)').matches) {
-      const r = input.getBoundingClientRect();
-      Object.assign(kutu.style, { position: 'fixed', left: `${r.left}px`, top: `${r.bottom + 2}px`, width: `${Math.max(r.width, 320)}px`, right: 'auto' });
+  const telefon = () => matchMedia('(max-width: 860px)').matches;
+  const sonAnahtar = sonKullanilan ? `secici-son-${sonKullanilan}` : null;
+  const sonlar = () => { try { return JSON.parse(localStorage.getItem(sonAnahtar) || '[]'); } catch { return []; } };
+  const sonaEkle = (o) => {
+    if (!sonAnahtar || !o?.id) return;
+    try { localStorage.setItem(sonAnahtar, JSON.stringify([o.id, ...sonlar().filter((x) => x !== o.id)].slice(0, 5))); } catch { /* */ }
+  };
+  const acik = () => kutu.isConnected && !kutu.hidden;
+  // Sayfa / tablo / pencere kayınca liste kutuyla birlikte gider (dinleyiciler yalnız liste açıkken)
+  const kaydir = (e) => { if (e?.target && kutu.contains(e.target)) return; if (acik()) requestAnimationFrame(yerlestir); };
+  const dinle = (ac) => {
+    const f = ac ? addEventListener : removeEventListener;
+    f('scroll', kaydir, true); f('resize', kaydir);
+    if (window.visualViewport) (ac ? visualViewport.addEventListener : visualViewport.removeEventListener).call(visualViewport, 'resize', kaydir);
+  };
+  const kapat = () => { if (kutu.isConnected) dinle(false); kutu.hidden = true; kutu.remove(); input.setAttribute('aria-expanded', 'false'); };
+
+  // Konum: kutunun yanına sabitlenir; dialog içindeyse dialog'a eklenir (üst katmanda kalsın)
+  function yerlestir() {
+    if (!acik()) return;
+    if (!input.isConnected) { kapat(); return; }
+    const r = input.getBoundingClientRect();
+    const vv = window.visualViewport;
+    const ekranY = vv ? vv.height : innerHeight; const ekranUst = vv ? vv.offsetTop : 0;
+    const st = kutu.style;
+    if (telefon()) {
+      kutu.classList.add('alt-panel');
+      Object.assign(st, { left: '0px', width: '100%', top: '', bottom: '', maxHeight: `${Math.round(ekranY * 0.5)}px` });
+      const h = kutu.offsetHeight;
+      const panelUst = ekranUst + ekranY - h;
+      st.top = `${Math.round(panelUst)}px`;
+      // Yazılan kutu panelin altında kalmasın: sayfayı kaydırıp kutuyu panelin üstüne getir
+      if (r.bottom > panelUst - 8 || r.top < 0) window.scrollBy(0, r.bottom - (panelUst - 16));
+    } else {
+      kutu.classList.remove('alt-panel');
+      const gen = Math.min(innerWidth - 16, Math.max(r.width, genislik));
+      const sol = Math.max(8, Math.min(r.left, innerWidth - gen - 8));
+      const alt = ekranUst + ekranY - r.bottom - 10; const ust = r.top - ekranUst - 10;
+      const yukari = alt < 240 && ust > alt;
+      const maxH = Math.max(160, Math.min(440, yukari ? ust : alt));
+      Object.assign(st, { width: `${gen}px`, left: `${sol}px`, maxHeight: `${maxH}px`, bottom: '' });
+      st.top = `${yukari ? r.top - Math.min(kutu.scrollHeight, maxH) - 4 : r.bottom + 4}px`;
+      kutu.classList.toggle('yukari', yukari);
     }
+    // Dönüşüm uygulanmış bir kabın içindeysek (ör. açılış animasyonlu pencere) sapmayı düzelt
+    const k = kutu.getBoundingClientRect();
+    const hedefX = parseFloat(st.left); const hedefY = parseFloat(st.top);
+    if (Math.abs(k.left - hedefX) > 0.5) st.left = `${hedefX + (hedefX - k.left)}px`;
+    if (Math.abs(k.top - hedefY) > 0.5) st.top = `${hedefY + (hedefY - k.top)}px`;
+  }
+  function goster2() {
+    const kap = input.closest('dialog[open]') || document.body;
+    if (!kutu.isConnected) dinle(true);
+    if (kutu.parentElement !== kap) kap.append(kutu);
+    kutu.hidden = false; input.setAttribute('aria-expanded', 'true');
+    yerlestir();
+  }
+
+  const ciz = () => {
+    const q = input.value.trim();
+    const sonIdler = !q && sonAnahtar ? sonlar() : [];
+    const sonOgeler = sonIdler.map((id) => ogeler.find((o) => o.id === id)).filter(Boolean);
+    const baslik = (i) => (sonOgeler.length && i === 0 ? html`<div class="secici-grup">Son kullanılanlar</div>` : sonOgeler.length && i === sonOgeler.length ? html`<div class="secici-grup">Tümü</div>` : '');
+    const yeniVar = (yeni || (bulunamadi && q));
+    kutu.innerHTML = String(html`<div class="secici-ogeler">${ogeler.map((o, i) => html`${baslik(i)}<div class="secici-oge ${i === aktif ? 'aktif' : ''}" data-i="${i}" role="option">${goster(o, q)}</div>`)}
+      ${!ogeler.length ? html`<div class="secici-bos">${yukleniyor ? 'Aranıyor…' : bosMetin}</div>` : ''}</div>
+      ${ekstra && !yeni ? ekstra(input.value) : ''}
+      ${yeniVar ? html`<div class="secici-oge secici-yeni ${aktif === ogeler.length ? 'aktif' : ''}" data-yeni-kart>+ ${yeni ? (yeniMetin || 'Yeni') : 'Yeni stok kartı aç'}${q ? html`: <b>"${q}"</b>` : ''}</div>` : ''}
+      <div class="secici-ipucu"><span>↑↓ seç · Enter ${yeni || bulunamadi ? 'ekle' : 'seç'} · Esc kapat</span><span>${ogeler.length ? `${ogeler.length}${sonSayi >= 30 ? '+' : ''} sonuç` : ''}</span></div>`);
+    // son kullanılanlar başa
+    if (sonOgeler.length) {
+      const liste = $('.secici-ogeler', kutu);
+      const kalan = ogeler.filter((o) => !sonIdler.includes(o.id));
+      ogeler = [...sonOgeler, ...kalan];
+      liste.innerHTML = String(html`${ogeler.map((o, i) => html`${baslik(i)}<div class="secici-oge ${i === aktif ? 'aktif' : ''}" data-i="${i}" role="option">${goster(o, q)}</div>`)}`);
+    }
+    goster2();
+    $('.secici-oge.aktif', kutu)?.scrollIntoView({ block: 'nearest' });
   };
   const yukle = async () => {
     const benim = ++sira;
     try {
       const s = await getir(input.value.trim()); if (benim !== sira) return;
-      ogeler = s; aktif = s.length ? 0 : -1; yukleniyor = false; ciz();
+      if (!input.isConnected || document.activeElement !== input) { yukleniyor = false; return; }
+      ogeler = s; sonSayi = s.length; aktif = s.length ? 0 : -1; yukleniyor = false; ciz();
       if (enterBekliyor) { enterBekliyor = false; if (aktif >= 0) secildi(ogeler[aktif]); else bulunamadiSor(); }
     } catch { yukleniyor = false; enterBekliyor = false; }
   };
@@ -189,43 +283,55 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   let secimYapildi = false;
   input.addEventListener('input', () => { yazildi = true; secimYapildi = false; yukleniyor = true; enterBekliyor = false; clearTimeout(zmn); zmn = setTimeout(yukle, 180); });
   input.addEventListener('focus', () => { yazildi = false; yukle(); });
+  const enSon = () => ogeler.length - ((yeni || (bulunamadi && input.value.trim())) ? 0 : 1);
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' && e.altKey) { yazildi = true; if (kutu.hidden) yukle(); e.preventDefault(); return; }
+    if (e.key === 'ArrowDown' && e.altKey) { yazildi = true; if (!acik()) yukle(); e.preventDefault(); return; }
     if (e.key === 'Enter' && yazildi && yukleniyor) { e.preventDefault(); enterBekliyor = true; return; }
-    if (kutu.hidden || (!yazildi && input.closest('tr[data-i]'))) return;
-    if (e.key === 'ArrowDown') { aktif = Math.min(aktif + 1, ogeler.length - (bulunamadi && input.value.trim() ? 0 : 1)); ciz(); e.preventDefault(); }
-    else if (e.key === 'Enter' && bulunamadi && aktif === ogeler.length && ogeler.length) { e.preventDefault(); bulunamadiSor(); }
+    if (!acik() || (!yazildi && input.closest('tr[data-i]'))) return;
+    if (e.key === 'ArrowDown') { aktif = Math.min(aktif + 1, enSon()); ciz(); e.preventDefault(); }
     else if (e.key === 'ArrowUp') { aktif = Math.max(aktif - 1, 0); ciz(); e.preventDefault(); }
-    else if (e.key === 'Enter' && aktif >= 0) { e.preventDefault(); secildi(ogeler[aktif]); }
+    else if (e.key === 'Enter' && aktif === ogeler.length && (yeni || bulunamadi)) { e.preventDefault(); yeniSec(); }
+    else if (e.key === 'Enter' && aktif >= 0 && aktif < ogeler.length) { e.preventDefault(); secildi(ogeler[aktif]); }
     else if (e.key === 'Enter' && yazildi && bulunamadi && input.value.trim()) { e.preventDefault(); bulunamadiSor(); }
-    else if (e.key === 'Escape') { kutu.hidden = true; e.stopPropagation(); }
+    else if (e.key === 'Escape') { kapat(); e.stopPropagation(); }
   });
-  const secildi = (o) => { kutu.hidden = true; secimYapildi = true; sec(o, input); };
+  const secildi = (o) => { kapat(); secimYapildi = true; sonaEkle(o); sec(o, input); };
+  // "+ Yeni …": yeni kayıt penceresi; kaydedilirse seçilmiş sayılır
+  async function yeniSec() {
+    if (yeni) {
+      const q = input.value.trim(); kapat(); secimYapildi = true;
+      const o = await yeni(q);
+      if (o) { sonaEkle(o); sec(o, input); } else secimYapildi = false;
+      return;
+    }
+    bulunamadiSor();
+  }
   // Yazılan metin listede yoksa (Enter ile ya da kutudan çıkınca) bir kez sorulur
   function bulunamadiSor() {
     const deger = input.value.trim();
     if (!bulunamadi || !deger || secimYapildi || input.dataset.sorgulaniyor) return;
-    kutu.hidden = true;
+    kapat();
     input.dataset.sorgulaniyor = '1';
     Promise.resolve(bulunamadi(deger, input)).finally(() => { delete input.dataset.sorgulaniyor; });
   }
   kutu.addEventListener('mousedown', (e) => {
-    if (e.target.closest('[data-yeni-kart]')) { e.preventDefault(); bulunamadiSor(); return; }
+    e.preventDefault(); // odak kutuda kalsın
+    if (e.target.closest('[data-yeni-kart]')) { yeniSec(); return; }
     const el = e.target.closest('[data-i]');
-    if (el) { e.preventDefault(); secildi(ogeler[Number(el.dataset.i)]); }
+    if (el) secildi(ogeler[Number(el.dataset.i)]);
   });
   input.addEventListener('blur', () => {
     const deger = input.value.trim(); const yazdi = yazildi;
     setTimeout(() => {
-      kutu.hidden = true;
+      if (document.activeElement === input) return;
+      kapat();
       // Yazılan metin listeden seçilmeden bırakıldıysa (Enter, Tab ya da başka yere tıklama)
       if (yazdi && deger && input.isConnected && input.value.trim() === deger) bulunamadiSor();
     }, 180);
   });
-  return { kapat: () => { kutu.hidden = true; } };
+  return { kapat };
 }
 
-// ---------- Tablo / CSV ----------
 export function csvIndir(dosyaAdi, basliklar, satirlar) {
   const h = (v) => {
     if (v === null || v === undefined) return '';

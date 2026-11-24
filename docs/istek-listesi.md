@@ -4,23 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Cari / ürün seçme açılır listeleri yeniden (24.11.2026)
-Kullanıcı: "Satış fişinde, iş listesinde cari seçecekken ya da ürün eklerken açılan pencere hiç güzel değil; müşterinin adını
-imleci aşağı çekmeden göremiyoruz."
-İnceleme (ekran görüntüleriyle): satış fişinin kalem tablosunda ürün listesi tablonun kaydırma alanının içinde kalıyor ve **kesiliyor**
-(görmek için aşağı kaydırmak gerekiyor); "+ İş ekle" gibi pencerelerin içinde de aynı sorun. Liste sade ve küçük.
-- **Hiç kesilmeyen liste:** açılır liste sayfanın / pencerenin en üst katmanında, yazı kutusunun hemen altında açılır; altta yer
-  yoksa **yukarı doğru** açılır; yüksekliği ekrana sığacak kadar; sayfa ya da tablo kaydırılınca kutuyla birlikte hareket eder.
-  Satış fişi, teklif, alış, iş ekle, teslim et, iş listesi filtreleri, cari / ürün seçilen tüm yerler.
-- **Daha okunur satırlar:**
-  - Cari: **ünvan büyük ve kalın**, altında telefon · il/ilçe · cari kodu; sağda bakiye (borç kırmızı / alacak yeşil).
-  - Ürün: **ad büyük ve kalın**, altında marka · model · kod · barkod; sağda stok rozeti (yok / az / var) ve satış fiyatı;
-    hizmet kartında "hizmet" rozeti.
-  - Aranan kelime satırda **vurgulu**; seçili satır belirgin; liste genişliği en az ~460 px (dar kutularda da ad tam okunur, uzun
-    adlar iki satıra kırılır, kesilmez).
-- Altta küçük ipucu: "↑↓ seç · Enter ekle · Esc kapat" ve sonuç sayısı; en altta sabit **"+ Yeni cari" / "+ Yeni stok kartı aç"**.
-- Kutu boşken tıklanınca **son kullanılan** 5 cari / ürün listelenir.
-- Telefonda liste ekranın altından açılan tam genişlik panel (klavyenin üstünde), satırlar parmakla seçilecek büyüklükte.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -29,6 +13,18 @@ imleci aşağı çekmeden göremiyoruz."
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 17. derleme: Cari / ürün açılır listeleri
+- Liste artık **üst katmanda** açılıyor: kalem tablosunun ya da pencerenin içinde kesilmiyor; kutunun hemen altında (yer yoksa
+  üstünde), ekrana sığan yükseklikte; sayfa / tablo kayınca kutuyla birlikte gidiyor. Tüm cari ve ürün seçimlerinde geçerli.
+- **Satırlar:** cari — ünvan büyük/kalın, altında telefon · il/ilçe · kod, sağda bakiye (borç kırmızı / alacak yeşil);
+  ürün — ad büyük/kalın, altında marka · model · kod · barkod, sağda stok rozeti (var yeşil / az turuncu / yok kırmızı) ve fiyat;
+  hizmet kartında "hizmet" rozeti. Aranan kelime **sarı vurgulu**, seçili satır mavi şeritli; liste en az 440–520 px genişlik,
+  uzun adlar kesilmeden alt satıra iner.
+- Altta "↑↓ seç · Enter ekle · Esc kapat" ve sonuç sayısı; en altta sabit **"+ Yeni cari: '…'"** / **"+ Yeni stok kartı aç: '…'"**
+  (↓ ile gelinip Enter ya da tıklama).
+- Kutu boşken **son kullanılan 5** cari / ürün en üstte ("Son kullanılanlar").
+- **Telefonda** ekranın altından açılan tam genişlik panel; yazılan kutu panelin üstünde kalacak şekilde sayfa kaydırılır.
 
 ### 24.11.2026 — 16. derleme: Kartlı kalemler, yeni satır onayı
 - **Her kalem stok kartlı:** satış fişi, teklif / proforma, alış faturası, "Teslim et / Tamamla" ve "İşi ben yaptım" satırlarında

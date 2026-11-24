@@ -1,28 +1,25 @@
 // Sayfalar arası ortak parçalar
 import { api } from './api.js';
-import { html, $, pencere, secici, bildir, para, dovizPara, miktar, sayiCoz, sayiGiris, yerelDT, bugunStr, bakiyeHucre, esc, debounce } from './ui.js';
+import { html, ham, $, pencere, secici, vurgula, bildir, para, dovizPara, miktar, sayiCoz, sayiGiris, yerelDT, bugunStr, bakiyeHucre, esc, debounce } from './ui.js';
 
 // ---------- Cari seçici ----------
 // input'a bağlanır, seçilen cari {id, unvan, ...} sec() ile döner. yeniIzin: listede "Yeni cari oluştur" seçeneği
 export function cariSecici(input, sec, { tip, yeniIzin = true } = {}) {
   return secici(input, {
     getir: (q) => api.get('/cariler', { q, tip, limit: 30 }),
-    goster: (c) => html`<b>${c.unvan}</b><small>${[c.telefon, c.il].filter(Boolean).join(' · ')} ${c.bakiye ? html`· ${bakiyeHucre(c.bakiye)}` : ''}</small>`,
+    goster: (c, q) => html`<div class="secici-satir"><div class="ss-ana"><b>${ham(vurgula(c.unvan, q))}</b>
+        <small>${ham([c.telefon && vurgula(c.telefon, q), [c.ilce, c.il].filter(Boolean).map(esc).join(' / '), c.kod && vurgula(c.kod, q)].filter(Boolean).join(' · '))}</small></div>
+      ${c.bakiye !== undefined && c.bakiye !== null ? html`<div class="ss-deger">${Math.abs(c.bakiye) > 0.004 ? bakiyeHucre(Number(c.bakiye)) : html`<span class="soluk">0,00</span>`}<small>bakiye</small></div>` : ''}</div>`,
     sec,
     bosMetin: 'Cari bulunamadı',
-    ekstra: yeniIzin ? (q) => html`<span class="secici-ekstra" data-yeni-cari="${q}">+ "${q || 'Yeni cari'}" oluştur</span>` : null,
+    sonKullanilan: `cari${tip ? '-' + tip : ''}`,
+    genislik: 440,
+    yeni: yeniIzin ? (q) => cariFormu(null, { unvan: q, tip }) : undefined,
+    yeniMetin: 'Yeni cari',
   });
 }
-// "Yeni cari oluştur" tıklamasını yakalar
-export function cariYeniYakala(kok, sonra, { tip } = {}) {
-  kok.addEventListener('mousedown', async (e) => {
-    const el = e.target.closest('[data-yeni-cari]');
-    if (!el) return;
-    e.preventDefault();
-    const c = await cariFormu(null, { unvan: el.dataset.yeniCari, tip });
-    if (c) sonra(c);
-  });
-}
+// Eski "yeni cari" yakalayıcısı: yeni seçenek artık listenin kendisinde (geriye uyum için boş)
+export function cariYeniYakala() {}
 
 export async function cariFormu(cari, varsayilan = {}) {
   const c = { tip: 'musteri', ...varsayilan, ...(cari || {}) };
@@ -148,6 +145,8 @@ export const urunAltBilgi = (u) => [u.marka, u.model, [u.ana_grup, u.alt_grup].f
 
 // bulunamadi: true → listeden seçilmeden bırakılan metin için "stokta yok, kart açılsın mı?" sorulur; seçilen/açılan kart sec'e gider.
 // iptal(input) → kullanıcı kart açmazsa çağrılır (satır boşaltılır).
+// bulunamadi: true → listeden seçilmeden bırakılan metin için "stokta yok, kart açılsın mı?" sorulur; seçilen/açılan kart sec'e gider.
+// iptal(input) → kullanıcı kart açmazsa çağrılır (satır boşaltılır). yeniIzin: listede "+ Yeni stok kartı" seçeneği.
 export function urunSecici(input, sec, { yonetici = true, yeniIzin = false, bulunamadi = false, iptal } = {}) {
   return secici(input, {
     getir: (q) => api.get('/urunler', { q, limit: 30 }),
@@ -155,13 +154,22 @@ export function urunSecici(input, sec, { yonetici = true, yeniIzin = false, bulu
       const u = await urunBulunamadi(metin);
       if (u) sec(u, input); else iptal?.(input);
     } : undefined,
-    goster: (u) => html`<div class="urun-oneri"><div class="ad"><b>${u.ad}</b>${u.tur === 'hizmet' ? html` <span class="rozet mavi">hizmet</span>` : ''}${u.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
-        <small>${urunAltBilgi(u)}</small></div>
-      ${yonetici && u.tur === 'hizmet' ? html`<div class="deger">${u.onerilen_satis != null ? html`<small>${dovizPara(u.onerilen_satis, u.satis_doviz)}</small>` : ''}</div>` : yonetici && u.stok_miktari !== undefined ? html`<div class="deger"><span class="${u.stok_miktari > 0 ? 'stokta' : 'stok-yok'}">${miktar(u.stok_miktari)} ${u.birim}</span>
-        ${u.onerilen_satis != null ? html`<small>${dovizPara(u.onerilen_satis, u.satis_doviz)}</small>` : ''}</div>` : ''}</div>`,
+    yeni: yeniIzin && !bulunamadi ? (q) => urunFormu(null, { ad: q }) : undefined,
+    yeniMetin: 'Yeni stok kartı',
+    sonKullanilan: 'urun',
+    genislik: 520,
+    goster: (u, q) => {
+      const hizmet = u.tur === 'hizmet';
+      const stok = Number(u.stok_miktari);
+      const stokSinif = stok <= 0 ? 'yok' : u.kritik_stok != null && stok <= Number(u.kritik_stok) ? 'az' : 'var';
+      const alt = [u.marka, u.model, u.kod, u.barkodlar?.split?.(',')[0]].filter(Boolean).map((x) => vurgula(x, q)).join(' · ');
+      return html`<div class="secici-satir"><div class="ss-ana"><b>${ham(vurgula(u.ad, q))}</b>${hizmet ? html` <span class="rozet mavi">hizmet</span>` : ''}${u.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
+          ${alt ? html`<small>${ham(alt)}</small>` : ''}</div>
+        ${yonetici ? html`<div class="ss-deger">${!hizmet && u.stok_miktari !== undefined ? html`<span class="stok-rozet ${stokSinif}">${miktar(stok)} ${u.birim}</span>` : ''}
+          ${u.onerilen_satis != null ? html`<small>${dovizPara(u.onerilen_satis, u.satis_doviz)}</small>` : ''}</div>` : ''}</div>`;
+    },
     sec,
-    bosMetin: 'Ürün bulunamadı',
-    ekstra: yeniIzin ? (q) => html`<span class="secici-ekstra" data-yeni-urun="${q}">+ "${q || 'Yeni ürün'}" oluştur</span>` : null,
+    bosMetin: 'Stokta eşleşen ürün yok',
   });
 }
 
@@ -255,15 +263,8 @@ export async function urunBulunamadi(metin, { barkod = null } = {}) {
   return urunFormu(null, barkod ? { barkodlar: [barkod], ad: metin || '' } : { ad: metin });
 }
 
-export function urunYeniYakala(kok, sonra) {
-  kok.addEventListener('mousedown', async (e) => {
-    const el = e.target.closest('[data-yeni-urun]');
-    if (!el) return;
-    e.preventDefault();
-    const u = await urunFormu(null, { ad: el.dataset.yeniUrun });
-    if (u) sonra(u);
-  });
-}
+// Eski "yeni ürün" yakalayıcısı: seçenek artık listenin kendisinde (geriye uyum için boş)
+export function urunYeniYakala() {}
 
 export async function urunFormu(urun, varsayilan = {}) {
   const u = { birim: 'adet', kdv_orani: 20, ...varsayilan, ...(urun || {}) };
