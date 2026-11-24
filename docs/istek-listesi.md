@@ -35,6 +35,12 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Satış görünümünde cariye bağlanan faturalar da "eşleşmeyen" sayısından düşer (bağlananlar listenin altına iner, soluk).
 - Hepsi bitince: "Tüm faturalar işlendi" kutusu + Alış faturaları / Resmi faturalar / KDV durumu bağlantıları.
 
+### 3. KDV durumu: devreden kutusu siyah yazı, alttaki toplamlar yukarı (24.11.2026)
+- Kullanıcı: "Önceki aydan devreden KDV yazı rengi beyaz, onu siyah yapalım; en alttaki toplamları yukarı alalım".
+- Devreden KDV kutusuna yazılan rakam şeritten beyaz renk alıyordu → kutu içi yazı siyah (kalın, okunur).
+- Alttaki denklem satırı (Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden) sonuç şeridinin hemen altına, iki sütunun üstüne
+  taşınır; altta tekrar edilmez.
+
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
   çekip "Fatura yükle" akışına düşürme; onaylı satış fişinden e-Fatura / e-Arşiv kesme. Gerekenler: Mysoft'tan API kullanıcısı
