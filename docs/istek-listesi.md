@@ -16,6 +16,10 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
      arka planda konum alınamaz — özellikle iPhone).
   3. **Telegram canlı konum:** teknisyen sabah bota "canlı konum paylaş"ı açar (8 saate kadar); telefon kilitliyken de güncellenir.
      Bot zaten kurulu olduğu için ek uygulama gerekmez.
+- **Karar (kullanıcı 22:15): "uygulamayı açtığı yerden son görülme olarak".** → Teknisyen programı (telefonda) açtığında ve
+  açık tuttuğu sürece birkaç dakikada bir konumu alınır; haritada her teknisyen için **son görülme** yeri ve zamanı
+  ("Ali Usta · 14:32'de · 12 dk önce"). İş adımı / Telegram yok. Varsayım (cevaplanmadı): **yalnız son konum**, geçmiş/rota tutulmaz.
+  Telefon konum izni vermezse "konum izni yok" görünür. Haritada son görülme 1 saatten eskiyse soluk.
 - Gizlilik / KVKK: yalnız çalışma saatlerinde ve iş sırasında; teknisyen ekranında "konum paylaşılıyor" göstergesi; çalışanlara
   aydınlatma metni (Ayarlar'da metin + teknisyenin bir kez onayı); konum kayıtları 30 gün sonra silinir; yalnız yönetici görür.
 
