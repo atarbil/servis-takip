@@ -4,7 +4,13 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Üst çubukta "+ Satış fişi" düğmesi (24.11.2026)
+Kullanıcı: "İş ekle butonunun yanına satış fişi butonu ekleyelim, aynı şekilde."
+- Sağ üstte **"+ İş ekle"nin yanında aynı görünümde "+ Satış fişi"** düğmesi (yalnız yönetici; her sayfadan erişilir).
+- Tıklayınca "+ İş ekle" gibi küçük bir pencere: **Cari** seçimi (yeni açılır listeyle; "+ Yeni cari" dahil), isteğe bağlı tarih.
+  "Fişi aç" → taslak satış fişi oluşur ve fiş ekranı açılır, imleç ilk kalem satırında (ürün yazmaya hazır).
+- Bulunduğunuz sayfa bir cari kartıysa o cari hazır seçili gelir.
+- Telefonda üst çubuğa sığmazsa düğme simgeye (🧾) dönüşür; ikisi de üst çubukta kalır.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
