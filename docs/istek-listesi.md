@@ -17,11 +17,9 @@ tüm kalemler stok olarak açılmak zorunda olsun. Açıklama olayı hiçbir yer
 - **İşçilik / hizmet de kart olur:** ürün kartına **"Tür: Ürün / Hizmet"** eklenir. Hizmet kartı (ör. "Kamera montaj işçiliği",
   "Servis ücreti") stok miktarı tutmaz, stok düşmez, kritik stok uyarısı vermez; ama fiyatı, KDV'si, raporlarda satış adedi/cirosu olur.
   Satır tipi (ürün / işçilik / hizmet) seçimi kalkar; kartın türünden gelir.
-- **Satır notu** (seri no, garanti vb.) kalemin altına yazılan ek not olarak kalır — bu bir "açıklama satırı" değil, kartlı kaleme ek bilgidir.
-  (İstenirse bu da kaldırılabilir — sorulacak.)
-- **Eski kayıtlar:** daha önce kaydedilmiş kartsız satırlar geçmişte olduğu gibi kalır (onaylı fiş / cari bakiyesi bozulmasın).
-  Taslak fiş / teklifte kartsız satır varsa kaydederken "kart aç ya da sil" istenir. Ayarlar'da "kartsız eski kalemleri karta
-  dönüştür" yardımcısı: aynı yazılı kalemleri gruplar, tek tıkla hizmet/ürün kartı açıp bağlar.
+- **Satır notu** (seri no, garanti vb.) **kalır** — kartlı kalemin altına yazılan ek not (kullanıcı onayladı, 24.11.2026).
+- **Eski kayıtlar için düzeltme / dönüştürme yapılmayacak** (kullanıcı: test aşamasındayız, eski verileri en sonda silecek).
+  Kural yalnız yeni kayıt ve düzenlemelerde uygulanır; veritabanı kuralı eski satırlara dokunmaz.
 
 ### 2. Satış fişi: Enter ile yeni satır açılması onaya bağlı olsun (24.11.2026)
 - Bugün: birim fiyat → Enter → miktar → Enter (son hücre) yeni satırı **kendiliğinden** açıyor.
