@@ -1,6 +1,7 @@
 # İstek listesi
 
-Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup birlikte uygulanır.
+Kullanım sırasında gelen istekler. Derleme komutu **"OK"** (24.11.2026'dan itibaren; eskiden "Derle"): yalnız "OK" yazılınca
+bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
