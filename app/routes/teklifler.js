@@ -24,12 +24,13 @@ module.exports = (r, { db, web, Y }) => {
   async function getir(id) {
     const t = (await db.query(`
       SELECT t.*, c.unvan, c.adres AS cari_adres, c.il, c.ilce, c.telefon AS cari_telefon, c.vergi_dairesi, c.vergi_no,
+             (SELECT bakiye FROM v_cari_bakiye b WHERE b.id = t.cari_id) AS cari_bakiye,
              f.fis_no, f.durum AS fis_durum, k.belge_no AS kaynak_belge_no
       FROM teklifler t JOIN cariler c ON c.id = t.cari_id LEFT JOIN satis_fisleri f ON f.id = t.fis_id
       LEFT JOIN teklifler k ON k.id = t.kaynak_teklif_id WHERE t.id = $1`, [id])).rows[0];
     if (!t) throw web.hata(404, 'Belge bulunamadı.');
     t.satirlar = (await db.query(`
-      SELECT s.*, round(s.miktar * s.birim_fiyat * (1 - s.iskonto_orani / 100), 2) AS tutar, u.kod AS urun_kod,
+      SELECT s.*, round(s.miktar * s.birim_fiyat * (1 - s.iskonto_orani / 100), 2) AS tutar, u.kod AS urun_kod, u.ort_maliyet AS urun_maliyet, u.tur AS urun_tur,
              u.resim AS urun_resim, u.raf_yeri, u.onerilen_satis AS liste_fiyati, (SELECT min(b.barkod) FROM urun_barkodlari b WHERE b.urun_id = u.id) AS barkod
       FROM teklif_satirlari s LEFT JOIN urunler u ON u.id = s.urun_id WHERE s.teklif_id = $1 ORDER BY s.sira, s.id`, [id])).rows;
     return t;
@@ -41,12 +42,14 @@ module.exports = (r, { db, web, Y }) => {
     let sira = 0;
     for (const s of satirlar) {
       const urunId = s.urun_id || null;
-      if (!urunId) throw web.hata(400, `"${metin(s.aciklama) || 'Boş satır'}" bir stok kartına bağlı değil. Listeden ürün seçin ya da yeni stok kartı açın.`, 'KART_YOK');
-      const aciklama = metin(s.aciklama) || '-';
-      await q(`INSERT INTO teklif_satirlari (teklif_id, sira, urun_id, aciklama, notu, miktar, birim, birim_fiyat, iskonto_orani, kdv_orani)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      const stoksuz = !urunId && ['iscilik', 'egitim', 'hizmet'].includes(s.tip);
+      if (!urunId && !stoksuz) throw web.hata(400, `"${metin(s.aciklama) || 'Boş satır'}" bir stok kartına bağlı değil. Listeden ürün seçin ya da yeni stok kartı açın.`, 'KART_YOK');
+      const aciklama = metin(s.aciklama) || (stoksuz ? '' : '-');
+      if (stoksuz && !aciklama) throw web.hata(400, 'İşçilik / eğitim / hizmet satırının açıklaması boş olamaz.');
+      await q(`INSERT INTO teklif_satirlari (teklif_id, sira, tip, urun_id, aciklama, notu, miktar, birim, birim_fiyat, iskonto_orani, kdv_orani)
+               VALUES ($1, $2, $11, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [id, ++sira, urunId, aciklama, metin(s.notu), sayi(s.miktar, 'Miktar') || 1, metin(s.birim) || 'adet',
-        sayi(s.birim_fiyat, 'Fiyat') || 0, sayi(s.iskonto_orani, 'İskonto') || 0, sayi(s.kdv_orani, 'KDV') ?? 20]);
+        sayi(s.birim_fiyat, 'Fiyat') || 0, sayi(s.iskonto_orani, 'İskonto') || 0, sayi(s.kdv_orani, 'KDV') ?? 20, stoksuz ? s.tip : 'urun']);
     }
   }
 

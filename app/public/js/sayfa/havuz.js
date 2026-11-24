@@ -61,7 +61,7 @@ export function hizliIs(ctx) {
         $('#hi-detay', d).hidden = !benYaptim;
         d.classList.toggle('ben-yaptim', benYaptim);
         kaydetBtn.textContent = benYaptim ? 'Kaydet ve fişi aç' : 'Havuza ekle';
-        if (benYaptim && !editor) { satirlar.push(bosSatir('hizmet')); editor = satirEditoruBagla(d, satirlar); $('#hi-satirlar [data-k=aciklama]', d)?.focus(); }
+        if (benYaptim && !editor) { satirlar.push(bosSatir()); editor = satirEditoruBagla(d, satirlar); $('#hi-satirlar [data-k=aciklama]', d)?.focus(); }
       };
     },
     kaydet: async (v) => {

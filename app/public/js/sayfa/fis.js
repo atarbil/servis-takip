@@ -42,7 +42,7 @@ export default async function (el, [id], ctx) {
   const gosterFiyat = (s) => (kdvDahil ? r2(Number(s.birim_fiyat) * (1 + Number(s.kdv_orani) / 100)) : Number(s.birim_fiyat));
 
   const maliyetGoster = () => { try { return localStorage.getItem('fisMaliyet') !== '0'; } catch { return true; } };
-  const TUR = { urun: 'Ürün', iscilik: 'İşçilik', hizmet: 'Hizmet' };
+  const STOKSUZ = { iscilik: 'İşçilik', egitim: 'Eğitim', hizmet: 'Hizmet' };
   const enterYeniSatir = () => { try { return localStorage.getItem('enterYeniSatir') === '1'; } catch { return false; } };
   let izgara = null;
 
@@ -90,7 +90,11 @@ export default async function (el, [id], ctx) {
 
         <div class="fatura-arac">
           ${taslak ? html`<div class="btn-grup">
-            <button class="btn ikincil kucuk" data-ekle="urun">+ Satır</button><button class="btn ikincil kucuk" data-stok-listesi title="F4">📦 Stok listesi</button>
+            <button class="btn ikincil kucuk" data-ekle="urun">+ Satır</button>
+            <button class="btn ikincil kucuk stoksuz-dugme" data-ekle="iscilik" title="Stoksuz işçilik satırı">+ İşçilik</button>
+            <button class="btn ikincil kucuk stoksuz-dugme" data-ekle="egitim" title="Stoksuz eğitim satırı">+ Eğitim</button>
+            <button class="btn ikincil kucuk stoksuz-dugme" data-ekle="hizmet" title="Stoksuz hizmet satırı">+ Hizmet</button>
+            <button class="btn ikincil kucuk" data-stok-listesi title="F4">📦 Stok listesi</button>
             <button class="btn ikincil kucuk" data-ekle="barkod" title="Ctrl+B">📷 Barkod</button>
             ${satirlar.some((s) => s.doviz) ? html`<button class="btn ikincil kucuk" data-a="kurguncelle" title="F9 — dövizli satırları bugünkü TCMB satış kuruyla yeniden hesapla">
               💱 Kurları güncelle${kur?.usd ? ` (USD ${kurFmt(kur.usd.satis)})` : ''}</button>` : ''}</div>` : html`<span></span>`}
@@ -102,11 +106,11 @@ export default async function (el, [id], ctx) {
         </div>
 
         <div class="fatura-tablo-kap"><table class="fatura-tablo ${mg ? '' : 'maliyetsiz'}" id="kalemler"><thead><tr>
-          <th class="no">#</th><th class="tur">Tür</th><th class="kod">Kod</th><th>Ürün / hizmet açıklaması</th><th class="sayi mik">Miktar</th><th class="brm">Birim</th>
+          <th class="no">#</th><th class="kod">Kod</th><th>Ürün / hizmet açıklaması</th><th class="sayi mik">Miktar</th><th class="brm">Birim</th>
           <th class="sayi fiyat">Birim fiyat${kdvDahil && taslak ? ' (KDV dahil)' : ''}</th><th class="sayi yuzde">İsk. %</th><th class="sayi yuzde">KDV %</th><th class="sayi tutar">Tutar</th>
           <th class="sayi maliyet">Maliyet</th>${taslak ? html`<th class="sil"></th>` : ''}</tr></thead>
           <tbody id="satirlar">${satirlar.map((s, i) => satirHtml(s, i, taslak))}
-            ${!satirlar.length ? html`<tr class="bos-satir"><td colspan="12">${taslak ? html`Satır yok. <b>+ Satır</b> ile başlayın veya <b>F4</b> ile stok listesinden seçin.` : 'Satır yok.'}</td></tr>` : ''}</tbody>
+            ${!satirlar.length ? html`<tr class="bos-satir"><td colspan="11">${taslak ? html`Satır yok. <b>+ Satır</b> ile başlayın veya <b>F4</b> ile stok listesinden seçin.` : 'Satır yok.'}</td></tr>` : ''}</tbody>
         </table></div>
         ${taslak ? html`<div class="fatura-ipucu">⌨️ ${KISAYOL_YARDIM} · F9 kurları güncelle</div>` : ''}
 
@@ -130,24 +134,31 @@ export default async function (el, [id], ctx) {
       if (odak) izgara.odakla(odak);
     }
   }
-  const bosSatir = () => ({ tip: 'urun', urun_id: null, aciklama: '', miktar: 1, birim: 'adet', birim_fiyat: 0, iskonto_orani: 0, kdv_orani: 20, _tahmin: 0 });
+  // tip: 'urun' (stok kartından seçilir) ya da stoksuz 'iscilik' / 'egitim' / 'hizmet' (açıklama yazılır, stoktan düşmez)
+  const bosSatir = (tip = 'urun') => (STOKSUZ[tip]
+    ? { tip, urun_id: null, aciklama: STOKSUZ[tip], miktar: 1, birim: tip === 'hizmet' ? 'adet' : 'saat', birim_fiyat: 0, iskonto_orani: 0, kdv_orani: 20, _tahmin: 0 }
+    : { tip: 'urun', urun_id: null, aciklama: '', miktar: 1, birim: 'adet', birim_fiyat: 0, iskonto_orani: 0, kdv_orani: 20, _tahmin: 0 });
+  const stoksuzMu = (s) => !s.urun_id && !!STOKSUZ[s.tip];
+  const turRozet = (s) => (stoksuzMu(s) ? html`<span class="rozet satir-tur ${s.tip}">${STOKSUZ[s.tip]}</span>` : s.urun_id && s.tip === 'hizmet' ? html`<span class="rozet mavi satir-tur">hizmet</span>` : '');
 
   function satirHtml(s, i, taslak) {
     const h = hesap(s);
     const kar = r2(h.net - h.maliyet);
     const kod = s.urun_kod || s._kod || '';
     if (!taslak) {
-      return html`<tr><td class="no">${i + 1}</td><td class="tur">${TUR[s.tip]}</td><td class="kod">${kod}</td>
-        <td>${s.aciklama}${s.notu ? html`<div class="alt-satir">${s.notu}</div>` : ''}</td>
+      return html`<tr><td class="no">${i + 1}</td><td class="kod">${kod}</td>
+        <td>${turRozet(s)} ${s.aciklama}${s.notu ? html`<div class="alt-satir">${s.notu}</div>` : ''}</td>
         <td class="sayi">${miktar(s.miktar)}</td><td class="brm">${s.birim}</td><td class="sayi">${paraSade(s.birim_fiyat)}${dovizNot(s)}</td>
         <td class="sayi">${Number(s.iskonto_orani) ? s.iskonto_orani : ''}</td><td class="sayi">${s.kdv_orani}</td><td class="sayi tutar"><b>${paraSade(h.net)}</b></td>
         <td class="sayi maliyet soluk">${s.urun_id ? paraSade(h.maliyet) : ''}</td></tr>`;
     }
-    return html`<tr data-i="${i}" class="${!s.urun_id ? 'eksik' : ''}">
+    return html`<tr data-i="${i}" class="${!s.urun_id && !stoksuzMu(s) ? 'eksik' : ''}">
       <td class="no">${i + 1}</td>
-      <td class="tur" title="Tür stok kartından gelir">${s.urun_id ? TUR[s.tip] || 'Ürün' : html`<span class="soluk">—</span>`}</td>
       <td class="kod">${kod}</td>
-      <td class="aciklama-hucre">${s.urun_id
+      <td class="aciklama-hucre">${stoksuzMu(s)
+        ? html`<div class="stoksuz-hucre">${turRozet(s)}<input data-k="aciklama" value="${s.aciklama || ''}" placeholder="${STOKSUZ[s.tip]} açıklaması (ör. ${s.tip === 'egitim' ? 'NVR kullanım eğitimi' : s.tip === 'iscilik' ? 'Kamera montaj işçiliği' : 'Uzaktan destek'})"></div>
+          <input data-k="notu" class="not-giris" value="${s.notu || ''}" placeholder="not…">`
+        : s.urun_id
         ? html`<div class="urun-adi" title="Ürün adı stok kartından gelir"><b>${s.aciklama}</b>${s.stoktan_dus === false ? html` <small class="soluk">· işte kullanıldı</small>` : html` <button type="button" class="btn-metin degistir" data-urun-degistir="${i}" tabindex="-1">değiştir</button>`}</div>
           <input data-k="notu" class="not-giris" value="${s.notu || ''}" placeholder="not: seri no, garanti…">`
         : html`<input data-k="aciklama" value="${s.aciklama || ''}" placeholder="Ürün / hizmet ara… (ad, kod, model)" class="urun-ara">`}</td>
@@ -244,8 +255,9 @@ export default async function (el, [id], ctx) {
   }
   async function kaydet() {
     // Boş satırlar atılır; yazılıp kart seçilmemiş satır kaydedilmez (her kalem stok kartlı)
-    satirlar = satirlar.filter((s) => s.urun_id || String(s.aciklama || '').trim());
+    satirlar = satirlar.filter((s) => s.urun_id || stoksuzMu(s) || String(s.aciklama || '').trim());
     for (const s of satirlar) {
+      if (stoksuzMu(s)) { if (!String(s.aciklama || '').trim()) throw new Error(`${STOKSUZ[s.tip]} satırının açıklamasını yazın.`); continue; }
       if (!s.urun_id) throw new Error(`"${s.aciklama}" bir stok kartına bağlı değil. Listeden seçin ya da kutudan çıkınca gelen soruda yeni kart açın.`);
     }
     f = await api.put(`/fisler/${f.id}`, govde());
@@ -298,10 +310,19 @@ export default async function (el, [id], ctx) {
           if (!u) return;
           satirlar.push({ tip: u.tur === 'hizmet' ? 'hizmet' : 'urun', urun_id: u.id, aciklama: u.ad, miktar: 1, birim: u.birim, ...fiyatAlanlari(u), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20), _tahmin: Number(u.ort_maliyet || 0), _kod: u.kod });
         }
+      } else if (STOKSUZ[ek]) {
+        // Stoksuz işçilik / eğitim / hizmet satırı: sondaki boş ürün satırının yerine geçer
+        const sonS = satirlar.at(-1);
+        const y = bosSatir(ek);
+        if (sonS && sonS.tip === 'urun' && !sonS.urun_id && !String(sonS.aciklama || '').trim()) satirlar[satirlar.length - 1] = y; else satirlar.push(y);
+        degisti = true; ciz();
+        const inp = $(`tr[data-i="${satirlar.length - 1}"] [data-k=aciklama]`, el);
+        if (inp) { inp.focus(); inp.select(); }
+        return;
       } else {
         const sonS = satirlar.at(-1);
         // Sonda boş ürün satırı varsa yenisini açmak yerine ona git
-        if (!(sonS && !sonS.urun_id && !String(sonS.aciklama || '').trim())) satirlar.push(bosSatir());
+        if (!(sonS && !sonS.urun_id && !stoksuzMu(sonS) && !String(sonS.aciklama || '').trim())) satirlar.push(bosSatir());
       }
       degisti = true; ciz();
       izgara?.odakla({ i: satirlar.length - 1, k: ek === 'barkod' ? 'miktar' : 'aciklama' });

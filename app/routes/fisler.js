@@ -8,6 +8,8 @@ function dovizSatir(s) {
   return [d, sayi(s.doviz_fiyat, 'Döviz fiyatı'), sayi(s.kur, 'Kur')];
 }
 
+const STOKSUZ = ['iscilik', 'egitim', 'hizmet'];
+
 module.exports = (r, { db, web, Y }) => {
   r.get('/fisler', Y, async (req) => {
     const p = []; const k = [];
@@ -67,11 +69,13 @@ module.exports = (r, { db, web, Y }) => {
         await q('DELETE FROM satis_fisi_satirlari WHERE fis_id = $1', [f.id]);
         let sira = 0;
         for (const s of b.satirlar) {
-          // Her kalem stok kartına bağlı (serbest açıklama satırı yok); tip (ürün/hizmet) veritabanında karttan gelir
+          // Ürün satırı stok kartlı olmak zorunda; stoksuz satır yalnız işçilik / eğitim / hizmet (veritabanı da zorlar)
           const urunId = s.urun_id || null;
-          if (!urunId) throw web.hata(400, `"${metin(s.aciklama) || 'Boş satır'}" bir stok kartına bağlı değil. Listeden ürün seçin ya da yeni stok kartı açın.`, 'KART_YOK');
-          const tip = 'urun';
-          const aciklama = metin(s.aciklama) || '-';
+          const stoksuz = !urunId && STOKSUZ.includes(s.tip);
+          if (!urunId && !stoksuz) throw web.hata(400, `"${metin(s.aciklama) || 'Boş satır'}" bir stok kartına bağlı değil. Listeden ürün seçin ya da yeni stok kartı açın.`, 'KART_YOK');
+          const tip = stoksuz ? s.tip : 'urun';
+          const aciklama = metin(s.aciklama) || (stoksuz ? '' : '-');
+          if (stoksuz && !aciklama) throw web.hata(400, 'İşçilik / eğitim / hizmet satırının açıklaması boş olamaz.');
           const onceki = s.id ? eski.get(Number(s.id)) : null;
           const ayniUrun = onceki && onceki.urun_id === (urunId ? Number(urunId) : null);
           await q(`INSERT INTO satis_fisi_satirlari (fis_id, sira, tip, urun_id, aciklama, miktar, birim, birim_fiyat, iskonto_orani,

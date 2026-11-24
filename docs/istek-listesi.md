@@ -4,29 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Satış fişi: "Tür" sütunu kalksın; "+ İşçilik / + Eğitim / + Hizmet" stoksuz satır ekler (24.11.2026)
-Kullanıcı: "Satış fişinde türü kaldıralım, + Satır'ın yanına işçilik / eğitim / hizmet diye 3 başlık açalım."
-Düzeltme (17:49): "Grup olarak değil; dediğin butonlara basılınca direkt **stoksuz** satış fişine satır eklesin."
-- Kalem tablosundaki **"Tür" sütunu kaldırılır.**
-- **"+ Satır"ın yanında üç düğme: "+ İşçilik", "+ Eğitim", "+ Hizmet".** Basılınca fişe **stok kartı gerektirmeyen** bir satır
-  eklenir: açıklama kutusunda varsayılan yazı ("İşçilik" / "Eğitim" / "Hizmet") seçili gelir, üzerine yazılabilir
-  (ör. "Kamera montaj işçiliği", "NVR kullanım eğitimi"); miktar (işçilik/eğitimde birim "saat"), fiyat, KDV girilir.
-  Stoktan düşmez, maliyeti yoktur (kâr = tutar). Satırda adın yanında küçük rozet: İşçilik / Eğitim / Hizmet.
-- **Kural güncellemesi:** "her kalem stok kartlı" kuralı **ürün satırları** için geçerli kalır (yazılan ürün stokta yoksa
-  "yeni stok kartı açılsın mı?" sorusu sürer). İşçilik / Eğitim / Hizmet satırları yalnız bu üç düğmeyle açılır; serbest yazılı
-  ürün satırı yine yoktur. Hizmet kartları (Tür = Hizmet) "+ Satır" ile seçilmeye devam edebilir.
-- Veritabanı: satır tipine "eğitim" eklenir; kartsız satıra yalnız işçilik / eğitim / hizmet tipinde izin verilir.
-- Yazdırmada bu satırlar normal kalem olarak çıkar (kod / barkod / resim boş).
-- Aynı üç düğme ve kural "Teslim et / İşi ben yaptım" satırlarında da.
-
-### 2. Teklif ekranı tasarım olarak satış fişinin aynısı olsun (24.11.2026)
-- Teklif / proforma düzenleme ekranı satış fişi ekranının düzenine geçer: üstte cari kutusu (bakiye ile) + sağda belge bilgileri
-  (no, tarih, geçerlilik, döviz/kur), Excel gibi kalem tablosu (aynı sütunlar, klavye kısayolları, F4 stok listesi, barkod,
-  "Enter ile yeni satır aç", "Fiyatlar KDV dahil"), aynı **+ Satır / + İşçilik / + Eğitim / + Hizmet** düğmeleri, altta yazıyla
-  tutar + KDV dökümü + toplam kutusu, sağ üstte Kaydet / Yazdır / (Satış fişine dönüştür) düğmeleri; telefonda aynı alt çubuk.
-- Teklife özel alanlar (giriş / kapanış metni, kaşe-imza, TL karşılığı) satış fişindeki açıklama alanı gibi başlık kartında
-  ya da tablonun altında katlanır bir "Teklif metinleri" bölümünde.
-- Maliyet / kâr sütunu teklifte de isteğe bağlı (yazdırmaya çıkmaz).
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -35,6 +13,25 @@ Düzeltme (17:49): "Grup olarak değil; dediğin butonlara basılınca direkt **
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 19. derleme: Stoksuz işçilik / eğitim / hizmet satırları, fiş düzeninde teklif
+- Satış fişinde **"Tür" sütunu kaldırıldı.** "+ Satır"ın yanında **"+ İşçilik", "+ Eğitim", "+ Hizmet"** düğmeleri: basılınca
+  fişe doğrudan **stok kartı gerektirmeyen** satır eklenir (açıklama hazır gelir ve seçili olur, üzerine yazılır; işçilik / eğitim
+  birimi "saat"). Bu satırlar stoktan düşmez, maliyeti 0; satırda renkli küçük etiketle (İşçilik / Eğitim / Hizmet) görünür.
+  Açıklaması boş stoksuz satır kaydedilmez.
+- **Ürün satırları için kural aynı:** stokta olmayan ürün yazılırsa yeni stok kartı açmanız istenir; kartsız ürün satırı kaydedilmez.
+- Aynı düğmeler **"Teslim et / İşi ben yaptım"** penceresinde de ("+ Ürün / + İşçilik / + Eğitim / + Hizmet"); bu pencerenin
+  kalem tablosunun sütun genişlikleri düzeltildi.
+- **Teklif / proforma ekranı satış fişinin düzeninde:** üstte "Sayın" cari kutusu (adres, VD/VN, telefon, **cari bakiye**) ve sağda
+  belge bilgileri (no, tarih, geçerlilik / son ödeme, para birimi + kur, iç not); altında durum düğmeleri; fişteki kalem tablosu ve
+  düğmeler (+ Satır, + İşçilik, + Eğitim, + Hizmet, Stok listesi, Barkod, Enter ile yeni satır, **Maliyet / kâr**, KDV dahil);
+  en altta "Yalnız: …", KDV dökümü, TL karşılığı, maliyet/kâr ve toplam bloğu. Giriş / kapanış metni, kaşe-imza ve TL karşılığı
+  açılır-kapanır **"Teklif metinleri ve çıktı seçenekleri"** bölümünde. Üst düğmeler: Kaydet, Satış fişine dönüştür, Yazdır,
+  Kopyala, İptal, Sil.
+- Teklif satırları türünü (işçilik / eğitim / hizmet) saklar; kopyalanınca ve **satış fişine dönüştürülünce korunur**.
+- Düzeltme: kalem tablosunda açılan ürün listesinde Esc artık yalnız listeyi kapatıyor (bazı durumlarda pencereyi kapatıyordu).
+- Testler: API (stoksuz fiş / teklif satırı, açıklamasız reddi, kartsız ürün reddi, fişe dönüşte tür korunur), yeni
+  stoksuz_testi.js (fiş, teklif, İşi ben yaptım ekranları).
 
 ### 24.11.2026 — 18. derleme: Üst çubukta "+ Satış fişi"
 - Sağ üstte "+ İş ekle"nin yanında aynı görünümde **"+ Satış fişi"** (yönetici). Pencere: cari (açılır liste, "+ Yeni cari") ve tarih;

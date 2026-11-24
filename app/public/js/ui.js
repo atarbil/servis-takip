@@ -290,6 +290,7 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   input.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' && e.altKey) { yazildi = true; if (!acik()) yukle(); e.preventDefault(); return; }
     if (e.key === 'Enter' && yazildi && yukleniyor) { e.preventDefault(); enterBekliyor = true; return; }
+    if (e.key === 'Escape' && acik()) { kapat(); e.preventDefault(); e.stopPropagation(); return; } // pencereyi kapatmasın, yalnız listeyi
     if (!acik() || (!yazildi && input.closest('tr[data-i]'))) return;
     if (e.key === 'ArrowDown') { aktif = Math.min(aktif + 1, enSon()); ciz(); e.preventDefault(); }
     else if (e.key === 'ArrowUp') { aktif = Math.max(aktif - 1, 0); ciz(); e.preventDefault(); }

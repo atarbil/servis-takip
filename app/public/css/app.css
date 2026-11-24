@@ -913,13 +913,13 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
 .hi-tablo th { text-align: left; font-size: .72rem; text-transform: uppercase; color: var(--soluk); padding: .3rem; border-bottom: 1px solid var(--cizgi); }
 .hi-tablo th.sayi { text-align: right; }
 .hi-tablo td { padding: .25rem .3rem; border-bottom: 1px solid var(--cizgi2); vertical-align: middle; }
-.hi-tablo td:nth-child(1) { width: 110px; } .hi-tablo td:nth-child(3) { width: 90px; } .hi-tablo td:nth-child(4) { width: 140px; } .hi-tablo td:nth-child(5) { width: 36px; }
+.hi-tablo td:nth-child(2) { width: 90px; } .hi-tablo td:nth-child(3) { width: 140px; } .hi-tablo td:nth-child(4) { width: 36px; }
 .hi-tablo input, .hi-tablo select { min-height: 36px; padding: .3rem .45rem; }
 @media (max-width: 860px) {
   .hi-tablo thead { display: none; }
   .hi-tablo tr { display: grid; grid-template-columns: 1fr 1fr 36px; gap: .3rem; padding: .4rem 0; border-bottom: 1px solid var(--cizgi); }
   .hi-tablo td { border: 0; width: auto !important; padding: 0; }
-  .hi-tablo td:nth-child(2) { grid-column: 1 / -1; order: -1; }
+  .hi-tablo td:nth-child(1) { grid-column: 1 / -1; }
 }
 
 /* ---------- + İş ekle: geniş, kaydırmasız pencere ---------- */
@@ -1301,3 +1301,18 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
 .ust-cubuk #btn-fis { flex: none; }
 @media (max-width: 1100px) { #btn-fis .uzun { display: none; } #btn-fis .kisa { display: inline; font-size: 1.05rem; } #btn-fis { padding: .3rem .6rem; } }
 @media (max-width: 860px) { #btn-fis { min-height: 34px; } }
+
+/* 19. derleme: stoksuz işçilik / eğitim / hizmet satırları, fiş düzeninde teklif */
+.stoksuz-dugme { border-style: dashed; }
+.stoksuz-hucre { display: flex; align-items: center; gap: .4rem; }
+.stoksuz-hucre input { flex: 1; min-width: 0; }
+.rozet.satir-tur { font-size: .68rem; padding: .1rem .45rem; flex: none; }
+.rozet.satir-tur.iscilik { background: #fff4e5; color: #b45309; }
+.rozet.satir-tur.egitim { background: #f3e8ff; color: #7e22ce; }
+.rozet.satir-tur.hizmet { background: #e0f2fe; color: #0369a1; }
+.teklif-durum { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; padding: .55rem 1.2rem; border-top: 1px solid var(--cizgi); }
+.teklif-metinleri { border-top: 1px solid var(--cizgi); padding: .2rem 1.2rem; }
+.teklif-metinleri > summary { cursor: pointer; padding: .55rem 0; font-weight: 650; color: var(--soluk); font-size: .9rem; }
+.teklif-metinleri-ic { display: grid; gap: .6rem; padding-bottom: .8rem; }
+.teklif-metinleri .metin-cifti { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+@media (max-width: 720px) { .teklif-metinleri .metin-cifti { grid-template-columns: 1fr; } }

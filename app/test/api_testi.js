@@ -191,8 +191,18 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Fiş taslağı 3 satır', x.veri.satirlar.length === 3, x.veri.satirlar);
   const satirlar = x.veri.satirlar.map((s) => ({ ...s, birim_fiyat: s.urun_id === kamera.id ? 2000 : s.urun_id === kablo.id ? 25 : 15 }));
   // Kartsız (serbest yazı) satır kaydedilemez
-  x = await y('PUT', `/fisler/${fisId}`, { satirlar: [...satirlar, { tip: 'iscilik', aciklama: 'Montaj işçiliği', miktar: 1, birim_fiyat: 1500 }] });
-  kontrol('Kartsız satır reddedildi', x.durum === 400 && x.veri.kod === 'KART_YOK', x.veri);
+  x = await y('PUT', `/fisler/${fisId}`, { satirlar: [...satirlar, { tip: 'urun', aciklama: 'Kartı olmayan kamera', miktar: 1, birim_fiyat: 1500 }] });
+  kontrol('Kartsız ürün satırı reddedildi', x.durum === 400 && x.veri.kod === 'KART_YOK', x.veri);
+  // İşçilik / eğitim / hizmet butonları stoksuz satır açar (kart gerekmez, stok ve maliyet etkisi yok)
+  {
+    const sf = (await y('POST', '/fisler', { cari_id: musteri.id })).veri;
+    x = await y('PUT', `/fisler/${sf.id}`, { satirlar: [{ tip: 'iscilik', aciklama: '', miktar: 1, birim_fiyat: 1500 }] });
+    kontrol('Açıklamasız stoksuz satır reddedildi', x.durum === 400, x.veri);
+    x = await y('PUT', `/fisler/${sf.id}`, { satirlar: [{ tip: 'egitim', aciklama: 'NVR kullanım eğitimi', miktar: 2, birim: 'saat', birim_fiyat: 500 }] });
+    const egt = x.veri.satirlar?.find((s) => s.tip === 'egitim');
+    kontrol('Stoksuz eğitim satırı kaydedildi', x.durum === 200 && egt && !egt.urun_id && Number(egt.birim_maliyet) === 0 && egt.aciklama === 'NVR kullanım eğitimi', x.veri);
+    await y('DELETE', `/fisler/${sf.id}`);
+  }
   satirlar.push({ urun_id: iscilikK.id, aciklama: 'Montaj işçiliği', miktar: 1, birim: 'saat', birim_fiyat: 1500, kdv_orani: 20 });
   x = await y('PUT', `/fisler/${fisId}`, { satirlar, vade: new Date().toISOString().slice(0, 10) });
   kontrol('Fiş kaydedildi', x.veri.ara_toplam === 10370 && x.veri.genel_toplam === 12444, x.veri);
@@ -312,6 +322,20 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   x = await y('PUT', `/fisler/${dFis.id}`, { cari_id: musteri.id, satirlar: dFis.satirlar.map((r) => ({ ...r, birim_fiyat: 4000, kur: 40 })) });
   kontrol('Fiş kaydında döviz bilgisi korunur', Number(x.veri.satirlar[0].kur) === 40 && x.veri.satirlar[0].doviz === 'USD', x.veri.satirlar[0]);
   // Dövizli teklif
+  // Teklifte stoksuz işçilik satırı; fişe dönüşünce türü korunur
+  x = await y('POST', '/teklifler', { tur: 'teklif', cari_id: musteri.id, satirlar: [{ urun_id: kamera.id, aciklama: 'x', miktar: 1, birim_fiyat: 1000, kdv_orani: 20 }, { tip: 'iscilik', aciklama: 'Kamera montajı', miktar: 3, birim: 'saat', birim_fiyat: 400, kdv_orani: 20 }] });
+  kontrol('Teklifte stoksuz işçilik satırı', x.durum === 200 && x.veri.satirlar.some((s) => s.tip === 'iscilik' && !s.urun_id && s.aciklama === 'Kamera montajı') && x.veri.ara_toplam === 2200, x.veri);
+  x = await y('POST', '/teklifler', { tur: 'teklif', cari_id: musteri.id, satirlar: [{ tip: 'urun', aciklama: 'Kartsız ürün', miktar: 1, birim_fiyat: 10 }] });
+  kontrol('Teklifte kartsız ürün reddedildi', x.durum === 400 && x.veri.kod === 'KART_YOK', x.veri);
+  {
+    const tk = (await y('GET', '/teklifler')).veri.find((b) => b.ara_toplam === 2200 || Number(b.ara_toplam) === 2200);
+    const kp = await y('POST', `/teklifler/${tk.id}/kopyala`, { tur: 'proforma' });
+    kontrol('Kopyada stoksuz satır türü korundu', (await y('GET', `/teklifler/${kp.veri.id}`)).veri.satirlar.some((s) => s.tip === 'iscilik'));
+    const r = await y('POST', `/teklifler/${tk.id}/fise-donustur`);
+    const fs = (await y('GET', `/fisler/${r.veri.id}`)).veri;
+    kontrol('Fişe dönüşte işçilik stoksuz kaldı', fs.satirlar.some((s) => s.tip === 'iscilik' && !s.urun_id && Number(s.birim_maliyet) === 0), fs.satirlar);
+    await y('DELETE', `/fisler/${r.veri.id}`);
+  }
   x = await y('POST', '/teklifler', { tur: 'proforma', cari_id: musteri.id, doviz: 'USD', kur: 41, tl_karsilik_goster: true,
     satirlar: [{ urun_id: usdUrun.id, aciklama: 'x', miktar: 3, birim_fiyat: 100, kdv_orani: 20 }] });
   kontrol('USD proforma', x.durum === 200 && x.veri.doviz === 'USD' && Number(x.veri.genel_toplam) === 360 && x.veri.tl_karsilik_goster === true, x.veri);
@@ -357,7 +381,8 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Malzeme stoktan düştü', Number((await y('GET', `/urunler/${ofKam.id}`)).veri.stok_miktari) === stokOnce - 2);
   kontrol('İş fiş kesildi oldu', (await y('GET', `/isler/${ofIs.id}`)).veri.durum === 'fis_kesildi');
   kontrol('Satırsız reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [] })).durum === 400);
-  kontrol('İşi ben yaptım: kartsız satır reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'hizmet', aciklama: 'serbest' }] })).durum === 400);
+  kontrol('İşi ben yaptım: kartsız satır reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'urun', aciklama: 'serbest' }] })).durum === 400);
+  kontrol('İşi ben yaptım: açıklamasız işçilik reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'iscilik', aciklama: '' }] })).durum === 400);
   kontrol('Hizmet kartı satıştan sonra stok tutmaz', Number((await y('GET', `/urunler/${iscilikK.id}`)).veri.stok_miktari) === 0);
   kontrol('Carisiz reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', satirlar: [{ urun_id: kurulumK.id }] })).durum === 400);
   kontrol('Teknisyen kullanamaz', (await t('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ urun_id: kurulumK.id }] })).durum === 403);
