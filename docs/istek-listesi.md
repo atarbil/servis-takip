@@ -21,7 +21,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
   cari (ara ya da telefondan bulunur), öncelik. Varsayılan: iş **havuza** düşer, yöneticiye bildirim (Telegram açıksa). İsteğe bağlı
   "Bu işi ben yapıyorum" → kendi ekibine bugün planlanır. Teknisyen fiyat / cari bakiye görmez (mevcut kural).
 
-### 3. İşe dükkandan verilen malzeme + sahada ilave malzeme (24.11.2026)
+### 3. İş türü (Kurulum / Teslimat), işe verilen malzeme + sahada ilave malzeme (24.11.2026)
 - Kullanıcı: "İş eklerken eksik gördüm: personel kamera kurmaya gidecek, biz ona dükkandan malzeme veriyoruz; neyi yapmaya gidecekse
   ana malzemeler zaten veriliyor. Ekip sahada ilave malzeme kullanması durumunda malzeme ekleyecek. Buna dair bir düzenleme."
 - Öneri:
@@ -33,6 +33,15 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
     (ofis "iade alındı" onayıyla ya da iş kapanınca).
   - İş kartında ve fişte kalemler etiketli: "Verilen" / "İlave"; ofis için "verilen ama işte kullanılmayan" farkı görünür.
   - Teknisyen yalnız miktar görür, fiyat / maliyet görmez (mevcut kural).
+- Kullanıcı ek (23:52): **"Sadece kurulum için düşünmeyelim; müşteri toner ya da telefon istedi; işi planlarken kurulumlu iş de
+  olsa sadece malzeme teslimli iş de olsa ona göre kurgu yapalım."** →
+  - İş eklerken / planlarken **iş türü**: **Kurulum / servis** ya da **Teslimat (yalnız malzeme)**.
+  - **Teslimat işi:** "Teslim edilecek malzeme" listesi (stoktan; ör. 2 toner, 1 telefon) zorunlu; teknisyen ekranında sade akış:
+    adres / telefon / harita → "Teslim ettim" (isteğe bağlı müşteri imzası / teslim alan adı, fotoğraf) → iş tamamlanır, kalemler
+    satış fişine gider. Kurulum alanları (yapılan iş, ilave malzeme, işçilik) gizli; gerekirse "ilave malzeme" yine eklenebilir.
+    Teslim edilemezse "Teslim edilemedi" + neden → malzeme stoğa döner, iş havuza / yeniden planlamaya.
+  - **Kurulum / servis işi:** yukarıdaki verilen + ilave malzeme akışı.
+  - İş listesi, takvim ve teknisyen ekranında türe göre rozet / renk (ör. 🚚 Teslimat, 🔧 Kurulum).
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
