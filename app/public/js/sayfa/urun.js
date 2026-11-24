@@ -17,9 +17,9 @@ export default async function (el, [id], ctx) {
         <button class="btn ikincil" data-a="birlestir">Zaten var olan bir ürün → birleştir</button></div></div>` : ''}
     <div class="istatistik">
       ${u.tur === 'hizmet' ? html`<div class="ist vurgu"><small>Tür</small><b>Hizmet</b><small>stok tutulmaz</small></div>` : html`<div class="ist vurgu"><small>Stok</small><b class="${u.stok_miktari < 0 ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</b></div>`}
-      <div class="ist"><small>Ortalama maliyet</small><b>${para(u.ort_maliyet)}</b></div>
+      <div class="ist kar-bilgi"><small>Ortalama maliyet</small><b>${para(u.ort_maliyet)}</b></div>
       <div class="ist"><small>Satış fiyatı (KDV hariç)</small><b>${u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : '—'}</b></div>
-      <div class="ist"><small>Stok değeri</small><b>${para(Math.max(0, u.stok_miktari) * u.ort_maliyet)}</b></div>
+      <div class="ist kar-bilgi"><small>Stok değeri</small><b>${para(Math.max(0, u.stok_miktari) * u.ort_maliyet)}</b></div>
     </div>
     <div class="kart urun-resim-kart"><div class="kart-ust"><h3>Resim ve raf yeri</h3><span class="soluk">yazdırma şablonlarında kullanılır</span></div>
       <div class="kart-govde urun-resim-govde">
@@ -35,7 +35,7 @@ export default async function (el, [id], ctx) {
       ${u.hareketler.length ? u.hareketler.map((h) => html`<tr class="${h.kaynak === 'is_malzeme' && h.kaynak_id ? 'tikla' : ''}" ${h.kaynak === 'is_malzeme' && h.kaynak_id ? html`data-git="is/${h.kaynak_id}"` : ''}>
         <td data-et="Zaman" class="nowrap">${zaman(h.zaman)}</td><td class="ana-hucre" data-et="">${KAYNAK[h.kaynak] || h.kaynak}</td><td data-et="Açıklama">${h.aciklama || ''}</td>
         <td class="sayi ${h.miktar < 0 ? 'negatif' : 'pozitif'}" data-et="Miktar">${h.miktar > 0 ? '+' : ''}${miktar(h.miktar)}</td>
-        <td class="sayi" data-et="Maliyet">${paraSade(h.birim_maliyet)}</td><td data-et="Kullanıcı">${h.ad_soyad || ''}</td></tr>`)
+        <td class="sayi kar-bilgi" data-et="Maliyet">${paraSade(h.birim_maliyet)}</td><td data-et="Kullanıcı">${h.ad_soyad || ''}</td></tr>`)
         : html`<tr><td colspan="6" class="bos-durum">Hareket yok</td></tr>`}</tbody></table></div></div>`);
 
   $('#urun-resim', el)?.addEventListener('change', async (e) => {

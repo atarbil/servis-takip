@@ -22,11 +22,33 @@ const db = new Havuz(AYAR.dbUrl, 10);
 const r = new web.Yonlendirici();
 
 // ---------- Yetki ----------
-const girisGerekli = (req) => { if (!req.kullanici) throw web.hata(401, 'Oturum açmanız gerekiyor.'); };
+
+// Muhasebe rolü yönetici ekranlarını kullanır; şu bölümler hariç (her yöntem ya da yalnız değiştirme)
+const MUHASEBE_YASAK = /^\/(kullanicilar|guncelleme|telegram|konumlar|silinenler|denetim|fiyatlandirma)(\/|$)/;
+const MUHASEBE_SALT_OKUMA = /^\/(ayarlar|ekipler|sablonlar|isler|notlar|havuz|takvim|dis-servis|hesaplar)(\/|$)/;
+const girisGerekli = (req) => {
+  if (!req.kullanici) throw web.hata(401, 'Oturum açmanız gerekiyor.');
+  if (req.kullanici.rol === 'muhasebe' && (MUHASEBE_YASAK.test(req.yol || '') || (req.method !== 'GET' && MUHASEBE_SALT_OKUMA.test(req.yol || '')))) {
+    throw web.hata(403, 'Bu işlem için yetkiniz yok.');
+  }
+};
 const yonetici = (req) => {
   girisGerekli(req);
-  if (req.kullanici.rol !== 'yonetici') throw web.hata(403, 'Bu işlem için yetkiniz yok.');
+  if (req.kullanici.rol === 'yonetici') return;
+  if (req.kullanici.rol === 'muhasebe' && !MUHASEBE_YASAK.test(req.yol) && !(req.method !== 'GET' && MUHASEBE_SALT_OKUMA.test(req.yol))) return;
+  throw web.hata(403, 'Bu işlem için yetkiniz yok.');
 };
+// Muhasebe kârlılık bilgisi görmez: maliyet / kâr alanları yanıttan çıkarılır (ekranda gizlemekle kalınmaz)
+const KAR_ALANI = (k) => k.split('_').some((p) => ['maliyet', 'maliyeti', 'maliyetsiz', 'kar', 'marj'].includes(p));
+function karsiz(v) {
+  if (Array.isArray(v)) return v.map(karsiz);
+  if (v && typeof v === 'object' && !(v instanceof Date) && !Buffer.isBuffer(v)) {
+    const o = {};
+    for (const [k, x] of Object.entries(v)) if (!KAR_ALANI(k)) o[k] = karsiz(x);
+    return o;
+  }
+  return v;
+}
 
 // Telegram botu (TELEGRAM_TOKEN ayarlıysa)
 const { TelegramBot } = require('./lib/telegram');
@@ -79,11 +101,13 @@ async function isle(req, res) {
     // CSRF koruması: değiştiren istekler sadece kendi arayüzümüzden (özel başlıkla) gelebilir
     if (req.method !== 'GET' && req.headers['x-istek'] !== '1') throw web.hata(403, 'Geçersiz istek kaynağı.');
     req.kullanici = await oturum.oturumBul(db, req.token);
+    req.yol = yol.slice(4);
     req.params = bulunan.params;
     req.query = Object.fromEntries(url.searchParams);
     req.body = req.method === 'GET' ? {} : await web.govdeOku(req, AYAR.govdeSiniri);
     let sonuc;
     for (const f of bulunan.y.isleyiciler) sonuc = await f(req, res);
+    if (req.kullanici?.rol === 'muhasebe') sonuc = karsiz(sonuc);
     if (!res.headersSent) web.json(res, 200, sonuc === undefined ? { tamam: true } : sonuc);
     return;
   }

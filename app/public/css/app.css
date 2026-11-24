@@ -1574,3 +1574,21 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
   #yazdir-alani .dek-ozet { break-inside: avoid; }
 }
 @media (max-width: 860px) { .dek-kagit { padding: .8rem; } .dek-ozet { grid-template-columns: 1fr 1fr; } }
+
+/* 26. derleme: muhasebe rolü kârlılık görmez (sunucu da göndermez) */
+.rol-muhasebe .kar-bilgi, .rol-muhasebe .fatura-tablo .maliyet { display: none !important; }
+
+/* 26. derleme: iş ekle malzemesi, malzeme etiketleri, teslim / onay özeti */
+.hi-malzeme { border: 1px dashed var(--cizgi); border-radius: 10px; padding: .6rem .7rem; margin-top: .7rem; display: grid; gap: .45rem; }
+.hi-malzeme[hidden] { display: none; }
+.hi-malzeme-ust { display: grid; } .hi-malzeme-ust small { font-size: .76rem; }
+.hm-satir { display: grid; grid-template-columns: minmax(0, 1fr) 80px auto 32px; gap: .4rem; align-items: center; }
+.hm-satir .hm-ad { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-satir input.hm-mik { text-align: right; }
+.hm-birim { font-size: .8rem; color: var(--soluk); min-width: 2.5rem; }
+.malz-etiket { font-size: .66rem; padding: .02rem .4rem; vertical-align: 1px; }
+.teslim-ozet { padding: .6rem .8rem; border-bottom: 1px solid var(--cizgi); background: #f8fafc; display: grid; gap: .25rem; }
+.teslim-ozet-baslik { font-weight: 800; font-size: 1rem; }
+.teslim-ozet-satir { font-size: .85rem; color: var(--soluk); }
+.teslim-ozet-is { background: #fff; border: 1px solid var(--cizgi); border-radius: 8px; padding: .45rem .6rem; font-size: .9rem; white-space: pre-wrap; }
+.teslim-ozet-is small { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--soluk); font-weight: 700; }

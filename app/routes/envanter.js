@@ -77,7 +77,7 @@ module.exports = (r, { db, web, G, Y }) => {
   async function isErisim(req, isId) {
     const is = (await db.query('SELECT id, cari_id, ekip_id, durum FROM isler WHERE id = $1', [isId])).rows[0];
     if (!is) throw web.hata(404, 'İş bulunamadı.');
-    if (req.kullanici.rol !== 'yonetici' && (!req.kullanici.ekip_id || is.ekip_id !== req.kullanici.ekip_id)) throw web.hata(403, 'Bu iş sizin ekibinize ait değil.');
+    if (!['yonetici', 'muhasebe'].includes(req.kullanici.rol) && (!req.kullanici.ekip_id || is.ekip_id !== req.kullanici.ekip_id)) throw web.hata(403, 'Bu iş sizin ekibinize ait değil.');
     return is;
   }
 
@@ -93,7 +93,7 @@ module.exports = (r, { db, web, G, Y }) => {
     const is = await isErisim(req, req.params.id);
     if (!is.cari_id) throw web.hata(400, 'Bu işe bağlı müşteri yok. Yöneticiye bildirin.');
     zorunlu(req.body, { tur: 'Cihaz türü' });
-    const izinli = req.kullanici.rol === 'yonetici' ? ALANLAR : TEKNISYEN_ALANLAR;
+    const izinli = ['yonetici', 'muhasebe'].includes(req.kullanici.rol) ? ALANLAR : TEKNISYEN_ALANLAR;
     const a = temizle(sec(req.body, izinli));
     Object.assign(a, { cari_id: is.cari_id, kaynak_is_id: is.id, kurulum_tarihi: a.kurulum_tarihi || bugun() });
     return db.islem(req.kullanici.id, async (q) => {

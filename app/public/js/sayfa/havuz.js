@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import { html, $, bildir, pencere, sor, onayla, sureMetni, telLink, ONCELIK } from '../ui.js';
-import { planlaPenceresi, yeniIsPenceresi, cariSecici, cariYeniYakala } from '../bilesen.js';
+import { planlaPenceresi, yeniIsPenceresi, cariSecici, cariYeniYakala, urunSecici } from '../bilesen.js';
 import { bosSatir, satirEditoruHtml, satirEditoruBagla, satirlariHazirla } from '../satirEditoru.js';
 
 // Hızlı iş kutusu: panel ve havuz sayfasında kullanılır
@@ -32,6 +32,7 @@ export function hizliKutu(kap, ctx, sonra) {
 export function hizliIs(ctx) {
   let cari = null; let benYaptim = false;
   const satirlar = [];
+  const malzemeler = [];
   let editor = null;
   pencere({
     baslik: 'İş ekle',
@@ -47,6 +48,11 @@ export function hizliIs(ctx) {
       </div>
       <label class="kutu-sec hi-mod"><input type="checkbox" id="hi-ben"> <span><b>İşi ben yaptım</b> — verdiğim hizmeti ve kullandığım malzemeyi gireyim, cariye fiş açılsın</span></label>
       <p class="soluk hi-ipucu" style="font-size:.84rem;margin:.2rem 0 0">"Acil" ile başlayan mesaj acil olur. Ctrl+Enter ile kaydedin.</p>
+      <div class="hi-malzeme" id="hi-malzeme">
+        <div class="hi-malzeme-ust"><b>Ekibe verilecek malzeme</b><small class="soluk">isteğe bağlı · stoktan düşer · işte "verildi" görünür</small></div>
+        <div id="hm-liste"></div>
+        <div class="btn-grup"><button type="button" class="btn ikincil kucuk" data-hm-ekle>+ Malzeme</button><button type="button" class="btn ikincil kucuk" data-hm-stok>📦 Stok listesi</button></div>
+      </div>
       </div>
       ${satirEditoruHtml({ gizli: true, not: 'Kaydedince iş "tamamlandı" olur ve bu cariye taslak satış fişi açılır. Fiyatları orada yazıp Onayla deyince müşteri borçlanır, malzeme stoktan düşer.' })}
     </div>`,
@@ -56,9 +62,32 @@ export function hizliIs(ctx) {
       const kaydetBtn = $('button[type=submit]', d);
       d.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('form', d).requestSubmit(); } });
       cariAlaniBagla(d, null, (c) => { cari = c; });
+      // Ekibe verilecek malzeme listesi
+      const hmCiz = () => {
+        $('#hm-liste', d).innerHTML = String(html`${malzemeler.map((m, i) => html`<div class="hm-satir" data-hm="${i}">
+          ${m.urun ? html`<span class="hm-ad"><b>${m.urun.ad}</b>${m.urun.kod ? html` <small class="soluk">${m.urun.kod}</small>` : ''}</span>` : html`<input class="hm-ara" placeholder="Ürün ara… (ad, kod, barkod)">`}
+          <input class="hm-mik" inputmode="decimal" value="${String(m.miktar).replace('.', ',')}" aria-label="Miktar"><span class="hm-birim">${m.urun?.birim || ''}</span>
+          <button type="button" class="btn-ikon" data-hm-sil="${i}" aria-label="Kaldır">✕</button></div>`)}`);
+        d.querySelectorAll('.hm-ara').forEach((inp) => {
+          const i = Number(inp.closest('[data-hm]').dataset.hm);
+          urunSecici(inp, (u) => { malzemeler[i].urun = u; hmCiz(); d.querySelector(`[data-hm="${i}"] .hm-mik`)?.select(); }, { yeniIzin: false });
+        });
+        d.querySelectorAll('.hm-mik').forEach((inp) => { inp.oninput = () => { malzemeler[Number(inp.closest('[data-hm]').dataset.hm)].miktar = Number(String(inp.value).replace(',', '.')) || 1; }; });
+      };
+      d.addEventListener('click', async (e) => {
+        if (e.target.closest('[data-hm-ekle]')) { malzemeler.push({ urun: null, miktar: 1 }); hmCiz(); d.querySelector('.hm-ara:last-of-type')?.focus(); const s2 = d.querySelectorAll('.hm-ara'); s2[s2.length - 1]?.focus(); return; }
+        const sl = e.target.closest('[data-hm-sil]'); if (sl) { malzemeler.splice(Number(sl.dataset.hmSil), 1); hmCiz(); return; }
+        if (e.target.closest('[data-hm-stok]')) {
+          const { stokListesi } = await import('../bilesen.js');
+          const sec = await stokListesi({ fiyat: 'yok', baslik: 'Ekibe verilecek malzeme' });
+          for (const { urun: u, miktar: mk } of sec || []) { const v = malzemeler.find((x) => x.urun?.id === u.id); if (v) v.miktar += mk; else malzemeler.push({ urun: u, miktar: mk }); }
+          hmCiz();
+        }
+      });
       $('#hi-ben', d).onchange = (e) => {
         benYaptim = e.target.checked;
         $('#hi-detay', d).hidden = !benYaptim;
+        $('#hi-malzeme', d).hidden = benYaptim;
         d.classList.toggle('ben-yaptim', benYaptim);
         kaydetBtn.textContent = benYaptim ? 'Kaydet ve fişi aç' : 'Havuza ekle';
         if (benYaptim && !editor) { satirlar.push(bosSatir()); editor = satirEditoruBagla(d, satirlar); $('#hi-satirlar [data-k=aciklama]', d)?.focus(); }
@@ -67,8 +96,9 @@ export function hizliIs(ctx) {
     kaydet: async (v) => {
       if (!String(v.mesaj || '').trim()) throw new Error(benYaptim ? 'İşin açıklamasını yazın.' : 'Mesajı yazın.');
       if (!benYaptim) {
-        const r = await api.post('/isler/hizli', { mesaj: v.mesaj, oncelik: Number(v.oncelik), cari_id: cari?.id || null });
-        bildir(r.cari ? `Havuza eklendi · ${r.cari.unvan}` : 'Havuza eklendi (müşteri eşleşmedi, sonra bağlayabilirsiniz)', 'basari', 4500);
+        const mz = malzemeler.filter((m) => m.urun).map((m) => ({ urun_id: m.urun.id, miktar: m.miktar }));
+        const r = await api.post('/isler/hizli', { mesaj: v.mesaj, oncelik: Number(v.oncelik), cari_id: cari?.id || null, malzemeler: mz });
+        bildir(`${r.cari ? `Havuza eklendi · ${r.cari.unvan}` : 'Havuza eklendi (müşteri eşleşmedi, sonra bağlayabilirsiniz)'}${mz.length ? ` · ${mz.length} malzeme verildi` : ''}`, 'basari', 4500);
         return { tur: 'havuz', ...r };
       }
       if (!cari) throw new Error('"İşi ben yaptım" için cari seçin.');

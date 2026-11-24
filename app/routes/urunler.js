@@ -5,7 +5,7 @@ const { kurGetir } = require('../lib/kur');
 const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'satis_doviz', 'kdv_orani', 'kritik_stok', 'aktif', 'raf_yeri', 'tur'];
 
 module.exports = (r, { db, web, G, Y, AYAR }) => {
-  const yon = (req) => req.kullanici.rol === 'yonetici';
+  const yon = (req) => ['yonetici', 'muhasebe'].includes(req.kullanici.rol);
 
   // Ürün arama. Her kelime ad, kod, marka, model veya gruplardan birinde geçmeli (Türkçe harf farkı yok sayılır).
   // Barkod tam eşleşirse o ürün de gelir. Teknisyen fiyat/maliyet görmez.

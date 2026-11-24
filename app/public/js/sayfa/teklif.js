@@ -61,7 +61,7 @@ export default async function (el, [id], ctx) {
   const STOKSUZ = { iscilik: 'İşçilik', egitim: 'Eğitim', hizmet: 'Hizmet' };
   const stoksuzMu = (x) => !x.urun_id && !!STOKSUZ[x.tip];
   const turRozet = (x) => (stoksuzMu(x) ? html`<span class="rozet satir-tur ${x.tip}">${STOKSUZ[x.tip]}</span>` : x.urun_id && (x.tip === 'hizmet' || x.urun_tur === 'hizmet') ? html`<span class="rozet mavi satir-tur">hizmet</span>` : '');
-  const maliyetGoster = () => { try { return localStorage.getItem('teklifMaliyet') === '1'; } catch { return false; } };
+  const maliyetGoster = () => { if (ctx.muhasebe) return false; try { return localStorage.getItem('teklifMaliyet') === '1'; } catch { return false; } };
   // Birim maliyet belge para biriminde (ürün kartındaki ortalama maliyet TL)
   const belgeKur = () => (t.doviz && t.doviz !== 'TRY' ? Number(t.kur) || kurDegeri(piyasa, t.doviz) || 0 : 1);
   const satirMaliyet = (x) => { if (!x.urun_id) return 0; const k = belgeKur(); return k ? r2(Number(x.miktar || 0) * Number(x.urun_maliyet || 0) / k) : 0; };
@@ -151,7 +151,7 @@ export default async function (el, [id], ctx) {
             <button class="btn ikincil kucuk" data-barkod title="Ctrl+B">📷 Barkod</button></div>` : html`<span></span>`}
           <span class="bosluk"></span>
           ${ac ? html`<label class="kutu-sec enter-yeni" style="margin:0" title="İşaretliyse son hücrede Enter yeni satır açar"><input type="checkbox" id="enter-yeni-satir" ${enterYeniSatir() ? 'checked' : ''}> Enter ile yeni satır aç</label>` : ''}
-          <label class="kutu-sec" style="margin:0"><input type="checkbox" id="maliyet-goster" ${mg ? 'checked' : ''}> Maliyet / kâr</label>
+          <label class="kutu-sec kar-bilgi" style="margin:0"><input type="checkbox" id="maliyet-goster" ${mg ? 'checked' : ''}> Maliyet / kâr</label>
           ${ac ? html`<label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatlar KDV dahil</label>` : ''}
         </div>
 

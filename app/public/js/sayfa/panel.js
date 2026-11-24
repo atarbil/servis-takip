@@ -34,7 +34,7 @@ export default async function (el, _p, ctx) {
       <a class="ist" href="#/raporlar/cari-bakiye"><small>Toplam alacak</small><b>${para(o.toplam_alacak)}</b></a>
       <a class="ist ${o.vadesi_gecen > 0 ? 'tehlike' : ''}" href="#/raporlar/vadesi-gecen"><small>Vadesi geçen</small><b>${para(o.vadesi_gecen)}</b></a>
       <a class="ist" href="#/raporlar/aylik"><small>Bu ay satış</small><b>${para(o.bu_ay.ciro)}</b><span class="ist-alt">${o.bu_ay.fis} fiş · KDV hariç</span></a>
-      <a class="ist" href="#/raporlar/is-karlilik"><small>Bu ay kâr</small><b class="${o.bu_ay.kar >= 0 ? 'pozitif' : 'negatif'}">${para(o.bu_ay.kar)}</b></a>
+      <a class="ist kar-bilgi" href="#/raporlar/is-karlilik"><small>Bu ay kâr</small><b class="${o.bu_ay.kar >= 0 ? 'pozitif' : 'negatif'}">${para(o.bu_ay.kar)}</b></a>
     </div>` },
     bugun: { ad: 'Bugünkü işler', html: () => kart('Bugünkü işler', isListesi(o.bugun_isler, 'Bugün için planlanmış iş yok.'), { sayi: o.bugun_isler.length, sag: html`<a href="#/takvim" class="btn ikincil kucuk">Takvim</a>` }) },
     yarin: { ad: 'Yarın', html: () => kart('Yarın', isListesi(o.yarin_isler, 'Yarın için planlanmış iş yok.'), { sayi: o.yarin_isler.length }) },
@@ -57,7 +57,7 @@ export default async function (el, _p, ctx) {
       { sayi: dsAcik, sag: html`<a href="#/dis-servis?yeni=1" class="btn ikincil kucuk">+ Gönder</a>` }) },
     fiyat: { ad: 'Fiyatlandırma bekleyen işler', html: () => kart('Fiyatlandırma bekleyen işler', o.fiyat_bekleyen.length ? html`<ul class="mini-liste">${o.fiyat_bekleyen.map((i) => html`<li class="tikla" data-fiyat="${i.id}" data-fis="${i.taslak_fis_id || ''}">
         <div class="ana-metin"><b>${i.baslik}</b><small>${i.unvan || 'Cari bağlı değil'} · bitti ${tarih(i.bitis_zamani)}</small></div>
-        <div class="sag-deger"><small>maliyet</small><br><b>${para(i.malzeme_maliyeti)}</b></div></li>`)}</ul>
+        <div class="sag-deger kar-bilgi"><small>maliyet</small><br><b>${para(i.malzeme_maliyeti)}</b></div></li>`)}</ul>
         ${o.fis_bekleyen > o.fiyat_bekleyen.length ? html`<div class="mini-bos"><a href="#/fiyatlandirma">Tümünü gör (${o.fis_bekleyen}) →</a></div>` : ''}` : bos('Fiyatlandırılmayı bekleyen iş yok.'),
       { sayi: o.fis_bekleyen, sag: html`<a href="#/fiyatlandirma" class="btn ikincil kucuk">Tümü</a>` }) },
     doviz: { ad: 'Döviz çevirici', html: () => (k && (k.usd || k.eur) ? html`<div class="kart kur-kart"><div class="kart-ust"><h3>💱 Döviz</h3><span class="bosluk"></span>
@@ -104,7 +104,7 @@ export default async function (el, _p, ctx) {
         ${duzen.gizli.length ? html`<div class="pk-gizli"><b>Gizlenen kartlar:</b>${duzen.gizli.map((x) => html`<button type="button" class="btn ikincil kucuk" data-goster="${x}">+ ${KART[x].ad}</button>`)}</div>` : ''}</div>` : ''}
       ${!ustGizli ? kartSar('sayilar') : ''}
       ${o.geciken ? html`<div class="uyari-kutu">Tarihi geçmiş ama başlanmamış <b>${o.geciken}</b> planlı iş var. <a href="#/isler?durum=planlandi">İşlere git →</a></div>` : ''}
-      ${o.onay_bekleyen_urun ? html`<div class="uyari-kutu">Sahada eklenen <b>${o.onay_bekleyen_urun}</b> ürün maliyet onayı bekliyor. <a href="#/urunler?onay=1">Ürünlere git →</a></div>` : ''}
+      ${o.onay_bekleyen_urun ? html`<div class="uyari-kutu kar-bilgi">Sahada eklenen <b>${o.onay_bekleyen_urun}</b> ürün maliyet onayı bekliyor. <a href="#/urunler?onay=1">Ürünlere git →</a></div>` : ''}
       ${o.stok_uyari ? html`<div class="uyari-kutu">Kritik seviyede veya eksi stokta <b>${o.stok_uyari}</b> ürün var. <a href="#/raporlar/stok">Stok uyarıları →</a></div>` : ''}
       <div class="izgara uc panel-izgara ${duzenleme ? 'duzenleniyor' : ''}">
         ${duzen.sutunlar.map((l, i) => html`<div class="panel-sutun" data-sutun="${i}">${l.map(kartSar)}${duzenleme && !l.length ? html`<div class="pk-bos">Kartı buraya bırakın</div>` : ''}</div>`)}

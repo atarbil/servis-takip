@@ -30,7 +30,7 @@ export default async function (el, [id], ctx) {
         ${is.ekip_ad ? html`<span><span class="nokta" style="background:${is.ekip_renk}"></span>${is.ekip_ad}</span>` : ''}
         ${is.plan_baslangic ? html`<span class="soluk">📅 ${tarih(is.plan_baslangic)} ${saat(is.plan_baslangic)}–${saat(is.plan_bitis)}</span>` : ''}</div>
         <h2 style="margin-top:.35rem">${is.baslik}</h2></div>
-      <div class="btn-grup">${aksiyon}${ctx.yonetici ? html`<button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button>` : ''}</div>
+      <div class="btn-grup">${ctx.muhasebe ? '' : aksiyon}${ctx.patron ? html`<button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button>` : ''}</div>
     </div>
     ${is.durum === 'iptal' ? html`<div class="uyari-kutu">İptal nedeni: ${is.iptal_nedeni || '-'}</div>` : ''}
     ${is.durum === 'tamamlandi' && !is.cari_id ? html`<div class="uyari-kutu">Fiş kesmek için önce bu işe bir cari bağlayın.</div>` : ''}
@@ -57,7 +57,7 @@ export default async function (el, [id], ctx) {
 
         <div class="kart"><div class="kart-ust"><h3>Malzemeler</h3><span class="bosluk"></span>
           ${malzemeAcik ? html`<button class="btn ikincil kucuk" data-akis="liste">+ Ekle</button><button class="btn ikincil kucuk" data-akis="barkod">📷 Barkod</button><button class="btn ikincil kucuk" data-akis="tanimsiz">Tanımsız</button>` : ''}</div>
-          <div>${malzemeListesi(is, { silinebilir: malzemeAcik, maliyet: true })}</div></div>
+          <div>${malzemeListesi(is, { silinebilir: malzemeAcik && !ctx.muhasebe, maliyet: !ctx.muhasebe })}</div></div>
 
         <div class="kart"><div class="kart-ust"><h3>Fotoğraflar</h3><span class="bosluk"></span><button class="btn ikincil kucuk" data-akis="foto">+ Fotoğraf</button></div>
           <div class="kart-govde">${is.fotograflar.length ? html`<div class="foto-izgara">${is.fotograflar.map((f) => html`<a href="/dosya/${f.dosya_yolu}" target="_blank" title="${f.ad_soyad || ''} ${zaman(f.zaman)}"><img src="/dosya/${f.dosya_yolu}" loading="lazy" alt=""></a>`)}</div>` : html`<span class="soluk">Fotoğraf yok</span>`}</div></div>
@@ -71,7 +71,7 @@ export default async function (el, [id], ctx) {
       </div>
 
       <div>
-        <div class="kart"><div class="kart-ust"><h3>Maliyet ve kâr</h3></div><div class="kart-govde">
+        <div class="kart kar-bilgi"><div class="kart-ust"><h3>Maliyet ve kâr</h3></div><div class="kart-govde">
           <div class="toplam-kutu" style="width:100%">
             <div><span>Malzeme maliyeti</span><b>${para(k.malzeme_maliyeti || 0)}</b></div>
             ${k.maliyetsiz_kalem ? html`<div style="color:var(--turuncu)"><span>Maliyeti girilmemiş kalem</span><b>${k.maliyetsiz_kalem}</b></div>` : ''}

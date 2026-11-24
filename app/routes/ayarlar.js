@@ -75,7 +75,7 @@ module.exports = (r, { db, web, oturum, G, Y, AYAR }) => {
     return db.islem(req.kullanici.id, (q) => q.bir(`
       INSERT INTO kullanicilar (ad_soyad, kullanici_adi, sifre_hash, rol, ekip_id, telefon)
       VALUES ($1, lower($2), $3, $4, $5, $6) RETURNING id`,
-    [metin(b.ad_soyad), metin(b.kullanici_adi), oturum.sifreOzet(String(b.sifre)), b.rol === 'yonetici' ? 'yonetici' : 'teknisyen',
+    [metin(b.ad_soyad), metin(b.kullanici_adi), oturum.sifreOzet(String(b.sifre)), ['yonetici', 'muhasebe'].includes(b.rol) ? b.rol : 'teknisyen',
       b.ekip_id || null, metin(b.telefon)]));
   });
 

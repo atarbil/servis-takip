@@ -41,7 +41,7 @@ export default async function (el, [id], ctx) {
   }
   const gosterFiyat = (s) => (kdvDahil ? r2(Number(s.birim_fiyat) * (1 + Number(s.kdv_orani) / 100)) : Number(s.birim_fiyat));
 
-  const maliyetGoster = () => { try { return localStorage.getItem('fisMaliyet') !== '0'; } catch { return true; } };
+  const maliyetGoster = () => { if (ctx.muhasebe) return false; try { return localStorage.getItem('fisMaliyet') !== '0'; } catch { return true; } };
   const STOKSUZ = { iscilik: 'İşçilik', egitim: 'Eğitim', hizmet: 'Hizmet' };
   const enterYeniSatir = () => { try { return localStorage.getItem('enterYeniSatir') === '1'; } catch { return false; } };
   let izgara = null;
@@ -65,7 +65,7 @@ export default async function (el, [id], ctx) {
         </div>
       </div>
       ${f.durum === 'iptal' ? html`<div class="uyari-kutu">Bu fiş iptal edilmiştir. Cari ve stok etkileri geri alındı.</div>` : ''}
-      ${onaysiz.length ? html`<div class="uyari-kutu">Bu fişte maliyeti girilmemiş (sahada eklenen) ürün var: ${onaysiz.map((s, i) => html`${i ? ', ' : ''}<a href="#/urun/${s.urun_id}">${s.aciklama}</a>`)}. Fişi onaylamadan önce ürünü onaylayıp maliyetini girin.</div>` : ''}
+      ${onaysiz.length ? html`<div class="uyari-kutu kar-bilgi">Bu fişte maliyeti girilmemiş (sahada eklenen) ürün var: ${onaysiz.map((s, i) => html`${i ? ', ' : ''}<a href="#/urun/${s.urun_id}">${s.aciklama}</a>`)}. Fişi onaylamadan önce ürünü onaylayıp maliyetini girin.</div>` : ''}
 
       <div class="fatura">
         <div class="fatura-ust">
@@ -101,7 +101,7 @@ export default async function (el, [id], ctx) {
           <span class="bosluk"></span>
           ${taslak ? html`<label class="kutu-sec enter-yeni" style="margin:0" title="İşaretliyse son hücrede Enter yeni satır açar; değilse yeni satırı + Satır ya da Ctrl+Insert ile siz açarsınız">
             <input type="checkbox" id="enter-yeni-satir" ${enterYeniSatir() ? 'checked' : ''}> Enter ile yeni satır aç</label>` : ''}
-          <label class="kutu-sec" style="margin:0"><input type="checkbox" id="maliyet-goster" ${mg ? 'checked' : ''}> Maliyet / kâr</label>
+          <label class="kutu-sec kar-bilgi" style="margin:0"><input type="checkbox" id="maliyet-goster" ${mg ? 'checked' : ''}> Maliyet / kâr</label>
           ${taslak ? html`<label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatlar KDV dahil</label>` : ''}
         </div>
 

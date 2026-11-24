@@ -24,7 +24,7 @@ async function fisSatirlariEkle(q, fisId, satirlar) {
 const doluSatirlar = (l) => (Array.isArray(l) ? l.filter((s) => s && (s.urun_id || metin(s.aciklama))) : []);
 
 module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
-  const yon = (req) => req.kullanici.rol === 'yonetici';
+  const yon = (req) => ['yonetici', 'muhasebe'].includes(req.kullanici.rol);
 
   // Teknisyen sadece kendi ekibinin işlerini görebilir ve sadece planlı/sahadaki işte işlem yapabilir
   async function isErisim(req, id, islemIcin = false) {
@@ -123,13 +123,34 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   });
 
   // Telefonla gelen işi tek mesajla havuza ekleme: telefon numarasından müşteri otomatik bulunur
+  // İşi tanımlarken ekibe verilecek malzeme de eklenebilir (stoktan düşer; işte "verildi" olarak görünür)
   r.post('/isler/hizli', Y, async (req) => {
     const mesaj = metin(req.body.mesaj);
     if (!mesaj) throw web.hata(400, 'Mesaj boş olamaz.');
-    return hizliIsEkle(db, req.kullanici.id, mesaj, {
-      oncelik: Number(req.body.oncelik) || undefined, planBaslangic: req.body.plan_baslangic || null, ekipId: req.body.ekip_id || null,
-      cariId: Number(req.body.cari_id) || null,
+    const malzemeler = (Array.isArray(req.body.malzemeler) ? req.body.malzemeler : []).filter((m) => m && m.urun_id);
+    return db.islem(req.kullanici.id, async (q) => {
+      const sonuc = await hizliIsEkle(db, req.kullanici.id, mesaj, {
+        oncelik: Number(req.body.oncelik) || undefined, planBaslangic: req.body.plan_baslangic || null, ekipId: req.body.ekip_id || null,
+        cariId: Number(req.body.cari_id) || null, q,
+      });
+      for (const m of malzemeler) await q('SELECT is_malzeme_ekle($1, $2, $3, false, false)', [sonuc.id, Number(m.urun_id), pozitif(m.miktar ?? 1, 'Miktar')]);
+      return { ...sonuc, malzeme: malzemeler.length };
     });
+  });
+
+  // Teknisyen iş ekler: havuza düşer (yöneticiye Telegram bildirimi); "Bu işi ben yapıyorum" → bugün kendi ekibine planlanır
+  r.post('/isler/teknisyen', G, async (req) => {
+    if (req.kullanici.rol !== 'teknisyen') throw web.hata(403, 'Bu işlem teknisyenler içindir.');
+    const mesaj = metin(req.body.mesaj);
+    if (!mesaj) throw web.hata(400, 'Ne istendiğini yazın.');
+    const ben = !!req.body.ben;
+    if (ben && !req.kullanici.ekip_id) throw web.hata(400, 'Hesabınız bir ekibe bağlı değil; iş havuza eklensin.');
+    const sonuc = await hizliIsEkle(db, req.kullanici.id, mesaj, {
+      oncelik: Number(req.body.oncelik) || undefined, kaynak: 'teknisyen',
+      planBaslangic: ben ? new Date().toISOString() : null, ekipId: ben ? req.kullanici.ekip_id : null,
+    });
+    telegram?.bildirArkada('yeni_is', async () => `🆕 <b>${req.kullanici.ad_soyad}</b> iş ekledi${ben ? ' (kendisi yapıyor)' : ' — havuzda'}:\n${mesaj}${sonuc.cari ? `\nMüşteri: ${sonuc.cari.unvan}` : ''}`);
+    return { ...sonuc, ben };
   });
 
   // "İşi ben yaptım": iş tamamlandı olarak açılır, verilen hizmet ve malzemelerle o cariye taslak satış fişi kesilir.
@@ -206,7 +227,8 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
         return q.bir('SELECT is_malzeme_ekle_barkod($1, $2, $3) AS id', [is.id, metin(req.body.barkod), miktar]);
       }
       zorunlu(req.body, { urun_id: 'Ürün' });
-      return q.bir('SELECT is_malzeme_ekle($1, $2, $3, false, $4) AS id', [is.id, req.body.urun_id, miktar, is.durum !== 'planlandi' || !yon(req)]);
+      // Ofisin eklediği "verildi", teknisyenin eklediği "ilave"
+      return q.bir('SELECT is_malzeme_ekle($1, $2, $3, false, $4) AS id', [is.id, req.body.urun_id, miktar, !yon(req)]);
     });
   });
 

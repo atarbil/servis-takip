@@ -5,38 +5,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. "Muhasebe" yetki grubu (24.11.2026)
-- Kullanıcı: "Muhasebe diye bir yetki grubu daha açalım".
-- Öneri (kullanıcıyla netleşecek): yeni rol **Muhasebe** — görür ve işlem yapar: Cariler (ekstre, detaylı ekstre, tahsilat / ödeme),
-  Satış fişleri ve Alış faturaları (onay dahil), Teklif / proforma, Kasa / banka, Resmi fatura yükleme, Resmi faturalar, KDV durumu,
-  Raporlar. Görmez / değiştiremez: Ayarlar, kullanıcılar, form tasarımı, program güncelleme, ekip konumları, iş havuzu / takvim
-  planlama (yalnız okuma?), stok kartı fiyat / maliyet düzenleme (?). Kullanıcı ekleme penceresinde rol seçeneği.
-- **Karar (kullanıcı 23:46): Muhasebe kârlılıkla ilgili hiçbir şey görmesin** — fiş / teklif / alışta maliyet ve kâr sütunu,
-  "Maliyet / kâr" kutusu, panel ve raporlardaki kâr / kâr oranı / maliyet rakamları, ürün kartında ortalama maliyet, cari yıllık
-  özetteki kâr, detaylı ekstre dışı maliyet bilgileri gizli; sunucu da bu alanları muhasebe rolüne göndermez (yalnız gizlemek değil).
-
-### 2. Teknisyenler de iş ekleyebilsin (24.11.2026)
-- Kullanıcı: "Teknisyenler de iş ekleyebilsin".
-- Öneri: teknisyen ekranında (İşlerim) **"+ İş ekle"** düğmesi — yöneticideki hızlı iş penceresinin sade hâli: mesaj / ne istendi,
-  cari (ara ya da telefondan bulunur), öncelik. Varsayılan: iş **havuza** düşer, yöneticiye bildirim (Telegram açıksa). İsteğe bağlı
-  "Bu işi ben yapıyorum" → kendi ekibine bugün planlanır. Teknisyen fiyat / cari bakiye görmez (mevcut kural).
-
-### 3. İşi tanımlarken malzeme eklenebilsin, personel sahada ilave yapabilsin (24.11.2026, sade hâli)
-- Kullanıcı: önce verilen / ilave malzeme ve iş türü (kurulum / teslimat) kurgusunu anlattı; sonra sadeleştirdi (23:55):
-  **"Çok kurcalamaya gerek yok; sadece işi tanımlarken malzeme ekleyebilelim, personel de sahada ilave yapabilsin."**
-- Yapılacak:
-  - **İş ekle** penceresinde (ve iş kartında) **"Malzeme"** bölümü: stok kartından ürün + miktar (barkod / stok listesi ile de).
-    Toner, telefon gibi yalnız teslim edilecek işlerde de aynı alan kullanılır. Eklenen malzeme işin malzemesi olur (mevcut
-    kural: stoktan düşer, iş tamamlanınca fişe gider).
-  - Teknisyen ekranında işin malzemeleri görünür; teknisyen sahada **ilave malzeme** ekler (mevcut özellik). Kalemlerde küçük
-    etiket: ofisin eklediği "verildi", teknisyenin eklediği "ilave".
-  - İş türü ve iade akışı **yok**.
-- Kullanıcı ek (23:58): **etiket "sahada" değil "ilave"** olsun (ofisin eklediği "verildi", teknisyenin eklediği "ilave").
-  **Personel işi bitirirken teslimat / müşteri onay ekranı** olsun → mevcut "Müşteri imzası al" adımı bir **teslim / onay
-  ekranına** dönüşür: iş başlığı / adres, yapılan iş / teknisyen notu, teslim metni (Ayarlar); altında teslim alan adı, isteğe bağlı
-  not, **imza** → "Onaylıyorum". Onaydan sonra iş tamamlanabilir (imzasız kapatılmaz).
-- Kullanıcı ek (25.11 00:00): **müşteri teslim edilen malzeme listesini görmesin** → onay ekranında ve yazdırılan teslim formunda
-  malzeme listesi yok.
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
@@ -50,6 +19,22 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 25.11.2026 — 26. derleme: Muhasebe rolü, teknisyen iş ekleme, iş tanımlarken malzeme, teslim / onay ekranı
+- **Muhasebe** rolü (Ayarlar → Kullanıcılar → Rol: "Muhasebe (kârlılık görmez)"): yönetici ekranlarını kullanır — Cariler, ekstre /
+  detaylı ekstre, tahsilat / ödeme, Satış fişleri, Teklif / proforma, Ürünler, Alış faturaları, Kasa / banka, Resmi fatura yükleme,
+  Resmi faturalar, KDV durumu, Raporlar, İşler (yalnız görür). **Göremez:** Ayarlar, kullanıcılar, form tasarımı, program güncelleme,
+  silinenler, ekip konumları, fiyatlandırma, havuz / takvim planlama; "+ İş ekle" yok. Sunucu bu bölümleri reddeder.
+  **Kârlılık:** maliyet, kâr, kâr oranı, ortalama maliyet, stok değeri, iş kârlılığı raporu görünmez; sunucu bu alanları yanıttan
+  çıkarır (yalnız ekranda gizleme değil).
+- **Teknisyen iş ekler:** İşlerim'de "+ İş ekle" (telefonda + düğmesi): ne istendi (müşteri adı / telefonu yazılırsa cari bulunur),
+  öncelik, "Bu işi ben yapıyorum" → bugün kendi ekibine planlanır ve saha ekranı açılır; değilse havuza düşer, yöneticiye Telegram bildirimi.
+- **İş eklerken malzeme:** İş ekle penceresinde "Ekibe verilecek malzeme" (ürün ara / stok listesi, miktar); stoktan düşer, işte
+  **"verildi"** etiketiyle görünür. Teknisyenin sahada eklediği malzeme **"ilave"**. Havuzdaki işe malzeme eklenip çıkarılabilir.
+- **Teslim / müşteri onay ekranı:** iş bitirilirken imza adımı; müşteri iş / adres, yapılan iş (teknisyen notu), teknisyen ve teslim
+  metnini görür, ad + not + imza ile **"✓ Onaylıyorum"**. **Malzeme listesi müşteriye gösterilmez** (teslim formunda da malzeme
+  bölümü varsayılan kapalı; Form tasarımından açılabilir).
+- Test: yeni rol_testi.js.
 
 ### 24.11.2026 — 25. derleme: Cari detaylı ekstre, cari listesi varsayılan Müşteriler
 - Cari ekranında **"Ekstre"nin yanında "Detaylı ekstre"** sekmesi: başlangıç – bitiş tarihi (Bu ay, Geçen ay, Bu yıl, Tümü),

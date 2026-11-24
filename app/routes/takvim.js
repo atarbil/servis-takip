@@ -6,7 +6,7 @@ module.exports = (r, { db, web, G, Y }) => {
   r.get('/takvim', G, async (req) => {
     const { bas, bit } = req.query;
     if (!bas || !bit) throw web.hata(400, 'Tarih aralığı gerekli.');
-    const yon = req.kullanici.rol === 'yonetici';
+    const yon = ['yonetici', 'muhasebe'].includes(req.kullanici.rol);
     return (await db.query(`
       SELECT * FROM v_takvim
       WHERE baslangic < $2::timestamptz AND coalesce(bitis, baslangic) >= $1::timestamptz

@@ -75,14 +75,18 @@ function hucre(s, sut) {
 export default async function (el, [secili], ctx) {
   ctx.baslik('Raporlar');
   const yil = new Date().getFullYear();
-  let ad = RAPORLAR[secili] ? secili : 'cari-bakiye';
+  // Muhasebe: kârlılık raporu ve maliyet / kâr sütunları gösterilmez
+  const KARLI = /maliyet|kâr/i;
+  const liste = Object.fromEntries(Object.entries(RAPORLAR).filter(([k]) => !(ctx.muhasebe && k === 'is-karlilik'))
+    .map(([k, r]) => [k, ctx.muhasebe ? { ...r, sutunlar: r.sutunlar.filter((s) => !KARLI.test(s.ad)) } : r]));
+  let ad = liste[secili] ? secili : 'cari-bakiye';
   const f = { tip: 'musteri', yil, bas: `${yil}-01-01`, bit: bugunStr() };
-  el.innerHTML = String(html`<div class="sekmeler">${Object.entries(RAPORLAR).map(([k, r]) => html`<button data-r="${k}">${r.ad}</button>`)}</div><div id="r"></div>`);
+  el.innerHTML = String(html`<div class="sekmeler">${Object.entries(liste).map(([k, r]) => html`<button data-r="${k}">${r.ad}</button>`)}</div><div id="r"></div>`);
 
   async function ciz() {
     history.replaceState(null, '', `#/raporlar/${ad}`);
     $$('[data-r]', el).forEach((b) => b.classList.toggle('aktif', b.dataset.r === ad));
-    const r = RAPORLAR[ad];
+    const r = liste[ad];
     const k = $('#r', el);
     k.innerHTML = '<div class="yukleniyor"><span></span></div>';
     const veri = await r.getir(f);

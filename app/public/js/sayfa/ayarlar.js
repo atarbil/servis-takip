@@ -127,14 +127,14 @@ export default async function (el, [secili], ctx) {
         <button class="btn birincil" id="k-yeni">+ Kullanıcı ekle</button></div>
         <div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Ad soyad</th><th>Kullanıcı adı</th><th>Rol</th><th>Ekip</th><th>Son giriş</th><th></th></tr></thead><tbody>
         ${liste.map((u) => html`<tr class="${u.aktif ? '' : 'iptal'}"><td class="ana-hucre" data-et="">${u.ad_soyad}</td><td data-et="Kullanıcı adı">${u.kullanici_adi}</td>
-          <td data-et="Rol">${u.rol === 'yonetici' ? html`<span class="rozet mavi">Yönetici</span>` : html`<span class="rozet">Teknisyen</span>`}</td>
+          <td data-et="Rol">${u.rol === 'yonetici' ? html`<span class="rozet mavi">Yönetici</span>` : u.rol === 'muhasebe' ? html`<span class="rozet yesil">Muhasebe</span>` : html`<span class="rozet">Teknisyen</span>`}</td>
           <td data-et="Ekip">${u.ekip_ad || '-'}</td><td data-et="Son giriş">${u.son_giris ? zaman(u.son_giris) : '-'}</td>
           <td data-et=""><button class="btn ikincil kucuk" data-k="${u.id}">Düzenle</button></td></tr>`)}</tbody></table></div></div>`);
       const form = (u) => pencere({
         baslik: u ? 'Kullanıcıyı düzenle' : 'Yeni kullanıcı',
         icerik: html`<div class="satir2"><label class="alan"><span>Ad soyad *</span><input name="ad_soyad" value="${u?.ad_soyad || ''}" required></label>
           <label class="alan"><span>Kullanıcı adı *</span><input name="kullanici_adi" value="${u?.kullanici_adi || ''}" ${u ? 'readonly' : ''} autocapitalize="none" required></label>
-          <label class="alan"><span>Rol</span><select name="rol"><option value="teknisyen">Teknisyen</option><option value="yonetici" ${u?.rol === 'yonetici' ? 'selected' : ''}>Yönetici</option></select></label>
+          <label class="alan"><span>Rol</span><select name="rol"><option value="teknisyen">Teknisyen</option><option value="yonetici" ${u?.rol === 'yonetici' ? 'selected' : ''}>Yönetici</option><option value="muhasebe" ${u?.rol === 'muhasebe' ? 'selected' : ''}>Muhasebe (kârlılık görmez)</option></select></label>
           <label class="alan"><span>Ekip</span><select name="ekip_id"><option value="">—</option>${ekipler.map((e) => html`<option value="${e.id}" ${u?.ekip_id === e.id ? 'selected' : ''}>${e.ad}</option>`)}</select></label>
           <label class="alan"><span>Telefon</span><input name="telefon" value="${u?.telefon || ''}"></label>
           <label class="alan"><span>${u ? 'Yeni şifre (değiştirmek için)' : 'Şifre *'}</span><input name="sifre" type="password" autocomplete="new-password" placeholder="en az 8 karakter"></label></div>
@@ -196,7 +196,7 @@ export default async function (el, [secili], ctx) {
         </div></div>
         <div class="kart"><div class="kart-ust"><h3>Bağlı hesaplar</h3></div><div class="kart-govde sifir">
           ${t.bagli_hesaplar.length ? html`<table class="tablo"><tbody>${t.bagli_hesaplar.map((b) => html`<tr><td><b>${b.ad_soyad}</b><div class="alt-satir">${b.telegram_ad || ''}</div></td>
-            <td>${b.rol === 'yonetici' ? 'Yönetici' : 'Teknisyen'}</td><td class="sayi"><button class="btn ikincil kucuk" data-tg-kaldir="${b.id}">Kaldır</button></td></tr>`)}</tbody></table>`
+            <td>${b.rol === 'yonetici' ? 'Yönetici' : b.rol === 'muhasebe' ? 'Muhasebe' : 'Teknisyen'}</td><td class="sayi"><button class="btn ikincil kucuk" data-tg-kaldir="${b.id}">Kaldır</button></td></tr>`)}</tbody></table>`
             : html`<div class="bos-durum">Bağlı hesap yok</div>`}
           <p class="soluk" style="padding:0 1rem;font-size:.85rem">Sadece bağlı <b>yönetici</b> hesaplarından gelen mesajlar işe çevrilir; diğer kişilerin mesajları reddedilir.</p>
         </div></div></div>

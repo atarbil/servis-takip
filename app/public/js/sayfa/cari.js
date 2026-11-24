@@ -103,10 +103,10 @@ export default async function (el, [id], ctx) {
         csvIndir(`detayli-ekstre-${c.unvan}`, ['Tarih', 'Belge', 'Belge no', 'Açıklama', 'Borç', 'Alacak', 'Bakiye'], sat);
       };
     } else if (sekme === 'isler') {
-      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>No</th><th>İş</th><th>Durum</th><th>Tarih</th><th class="sayi">Satış</th><th class="sayi">Kâr</th></tr></thead><tbody>
+      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>No</th><th>İş</th><th>Durum</th><th>Tarih</th><th class="sayi">Satış</th><th class="sayi kar-bilgi">Kâr</th></tr></thead><tbody>
         ${c.isler.length ? c.isler.map((i) => html`<tr class="tikla" data-git="is/${i.id}"><td data-et="No">#${i.id}</td><td class="ana-hucre" data-et="">${i.baslik}</td><td data-et="Durum">${durumRozet(i.durum)}</td>
           <td data-et="Tarih">${tarih(i.plan_baslangic || i.olusturma)}</td><td data-et="Satış" class="sayi">${i.satis_kdv_haric != null ? para(i.satis_kdv_haric) : ''}</td>
-          <td data-et="Kâr" class="sayi">${i.kar != null && i.satis_kdv_haric != null ? para(i.kar) : ''}</td></tr>`) : html`<tr><td colspan="6" class="bos-durum">İş yok</td></tr>`}</tbody></table></div></div>`);
+          <td data-et="Kâr" class="sayi kar-bilgi">${i.kar != null && i.satis_kdv_haric != null ? para(i.kar) : ''}</td></tr>`) : html`<tr><td colspan="6" class="bos-durum">İş yok</td></tr>`}</tbody></table></div></div>`);
     } else if (sekme === 'envanter') {
       const { envanterTablosu, envanterFormu } = await import('./envanter.js');
       const liste = await api.get('/envanter', { cari_id: c.id, tumu: '1' });
@@ -125,9 +125,9 @@ export default async function (el, [id], ctx) {
       k.onclick = async (ev) => { const t = ev.target.closest('[data-ds]'); if (t && await disServisFormu({ id: Number(t.dataset.ds) }, { cari: c, ctx })) ciz(); };
     } else if (sekme === 'fisler') {
       const fl = await api.get(`/cariler/${c.id}/fisler`);
-      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Fiş no</th><th>Tarih</th><th>Durum</th><th class="sayi">Tutar</th><th class="sayi">Kâr</th></tr></thead><tbody>
+      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Fiş no</th><th>Tarih</th><th>Durum</th><th class="sayi">Tutar</th><th class="sayi kar-bilgi">Kâr</th></tr></thead><tbody>
         ${fl.length ? fl.map((f) => html`<tr class="tikla ${f.durum === 'iptal' ? 'iptal' : ''}" data-git="fis/${f.id}"><td class="ana-hucre" data-et="">${f.fis_no}</td><td data-et="Tarih">${tarih(f.tarih)}</td>
-          <td data-et="Durum">${durumRozet(f.durum)}</td><td class="sayi" data-et="Tutar">${para(f.genel_toplam)}</td><td class="sayi" data-et="Kâr">${para(f.ara_toplam - f.maliyet_toplam)}</td></tr>`)
+          <td data-et="Durum">${durumRozet(f.durum)}</td><td class="sayi" data-et="Tutar">${para(f.genel_toplam)}</td><td class="sayi kar-bilgi" data-et="Kâr">${para(f.ara_toplam - f.maliyet_toplam)}</td></tr>`)
           : html`<tr><td colspan="5" class="bos-durum">Fiş yok</td></tr>`}</tbody></table></div></div>`);
     } else if (sekme === 'resmi') {
       const yil = resmiYil || String(new Date().getFullYear());
@@ -154,9 +154,9 @@ export default async function (el, [id], ctx) {
       $('#rf-yil', k).onchange = (e) => { resmiYil = e.target.value; ciz(); };
       $('#rf-tip', k).onchange = (e) => { resmiTip = e.target.value; ciz(); };
     } else if (sekme === 'yillik') {
-      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Yıl</th><th class="sayi">İş</th><th class="sayi">Ciro (KDV hariç)</th><th class="sayi">Maliyet</th><th class="sayi">Kâr</th><th class="sayi">Tahsilat</th><th class="sayi">Yıl sonu bakiye</th></tr></thead><tbody>
+      k.innerHTML = String(html`<div class="kart"><div class="tablo-kap"><table class="tablo mobil-kart"><thead><tr><th>Yıl</th><th class="sayi">İş</th><th class="sayi">Ciro (KDV hariç)</th><th class="sayi kar-bilgi">Maliyet</th><th class="sayi kar-bilgi">Kâr</th><th class="sayi">Tahsilat</th><th class="sayi">Yıl sonu bakiye</th></tr></thead><tbody>
         ${c.yillik.length ? c.yillik.map((y) => html`<tr><td class="ana-hucre" data-et="">${y.yil}</td><td class="sayi" data-et="İş">${y.is_sayisi}</td><td class="sayi" data-et="Ciro">${para(y.ciro_kdv_haric)}</td>
-          <td class="sayi" data-et="Maliyet">${para(y.maliyet)}</td><td class="sayi" data-et="Kâr">${para(y.kar)}</td><td class="sayi" data-et="Tahsilat">${para(y.tahsilat)}</td><td class="sayi" data-et="Bakiye">${bakiyeHucre(y.yil_sonu_bakiye)}</td></tr>`)
+          <td class="sayi kar-bilgi" data-et="Maliyet">${para(y.maliyet)}</td><td class="sayi kar-bilgi" data-et="Kâr">${para(y.kar)}</td><td class="sayi" data-et="Tahsilat">${para(y.tahsilat)}</td><td class="sayi" data-et="Bakiye">${bakiyeHucre(y.yil_sonu_bakiye)}</td></tr>`)
           : html`<tr><td colspan="7" class="bos-durum">Henüz satış yok</td></tr>`}</tbody></table></div></div>`);
     } else {
       k.innerHTML = String(html`<div class="kart"><div class="kart-govde"><dl class="bilgi-liste">

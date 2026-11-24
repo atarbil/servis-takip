@@ -131,7 +131,7 @@ export function varsayilanAyar(tur, tema = 'klasik') {
     yazi_tipi: 'Arial', yazi_boyu: 12.5, kenar: 12,
     logo: { goster: true, hiza: tema === 'modern' ? 'sol' : 'sol', genislik: 220, dosya: null },
     serit: { kaynak: tur === 'teklif' && tema === 'klasik' ? 'firma' : 'yok', dosya: null }, // firma: Ayarlar'daki teklif şeridi; ozel: şablona yüklenen
-    bolumler: bolumListesi(tur).map((id) => ({ id, goster: !['banka', 'qr'].includes(id) && !(id === 'giris' && tur === 'proforma') && !(id === 'yazi' && tur === 'proforma') })),
+    bolumler: bolumListesi(tur).map((id) => ({ id, goster: !['banka', 'qr'].includes(id) && !(id === 'giris' && tur === 'proforma') && !(id === 'yazi' && tur === 'proforma') && !(id === 'malzeme' && tur === 'teslim') })),
     alan,
     kolonlar: KOLON_SIRA.map((id) => ({ id, goster: kolonGorunur.has(id), ad: '' })),
     toplam: { brut: false, indirim: false, net: true, kdv: true, toplam: true, tl_karsilik: true },

@@ -1,7 +1,7 @@
 // Müşteri imzası: telefon ekranında parmakla imza
 import { html, $ } from './ui.js';
 
-export function imzaAl({ baslik = 'Müşteri teslim onayı', ad = '', tel = '', metin = '' } = {}) {
+export function imzaAl({ baslik = 'Müşteri teslim onayı', ad = '', tel = '', metin = '', ozet = null, onayMetni = 'İmzayı kaydet' } = {}) {
   return new Promise((coz) => {
     // <dialog> olarak açılır: başka bir pencerenin (ör. "Teslim et") üstünde de görünür ve kullanılabilir
     const el = document.createElement('dialog');
@@ -13,11 +13,15 @@ export function imzaAl({ baslik = 'Müşteri teslim onayı', ad = '', tel = '', 
         <input name="tel" placeholder="Telefon" type="tel" value="${tel}">
         <input name="not" placeholder="Müşteri notu (isteğe bağlı)" style="grid-column:1/-1">
       </div>
+      ${ozet ? html`<div class="teslim-ozet"><div class="teslim-ozet-baslik">${ozet.baslik || ''}</div>
+        ${ozet.adres ? html`<div class="teslim-ozet-satir">📍 ${ozet.adres}</div>` : ''}
+        ${ozet.yapilan ? html`<div class="teslim-ozet-is"><small>Yapılan iş</small>${ozet.yapilan}</div>` : ''}
+        ${ozet.teknisyen ? html`<div class="teslim-ozet-satir">Teknisyen: ${ozet.teknisyen}</div>` : ''}</div>` : ''}
       ${metin ? html`<div style="padding:.4rem .8rem;font-size:.85rem;color:var(--soluk)">${metin}</div>` : ''}
       <div class="imza-alan"><canvas></canvas><div class="imza-cizgi"></div><div class="imza-ipucu">Lütfen buraya imzalayın</div></div>
       <div class="alt-cubuk"><div class="imza-hata" style="flex-basis:100%;color:var(--kirmizi);font-weight:600" hidden></div>
         <button class="btn ikincil" data-temizle>Temizle</button><span class="bosluk"></span>
-        <button class="btn basari buyuk" data-kaydet>İmzayı kaydet</button></div>`);
+        <button class="btn basari buyuk" data-kaydet>${onayMetni}</button></div>`);
     document.body.append(el);
     el.showModal();
     const canvas = $('canvas', el);

@@ -40,7 +40,12 @@ export const KULLANICI_MENU = [
   { yol: 'silinenler', ad: 'Silinenler', ikon: 'cop' },
   { yol: 'guncelleme', ad: 'Programı güncelle', ikon: 'yenile' },
 ];
-const MOBIL_ALT = ['panel', 'havuz', 'takvim', 'cariler'];
+const MOBIL_ALT_YONETICI = ['panel', 'havuz', 'takvim', 'cariler'];
+const MOBIL_ALT_MUHASEBE = ['panel', 'cariler', 'fisler', 'kdv'];
+// Muhasebe rolünün açabildiği sayfalar
+const MUHASEBE_SAYFA = new Set(['panel', 'isler', 'is', 'cariler', 'cari', 'envanter', 'fisler', 'fis', 'teklifler', 'teklif', 'urunler', 'urun',
+  'alislar', 'alis', 'kasa', 'raporlar', 'resmi-yukle', 'efatura', 'resmi-faturalar', 'kdv']);
+const menuIzinli = (m) => !ctx.muhasebe || (m.yol ? MUHASEBE_SAYFA.has(m.yol) : m.alt.some(menuIzinli));
 const DUZ_MENU = [...YONETICI_MENU.flatMap((m) => m.alt || [m]), ...KULLANICI_MENU];
 const menuAdi = (m) => ctx.menuAdlari?.[m.yol || 'grup:' + m.grup] || m.ad;
 const sayacHtml = (anahtarlar) => (anahtarlar.length ? html`<b class="menu-sayac" data-sayac="${anahtarlar.join(',')}" hidden></b>` : '');
@@ -48,15 +53,15 @@ const menuLink = (m) => html`<a href="#/${m.yol}" data-yol="${m.yol}" role="menu
 const grupHtml = (m, ek = '') => html`<div class="um-grup ${ek}" data-grup="${m.grup}">
     <button type="button" class="um-baslik" aria-haspopup="true" aria-expanded="false">${ikon(m.ikon)}<span>${menuAdi(m)}</span>
       ${sayacHtml(m.alt.filter((a) => a.sayac).map((a) => a.sayac))}<span class="um-ok">${ikon('asagi', 16)}</span></button>
-    <div class="um-acilir" role="menu">${m.alt.map(menuLink)}</div></div>`;
+    <div class="um-acilir" role="menu">${m.alt.filter(menuIzinli).map(menuLink)}</div></div>`;
 const kullaniciGrup = (ek) => html`<div class="um-grup um-kullanici ${ek}" data-grup="kullanici">
     <button type="button" class="um-baslik" aria-haspopup="true" aria-expanded="false"><span class="avatar">${(ctx.kullanici.ad_soyad || '?').split(' ').map((x) => x[0]).slice(0, 2).join('')}</span>
       <span class="um-ad">${ctx.kullanici.ad_soyad}</span><span class="um-ok">${ikon('asagi', 16)}</span></button>
-    <div class="um-acilir sag" role="menu">${KULLANICI_MENU.map(menuLink)}
+    <div class="um-acilir sag" role="menu">${KULLANICI_MENU.filter(menuIzinli).map(menuLink)}
       <hr>${uygulamaKurulu() ? '' : html`<button type="button" role="menuitem" data-uygulama>📱<span>Telefona uygulama olarak ekle</span></button>`}
       <button type="button" role="menuitem" data-sifre>${ikon('anahtar')}<span>Şifre değiştir</span></button>
       <button type="button" role="menuitem" data-cikis>${ikon('cikis')}<span>Çıkış</span></button></div></div>`;
-const menuHtml = () => html`${YONETICI_MENU.map((m) => (m.alt ? grupHtml(m) : menuLink(m)))}${kullaniciGrup('yalniz-mobil')}`;
+const menuHtml = () => html`${YONETICI_MENU.filter(menuIzinli).map((m) => (m.alt ? grupHtml(m) : menuLink(m)))}${kullaniciGrup('yalniz-mobil')}`;
 
 const IKON = {
   yenile: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
@@ -88,7 +93,10 @@ const ctx = {
   kullanici: null,
   ayarlar: {},
   _ekipler: null,
-  get yonetici() { return this.kullanici?.rol === 'yonetici'; },
+  // Muhasebe yönetici kabuğunu kullanır (sınırlı menü, kârlılık yok); "patron" yalnız asıl yönetici
+  get yonetici() { return ['yonetici', 'muhasebe'].includes(this.kullanici?.rol); },
+  get muhasebe() { return this.kullanici?.rol === 'muhasebe'; },
+  get patron() { return this.kullanici?.rol === 'yonetici'; },
   git(yol) { location.hash = '#/' + yol.replace(/^#?\//, ''); },
   // Sayfa başlığı: menüde adı değiştirilmiş sayfalar yeni adla görünür
   baslikMetni(metin) {
@@ -391,7 +399,7 @@ function kabukCiz() {
         <button class="btn-ikon" id="btn-cikis" title="Çıkış">${ikon('cikis')}</button></header>
       <main id="sayfa"></main></div>`);
   } else {
-    document.body.innerHTML = String(html`<div class="kabuk ust-duzen">
+    document.body.innerHTML = String(html`<div class="kabuk ust-duzen ${ctx.muhasebe ? 'rol-muhasebe' : ''}">
       <header class="ust-cubuk">
         <button class="btn-ikon mobil-menu" id="btn-menu" aria-label="Menü">${ikon('menu')}</button>
         <a href="#/panel" class="ust-logo" title="${firma}">${ctx.ayarlar.firma_logo
@@ -406,17 +414,17 @@ function kabukCiz() {
         <div class="kur-kutu" id="kur" hidden></div>
         <button class="btn-ikon sekme-dugme" id="btn-sekmeler" title="Açık sayfalar" aria-label="Açık sayfalar"><span>${ikon('sekme')}</span><b id="sekme-sayi">1</b></button>
         <button class="btn birincil" id="btn-fis" title="Yeni satış fişi"><span class="uzun">+ Satış fişi</span><span class="kisa" aria-hidden="true">🧾</span></button>
-        <button class="btn birincil" id="btn-hizli">+ İş ekle</button>
+        ${ctx.muhasebe ? '' : html`<button class="btn birincil" id="btn-hizli">+ İş ekle</button>`}
         ${kullaniciGrup('yalniz-masa')}
       </header>
       <div class="sekme-serit" id="sekme-serit" role="tablist" aria-label="Açık sayfalar"></div>
       <div class="yan-ortu" id="yan-ortu"></div>
       <main id="sayfa"></main>
-      <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = DUZ_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${menuAdi(m).replace('İş ', '')}</span></a>`; })}
+      <nav class="alt-menu">${(ctx.muhasebe ? MOBIL_ALT_MUHASEBE : MOBIL_ALT_YONETICI).map((y) => { const m = DUZ_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${menuAdi(m).replace('İş ', '')}</span></a>`; })}
         <a href="#" id="alt-daha">${ikon('menu')}<span>Menü</span></a></nav>
     </div>`);
     menuBagla();
-    $('#btn-hizli').onclick = async () => {
+    const hz = $('#btn-hizli'); if (hz) hz.onclick = async () => {
       const { hizliIs } = await import('./sayfa/havuz.js');
       hizliIs(ctx);
     };
@@ -513,6 +521,7 @@ function yolCoz(hashYol) {
   if (!ad) ad = ctx.yonetici ? 'panel' : 'islerim';
   if (!ctx.yonetici && !TEKNISYEN_IZINLI.has(ad)) { ad = 'islerim'; params = []; }
   if (!ctx.yonetici && ad === 'saha' && !params[0]) ad = 'islerim';
+  if (ctx.muhasebe && !MUHASEBE_SAYFA.has(ad)) { ad = 'panel'; params = []; }
   return { ad, params, sorgu, anahtar: [ad, ...params].join('/') };
 }
 function varsayilanBaslik(ad) {

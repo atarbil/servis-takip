@@ -114,7 +114,11 @@ export function fotoAkisi(isId) {
 
 export async function imzaAkisi(ctx, is) {
   const { imzaAl } = await import('../imza.js');
-  const s = await imzaAl({ ad: is.cari_yetkili || is.iletisim_ad || '', tel: is.iletisim_tel || is.cari_telefon || '', metin: ctx.ayarlar.teslim_metni });
+  // Teslim / müşteri onay ekranı: iş, adres ve yapılan iş özeti (malzeme listesi müşteriye gösterilmez)
+  const yapilan = document.querySelector('#tek-not')?.value?.trim() || is.teknisyen_notu || '';
+  const s = await imzaAl({ baslik: 'Teslim / müşteri onayı', ad: is.cari_yetkili || is.iletisim_ad || '', tel: is.iletisim_tel || is.cari_telefon || '', metin: ctx.ayarlar.teslim_metni,
+    onayMetni: '✓ Onaylıyorum',
+    ozet: { baslik: [is.unvan, is.baslik].filter(Boolean).join(' · '), adres: is.adres || is.cari_adres || '', yapilan, teknisyen: ctx.kullanici?.ad_soyad || '' } });
   if (!s) return false;
   try {
     await api.post(`/isler/${is.id}/teslim`, s);
@@ -127,7 +131,7 @@ export function malzemeListesi(is, { silinebilir, maliyet = false }) {
   if (!is.malzemeler.length) return html`<div class="bos-durum" style="padding:1.2rem">Henüz malzeme eklenmedi.</div>`;
   return html`${is.malzemeler.map((m) => html`<div class="malzeme-satir">
     <div class="ad">${m.ad}${m.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
-      <small>${m.barkodla_eklendi ? '📷 barkod · ' : ''}${m.sahada_eklendi ? 'sahada eklendi' : 'planlı'} · ${m.ekleyen || ''} · ${saat(m.zaman)}
+      <small>${m.barkodla_eklendi ? '📷 barkod · ' : ''}${m.sahada_eklendi ? html`<span class="rozet turuncu malz-etiket">ilave</span>` : html`<span class="rozet mavi malz-etiket">verildi</span>`} · ${m.ekleyen || ''} · ${saat(m.zaman)}
       ${maliyet ? html` · maliyet ${m.birim_maliyet ? Number(m.tutar).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺' : html`<b style="color:var(--turuncu)">girilmedi</b>`}` : ''}</small></div>
     <div class="mik">${miktar(m.miktar)} ${m.birim}</div>
     ${silinebilir ? html`<button class="btn-ikon" data-malzeme-sil="${m.id}" title="Çıkar">✕</button>` : ''}</div>`)}`;
