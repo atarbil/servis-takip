@@ -4,7 +4,18 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Alış faturası ekranı satış fişinin düzeninde olsun (24.11.2026)
+- Kullanıcı: alış faturası ekranında satır ve sütunlar kaymış; satış fişi ekranı gibi tasarlansın.
+- Şu an alış ekranı eski tablo düzeninde (Ürün / Miktar / Birim fiyat / KDV% / Tutar; butonlar tablonun altında).
+- Yapılacak: satış fişi / teklifteki fatura düzeni —
+  - Üstte tedarikçi cari kutusu (adres, VD/VN, telefon, cari bakiye) ve sağda belge bilgileri (fatura no, tarih, vade,
+    para birimi + kur, açıklama).
+  - Fişteki Excel tipi kalem tablosu: # / Kod / Ürün açıklaması (+ satır notu) / Miktar / Birim / Birim fiyat / İsk. % / KDV % / Tutar,
+    sabit sütun genişlikleri, kaymayan hizalama; telefonda fişteki gibi kart görünümü.
+  - Tablonun üstünde düğmeler: + Satır, Stok listesi, Barkod, "Enter ile yeni satır aç", KDV dahil.
+  - En altta "Yalnız: …", KDV dökümü, TL karşılığı ve toplam bloğu.
+- Alışta kalemler stok kartlı kalır (bulunamayan ürün → yeni stok kartı sorusu); mevcut işlemler (kaydet, onayla, iptal, sil,
+  döviz) aynen korunur.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
