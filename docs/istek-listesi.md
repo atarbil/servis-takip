@@ -5,26 +5,8 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. Ekibe atanan işte "Servis" kalemi kullanılan malzemeye eklensin (24.11.2026)
-- Kullanıcı: "Planlanan işi ekibin üzerine atınca, servis için gidildi ise kullanılan malzeme bölümüne servis ekleyelim".
-- Varsayım (soru cevaplanmadı, kullanıcı başka konuya geçti): **atama penceresinde "Servis için gidiliyor" kutusu**; işaretliyse
-  işin kullanılan malzemesine **1 adet "Servis"** kalemi eklenir (stoksuz hizmet; stoktan düşmez). Fiyat: **Ayarlar → Servis ücreti**
-  (bir kez yazılır; boşsa fiyatsız). Teknisyen sahada miktarı değiştirebilir / silebilir; satış fişine stoksuz "Servis" satırı olarak
-  geçer. Aynı işe ikinci kez atanınca tekrar eklenmez. (Kullanıcı farklı isterse: her atamada otomatik ya da teknisyende "+ Servis".)
-
-### 2. Cari açarken vergi numarası ile sorgulama (24.11.2026)
-- Kullanıcı: "Cari oluştururken vergi numarası ile sorgulama yapabilir misin?"
-- GİB'in herkese açık, ücretsiz bir VKN → ünvan API'si yok (Dijital Vergi Dairesi / e-Devlet sorgusu giriş ya da doğrulama
-  kodu istiyor). Yapılabilecekler:
-  1. **Numara doğrulama:** 10 haneli VKN ve 11 haneli TCKN kontrol hanesi algoritmasıyla anında "geçerli / geçersiz".
-  2. **Programdaki bilgilerden doldurma:** aynı vergi no'lu cari varsa "Bu numara zaten kayıtlı: … (aç)" uyarısı; yüklenmiş resmi
-     faturalarda (alış / satış XML'leri) bu numara geçiyorsa ünvan, vergi dairesi, adres, il / ilçe, telefon, e-posta tek tıkla doldurulur.
-  3. **GİB'de sorgula** düğmesi: GİB mükellef / vergi levhası sorgulama sayfasını yeni sekmede açar (kullanıcı doğrulama kodunu girer).
-  4. İleride Mysoft bağlantısı açılırsa (beklemede): entegratörün mükellef sorgusuyla ünvan + e-Fatura kullanıcısı mı bilgisi otomatik.
-
-
-### 3. Cari → Detaylı ekstre (24.11.2026)
-- Kullanıcı: "Şimdilik bu dediklerim kalsın (1–2 bekliyor); cari listesinden cari seçtiğimiz zaman ekstrenin yanına bir de **detaylı
+### 1. Cari → Detaylı ekstre (24.11.2026)
+- Kullanıcı: "Cari listesinden cari seçtiğimiz zaman ekstrenin yanına bir de **detaylı
   ekstre** ekleyelim; oradan müşterinin **ne aldığı, ne kadar ödeme yaptığı, kalan bakiyesi** **borç / alacak / bakiye** şeklinde
   **kurumsal** bir şekilde çıksın; istenilen **2 tarih arası** alınabilsin; **vade tarihi çıkmasın**."
 - Tasarım: Cari ekranında "Ekstre"nin yanında **"Detaylı ekstre"** sekmesi.
@@ -40,6 +22,8 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
   - Çıktı A4 dikey, kalemler sayfa arasında bölünebilir, başlık her sayfada tekrar.
 
 ## İsteğe bağlı fikirler
+- **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
+  cari açarken vergi numarası ile sorgulama.
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
   çekip "Fatura yükle" akışına düşürme; onaylı satış fişinden e-Fatura / e-Arşiv kesme. Gerekenler: Mysoft'tan API kullanıcısı
   + test hesabı + API dokümanı; şifre sunucuda gizli girilir.
