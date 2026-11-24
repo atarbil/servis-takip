@@ -41,17 +41,15 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Alttaki denklem satırı (Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden) sonuç şeridinin hemen altına, iki sütunun üstüne
   taşınır; altta tekrar edilmez.
 
-### 4. Cari ekstresinde resmi faturalar işlem tipiyle görünsün (24.11.2026)
-- Kullanıcı: "Resmi faturaları programa işlenen hâli ile hem tedarikçide hem alıcıda görelim; ne kesmişiz ne almışız göremiyoruz"
-  → netleştirdi: **"ikiye bölme; ekstrede işlem tipini görsek yeterli: Alış faturası ve Satış faturası olarak".**
-- Cari **ekstresine** resmi faturalar da tarih sırasıyla satır olarak girer; işlem tipi sütununda:
-  - **Satış faturası** — bu cariye kesilen resmi satış faturası,
-  - **Alış faturası** — bu cariden gelen gider (yalnız KDV) faturası. (Stoklu alış faturaları zaten ekstrede "Alış faturası".)
-- Bu satırlar **bakiyeyi değiştirmez** (resmi fatura kuralı): tutar bilgi olarak görünür, bakiye sütunu aynı kalır; satır
-  hafif soluk / "bilgi" işaretli. Tıklayınca fatura ayrıntısı. Ekstre üstünde "Resmi faturaları göster" kutusu (varsayılan açık);
-  yazdırılan ekstrede çıkmaz (ya da isteğe bağlı).
-- Gider faturaları vergi no'dan cariyle eşleşir (kaydederken ve eskiler bir kez); eşleşmeyen için Resmi faturalar listesinden bağla.
-- Ayrı "Resmi faturalar" sekmesi kalır (sade liste) — ikiye bölünmez.
+### 4. Cari → Resmi faturalar: tek liste, işlem tipi Alış / Satış faturası (24.11.2026, son hâli)
+- Kullanıcı (22:35, öncekileri iptal etti): "resmi olan faturalar **Resmi faturalar** altında gelsin; işlem tipinde **alış ve satış
+  faturası** yazsın; gerekirse biz **kutudan alış veya satış olarak seçebilelim**; **ekstreye karışmayalım**."
+- Cari → Resmi faturalar sekmesi **tek liste** (ikiye bölünmez, ekstre değişmez): tarih, fatura no, **İşlem tipi**
+  (Alış faturası / Satış faturası), fatura tutarı, KDV tutarı, toplam tutar; alt toplam. Üstte **filtre kutusu: Tümü / Alış / Satış**
+  ve yıl seçimi.
+- Listeye girenler: bu cariye kesilen resmi satış faturaları; bu cariden gelen gider (yalnız KDV) faturaları; XML'den aktarılmış
+  stoklu alış faturaları (yeşil, alış faturasına bağlantılı). Renkler: stoklu yeşil, gider açık mavi.
+- Gider faturaları vergi no'dan cariyle eşleşir (kaydederken; eskiler bir kez). Bakiye / ekstre değişmez.
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
