@@ -26,6 +26,15 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
   görür; yalnız son konum tutulur, eskisinin üzerine yazılır.
 
 
+### 2. Resmi fatura yüklemede işlenen faturalar üstteki listeden düşsün (24.11.2026)
+- Kullanıcı: "Resmi fatura yüklemede onaylanan faturalar yukarıdaki listeden düşsün".
+- Üstteki alış faturası kartlarından (sekme şeridi) **taslak alış faturası oluşturulanlar** ve **yalnız KDV (gider) olarak
+  kaydedilenler** kaldırılır; sıradaki bekleyen fatura kendiliğinden açılır. "Daha önce girilmiş" (işlem yapılamayan) faturalar da
+  listede durmaz, yalnız özet satırında sayıları yazar. "Atla" denilenler listede kalır (sonra dönülebilsin).
+- Özet satırında: "x fatura işlendi (y taslak alış, z gider)" — tıklanınca işlenenlerin bağlantıları açılır.
+- Satış görünümünde cariye bağlanan faturalar da "eşleşmeyen" sayısından düşer (bağlananlar listenin altına iner, soluk).
+- Hepsi bitince: "Tüm faturalar işlendi" kutusu + Alış faturaları / Resmi faturalar / KDV durumu bağlantıları.
+
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
   çekip "Fatura yükle" akışına düşürme; onaylı satış fişinden e-Fatura / e-Arşiv kesme. Gerekenler: Mysoft'tan API kullanıcısı
