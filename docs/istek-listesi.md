@@ -4,6 +4,23 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
+### 2. Resmi faturalar: kesilen satış faturaları carilerle eşleşsin, cari ekranında görünsün (24.11.2026)
+- Kullanıcı: "satış faturaları ile carileri de eşleştirelim; yaptığımız işle müşteriye kestiğimiz faturalar farklı oluyor, kime ne
+  fatura kestiğimizi bilmek için yükleyeceğim faturalar cari ekranında **'Resmi faturalar'** diye bir başlıkta olsun; KDV hesaplama
+  hariç hiçbir yerde kullanılmayacak satış faturaları olsun".
+- **Önceki kararı değiştirir:** KDV ekranındaki "hiçbir şey kaydedilmesin" yerine artık yüklenen satış faturalarının **bilgileri**
+  kaydedilir (XML / PDF dosyası yine saklanmaz). Bir kez yüklenen fatura kalır; her seferinde ayın hepsini yüklemek gerekmez.
+- Kayıt: fatura no, ETTN, tarih, tür (SATIS/İADE/TEVKİFAT…), müşteri ünvanı + VKN/TCKN, fatura tutarı (KDV hariç), KDV (oran
+  bazında), tevkifat, toplam, para birimi/kur, kalemler (ad, miktar, birim, fiyat, KDV) — yalnız görüntülemek için.
+- **Hiçbir yere etkisi yok:** cari bakiyesi / ekstre, stok, satış fişi, kasa, raporlar değişmez. Yalnız KDV durumu ekranında
+  "hesaplanan KDV" buradan gelir.
+- Eşleştirme: alıcı VKN/TCKN → programdaki cari; yoksa ünvan. Eşleşmeyenler "Eşleşmeyen faturalar" listesinde; tek tıkla mevcut
+  cariye bağla ya da faturadaki bilgilerle yeni cari aç. Sonradan cari değiştirilebilir.
+- Aynı fatura (ETTN) ikinci kez eklenmez; yanlış yüklenen fatura silinebilir. Satıcı VKN firma değilse kabul edilmez (alış XML'i).
+- **Cari ekranı → "Resmi faturalar" sekmesi:** tarih, fatura no, tür, fatura tutarı, KDV, toplam; yıl/ay filtresi ve toplam satırı;
+  satıra tıklayınca kalemleri gösteren pencere. Not: "Bilgi amaçlı; cari bakiyesini etkilemez."
+- Yükleme yerleri: KDV durumu ekranının satış sütunu ve Finans → **Resmi faturalar** listesi (tüm kesilen faturalar, arama, eşleşmeyenler).
+
 ### 1. KDV durumu: iki sütunlu ekran — solda alış, sağda satış (24.11.2026)
 - Kullanıcı: "2 sütunlu bir ekran olsun, sol alış sağ satış gibi; fatura tutarı, KDV tutarı, toplam tutar şeklinde".
 - Tasarım:
@@ -12,7 +29,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
   - **Sol sütun — ALIŞ (indirilecek KDV):** o ayın onaylı alış faturaları tek tek: tarih, fatura no, tedarikçi,
     **Fatura tutarı** (KDV hariç), **KDV tutarı**, **Toplam tutar**; altta toplam satırı. Taslak bekleyenler soluk ve "sayılmadı" etiketli
     (bağlantılı). Satıra tıklayınca alış faturası açılır.
-  - **Sağ sütun — SATIŞ (hesaplanan KDV):** yüklenen XML'lerdeki faturalar tek tek: tarih, fatura no, müşteri, **Fatura tutarı**,
+  - **Sağ sütun — SATIŞ (hesaplanan KDV):** (istek 2'den sonra: kayıtlı resmi faturalardan) faturalar tek tek: tarih, fatura no, müşteri, **Fatura tutarı**,
     **KDV tutarı**, **Toplam tutar**; altta toplam satırı. Sütunun üstünde yükleme alanı (dosyalar kaydedilmez, kural aynı).
     Sayılmayanlar (başka ay / başka firma / tekrar) listede soluk ve nedeni yazılı; tevkifatlı faturada tevkifat ayrıca görünür.
   - İki sütunun altında karşılaştırma: Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden.
