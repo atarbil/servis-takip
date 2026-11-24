@@ -21,8 +21,8 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Kullanıcı: gelen faturayı PDF olarak yükleyebileceğim bir ekran; tedarikçi var mı, fatura tarihi / no, faturadaki ürünleri
   tanısın, aynı stok varsa stok değeri olarak girsin. "Küçük bir yapay zeka sayfası".
 - Önerilen akış (Stok / Alış altında "Fatura yükle" sayfası):
-  1. PDF (ve varsa e-Fatura XML / UBL) sürükle-bırak veya telefondan fotoğraf.
-  2. Okuma: XML varsa doğrudan (kesin, ücretsiz); yoksa PDF yapay zekaya (Claude API) gönderilir → tedarikçi ünvanı, VKN/TCKN,
+  1. e-Fatura XML (veya zip) sürükle-bırak / dosya seç.
+  2. XML'den okunur → tedarikçi ünvanı, VKN/TCKN,
      fatura no, tarih, vade, para birimi, satırlar (kod, ad, miktar, birim, birim fiyat, iskonto, KDV), toplamlar.
   3. Tedarikçi eşleşmesi: önce VKN/TCKN, sonra ünvan. Yoksa "faturadaki bilgilerle yeni tedarikçi açılsın mı?".
   4. Aynı tedarikçi + fatura no daha önce girildiyse uyarı (mükerrer engeli).
@@ -33,8 +33,15 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
   7. Sonuç **taslak alış faturası** olur; kullanıcı kontrol edip Onayla'ya basınca stok ve maliyet girer. Otomatik onay yok.
   8. **Yüklenen dosya saklanmaz** (kullanıcı kararı 24.11.2026): yalnız okunur, taslak alış faturası oluşturulur; dosya diske
      yazılmaz / okuma bitince bellekten atılır, yedeğe de girmez.
-- Açık kararlar: Claude API kullanımı (ücretli API anahtarı, fatura içeriği Anthropic'e gider) mi, yalnız XML/metin okuma mı?
-  Anahtar sunucuda .env'e `read -s` ile girilir, sohbete yazılmaz.
+- **Karar (24.11.2026): faturalar e-Fatura XML (UBL-TR) olarak geliyor → okuma XML'den yapılır, yapay zeka / API gerekmez.**
+  - Kabul edilen dosya: .xml (ve içinde XML bulunan .zip — GİB portalından inen paketler). Birden çok dosya bir kerede yüklenebilir.
+  - Okunacak alanlar: AccountingSupplierParty (ünvan, VKN/TCKN, vergi dairesi, adres, telefon, e-posta), ID (fatura no), IssueDate,
+    PaymentMeans/PaymentDueDate (vade), DocumentCurrencyCode + PricingExchangeRate (döviz/kur), InvoiceLine (SellersItemIdentification,
+    BuyersItemIdentification, StandardItemIdentification/barkod, Item/Name, InvoicedQuantity + unitCode → birim, PriceAmount,
+    AllowanceCharge → iskonto, TaxSubtotal/Percent → KDV), LegalMonetaryTotal (toplam kontrolü). Fatura tipi İADE ise uyarı.
+  - Alıcı VKN'si Ayarlar'daki firma VKN'si değilse uyarı ("bu fatura size kesilmemiş olabilir").
+  - Sunucu tarafında sıfır bağımlılıkla küçük bir XML okuyucu (namespace'li UBL için yeterli); zip için Node'un zlib'i.
+  - PDF / fotoğraf okuma (Claude API) şimdilik yok; ileride istenirse eklenir.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
