@@ -4,28 +4,22 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. KDV durumu ekranı: alış ve kesilen faturaları yükleyip KDV durumunu görme (24.11.2026)
-- Kullanıcı: "KDV durumumu görebilmem için alış faturalarımı ve kestiğim faturaları yükleyip mevcut durumu görebileceğim bir ekran".
-- Önerilen tasarım (Finans → **KDV durumu**):
-  - Üstte dönem seçimi (ay; çeyrek / yıl özet) ve yükleme alanı: **Kestiğim faturalar (satış)** — e-Fatura / e-Arşiv XML ya da
-    zip, çoklu. Dosya saklanmaz; faturadan yalnız KDV özeti kaydedilir (tarih, no, ETTN, karşı taraf,
-    VKN, KDV oranı bazında matrah ve KDV, tevkifat, iade/istisna türü). Aynı fatura iki kez sayılmaz (ETTN).
-  - Satıcı VKN'si firma VKN'si değilse uyarı ("bu fatura sizin kestiğiniz bir fatura değil" — yanlışlıkla alış XML'i yüklenirse).
-  - Özet kartlar: **Hesaplanan KDV** (satış) − **İndirilecek KDV** (alış) − **Önceki dönemden devreden KDV** (elle girilir ya da bir
-    önceki aydan aktarılır) = **Ödenecek KDV** ya da **Sonraki döneme devreden KDV**. Tevkifatlı satışlarda alıcının ödediği kısım ayrı.
-  - Oran bazında tablo (%1 / %10 / %20 … matrah + KDV, satış ve alış yan yana); İADE faturaları ilgili taraftan düşülür.
-  - Altta iki liste (kesilen / gelen): tarih, no, karşı taraf, matrah, KDV, tür; arama, Excel'e aktar, satır silme.
-  - Programdaki onaylı alış faturaları ve (e-Fatura no'su girilmiş) satış fişleriyle karşılaştırma: "XML'de olup programda olmayan"
-    ve tersi uyarısı. Grafik: son 12 ayın hesaplanan / indirilecek KDV'si.
-  - Not: ekran bilgi amaçlıdır; beyanname için mali müşavir kontrolü gerekir (KDV-2, ÖTV, istisnalar kapsanmaz).
-- **Kararlar (kullanıcı 24.11.2026):**
-  - **İndirilecek KDV (alış):** programdaki **alış faturalarından** alınır (kullanıcı alışları zaten giriyor / e-Fatura aktar ile
-    aktarıyor). KDV ekranında ayrıca alış XML yükleme alanı **yok**. Onaylı alış faturaları sayılır; dönemde taslak bekleyen
-    alış faturası varsa "sayılmadı" uyarısı ve bağlantısı gösterilir. İptal / silinen sayılmaz. Tarih: fatura tarihi.
-  - **Hesaplanan KDV (satış):** kullanıcı kestiği faturaların XML'ini **haftalık ya da günlük** yükler; ekran her yüklemede
-    güncel durumu gösterir. Yalnız satış tarafında yükleme alanı. Aynı fatura tekrar yüklenirse sayılmaz (ETTN); son yükleme
-    tarihi ve "en son fatura tarihi" görünür ("… tarihine kadar yüklendi").
-  - Varsayım (kullanıcı cevaplamadı): yüklenen satış XML'leri yalnız KDV kaydı olur, satış fişi / cari / stok oluşturmaz.
+### 1. KDV durumu ekranı: "bu ay KDV çıkacak mı?" (24.11.2026, sade hâli)
+- Kullanıcı: alış ve kestiği faturalara göre KDV durumunu görmek istiyor; sonra netleştirdi: **"hiçbir yedekleme (kayıt) yapmasın,
+  sadece o ay KDV çıkacak mı çıkmayacak mı o önemli"**.
+- Tasarım (Finans → **KDV durumu**), sade:
+  - Ay seçimi (varsayılan: bu ay).
+  - **İndirilecek KDV:** programdaki o ayın **onaylı alış faturalarından** (fatura tarihine göre). Taslak bekleyen alış varsa
+    "x taslak alış faturası sayılmadı" uyarısı + bağlantı.
+  - **Hesaplanan KDV:** kullanıcı o ayın kestiği faturaların XML'ini (ya da zip) yükler; sunucuda **yalnız bellekte okunur,
+    hiçbir şey kaydedilmez** (ne dosya ne fatura özeti). Her seferinde ayın tüm satış XML'leri birlikte yüklenir (haftalık /
+    günlük güncel durum için o güne kadarki hepsi). Aynı fatura iki kez gelirse bir kez sayılır (ETTN); seçilen ayın dışındaki
+    faturalar ayrıca belirtilip sayılmaz; satıcı VKN firmanınki değilse uyarı. İADE faturaları hesaplanandan düşülür;
+    tevkifatlı satışta yalnız firmanın beyan edeceği kısım sayılır.
+  - **Önceki aydan devreden KDV:** elle girilen kutu (yalnız bu tarayıcıda hatırlanır; sunucuya yazılmaz).
+  - **Sonuç** büyük ve net: **"Bu ay KDV ÇIKIYOR — ödenecek ≈ X ₺"** ya da **"Bu ay KDV ÇIKMIYOR — sonraki aya devreden ≈ Y ₺"**.
+    Altında üç satır: hesaplanan, indirilecek, devreden; KDV oranına göre küçük döküm (satış / alış). Ekstra liste, grafik yok.
+  - Not satırı: bilgi amaçlıdır; kesin tutar için mali müşavir.
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
