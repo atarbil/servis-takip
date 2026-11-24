@@ -4,7 +4,16 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Satış fişi: "Tür" sütunu kalksın; "+ Satır" yanında "+ İşçilik / + Eğitim / + Hizmet" (24.11.2026)
+Kullanıcı: "Satış fişinde türü kaldıralım, + Satır'ın yanına işçilik / eğitim / hizmet diye 3 başlık açalım."
+Yorum (tüm kalemler kartlı kuralıyla uyumlu):
+- Kalem tablosundaki **"Tür" sütunu kaldırılır** (fiş ekranında ve yazdırmada yok).
+- Hizmet kartlarına **hizmet grubu** eklenir: **İşçilik · Eğitim · Hizmet** (ürün kartı formunda Tür = Hizmet seçilince görünür).
+- Kalem araç çubuğunda **"+ Satır"ın yanında üç düğme: "+ İşçilik", "+ Eğitim", "+ Hizmet"**. Her biri yeni satır açar ve
+  ürün kutusunda **yalnız o gruptaki hizmet kartlarını** listeler (boşken hepsi, yazınca süzülür). Listede yoksa
+  "yeni kart aç" penceresi **Tür = Hizmet ve o grup seçili** gelir.
+- "+ Satır" her şeyi (ürün + hizmet) aramaya devam eder.
+- Aynı düğmeler teklif ekranında da (alışta hizmet nadir, eklenmez) — kullanıcıya teyit edilecek.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
