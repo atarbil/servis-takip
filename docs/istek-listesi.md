@@ -4,7 +4,19 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-_(şu an bekleyen istek yok)_
+### 1. Satış fişi: bulunamayan ürün için "yeni stok kartı açılsın mı?" (24.11.2026)
+- Satış fişinde ürün hücresine bir ad yazılıp stokta eşleşen ürün yoksa (Enter / hücreden çıkınca) sorulsun:
+  **"'…' stokta bulunamadı. Yeni stok kartı açılsın mı?"** — Evet: ürün kartı penceresi yazılan adla dolu açılır (birim, KDV, satış
+  fiyatı, barkod sorulur); kaydedince satıra o ürün bağlanır, fiyatı gelir. Hayır: satır stoksuz serbest açıklama olarak kalır
+  (bugünkü gibi) ya da yazı silinir — iki seçenek pencerede.
+- Aynı davranış alış faturası ve teklif ekranındaki ürün hücresinde de (tutarlılık için).
+- Barkod okutulup bulunamazsa da aynı soru (barkod alanı dolu gelir).
+
+### 2. Satış fişi: Enter ile yeni satır açılması onaya bağlı olsun (24.11.2026)
+- Bugün: birim fiyat → Enter → miktar → Enter (son hücre) yeni satırı **kendiliğinden** açıyor.
+- İstenen: tablonun **sağ üst köşesinde onay kutusu**: **"☐ Enter ile yeni satır aç"**. İşaretli değilse son hücrede Enter
+  yeni satır açmaz (odak satırda kalır / Kaydet'e geçmez); yeni satır "+ Satır" ya da Ctrl+Insert ile açılır. İşaretliyse bugünkü gibi.
+- Seçim kullanıcıya göre hatırlansın (her açılışta sıfırlanmasın). Alış ve teklif ekranlarında da aynı kutu.
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
