@@ -21,6 +21,19 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
   cari (ara ya da telefondan bulunur), öncelik. Varsayılan: iş **havuza** düşer, yöneticiye bildirim (Telegram açıksa). İsteğe bağlı
   "Bu işi ben yapıyorum" → kendi ekibine bugün planlanır. Teknisyen fiyat / cari bakiye görmez (mevcut kural).
 
+### 3. İşe dükkandan verilen malzeme + sahada ilave malzeme (24.11.2026)
+- Kullanıcı: "İş eklerken eksik gördüm: personel kamera kurmaya gidecek, biz ona dükkandan malzeme veriyoruz; neyi yapmaya gidecekse
+  ana malzemeler zaten veriliyor. Ekip sahada ilave malzeme kullanması durumunda malzeme ekleyecek. Buna dair bir düzenleme."
+- Öneri:
+  - İş ekleme / iş kartı / planlama penceresinde **"Verilen malzeme"** bölümü: ofis, ekibe dükkandan verilen ana malzemeleri stok
+    kartından seçer (miktar). "Malzemeyi teslim ettim" ile **stoktan düşer** (iş üzerinde "verildi" görünür).
+  - Teknisyen ekranında iki bölüm: **"Size verilen malzeme"** (salt okunur liste; her kalemde "kullanılmadı / iade" miktarı
+    girilebilir) ve **"İlave malzeme"** (bugünkü gibi barkod / ara ile ekler, stoktan düşer).
+  - İş tamamlanınca satış fişine: verilen − iade + ilave kalemler gider (fiyat ofiste). İade edilen miktar stoğa geri girer
+    (ofis "iade alındı" onayıyla ya da iş kapanınca).
+  - İş kartında ve fişte kalemler etiketli: "Verilen" / "İlave"; ofis için "verilen ama işte kullanılmayan" farkı görünür.
+  - Teknisyen yalnız miktar görür, fiyat / maliyet görmez (mevcut kural).
+
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
