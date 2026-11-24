@@ -68,6 +68,26 @@ async function giris(s) {
   kontrol('Bilgisayarda "+ Yeni cari" yerinde', await m.isVisible('.sayfa-ust .btn.birincil'));
   kontrol('Bilgisayarda filtreler açık', await m.isVisible('.filtre select'));
 
+  // Üst çubuk "+ Satış fişi": cari seç → taslak fiş açılır, imleç ilk satırın ürün kutusunda
+  kontrol('"+ Satış fişi" düğmesi "+ İş ekle"nin yanında', await m.isVisible('#btn-fis') && (await m.textContent('#btn-fis')).includes('Satış fişi'));
+  await m.click('#btn-fis'); await m.waitForSelector('dialog[open] #yf-cari');
+  await m.keyboard.press('Escape'); // açılan cari listesini kapat
+  await m.click('dialog[open] button[type=submit]');
+  kontrol('Cari seçmeden fiş açılmaz', (await m.textContent('dialog[open] .pencere-hata')).includes('cari'));
+  await m.fill('dialog[open] #yf-cari', 'ahmet'); await m.waitForSelector('.secici-liste .secici-oge[data-i]');
+  await m.keyboard.press('Enter');
+  await m.click('dialog[open] button[type=submit]');
+  await m.waitForURL(/#\/fis\/\d+/); await m.waitForSelector('tr[data-i="0"] .urun-ara');
+  await m.waitForTimeout(200);
+  kontrol('Fiş açıldı, imleç ilk satırın ürün kutusunda', await m.evaluate(() => document.activeElement?.classList.contains('urun-ara')));
+  kontrol('Fişin carisi seçilen cari', (await m.inputValue('#f-cari')).toLowerCase().includes('ahmet'));
+  // Cari kartındayken o cari hazır gelir
+  const cid = await m.evaluate(async () => (await (await fetch('/api/cariler', { headers: { 'x-istek': '1' } })).json())[0].id);
+  await m.goto(`${T}/#/cari/${cid}`); await m.waitForTimeout(600);
+  await m.click('#btn-fis'); await m.waitForSelector('dialog[open] #yf-cari');
+  kontrol('Cari kartındayken cari hazır seçili', (await m.inputValue('dialog[open] #yf-cari')).length > 0);
+  await m.click('dialog[open] .vazgec');
+
   await tarayici.close();
   console.log(hata ? `MOBİL TEST: ${hata} HATA` : 'MOBİL TEST BAŞARILI');
   process.exit(hata ? 1 : 0);

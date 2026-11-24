@@ -283,6 +283,9 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   let secimYapildi = false;
   input.addEventListener('input', () => { yazildi = true; secimYapildi = false; yukleniyor = true; enterBekliyor = false; clearTimeout(zmn); zmn = setTimeout(yukle, 180); });
   input.addEventListener('focus', () => { yazildi = false; yukle(); });
+  // Zaten odaktaysa (pencere açılınca kendiliğinden odaklanan kutu) ya da kapalıyken tıklanınca listeyi aç
+  input.addEventListener('mousedown', () => { if (document.activeElement === input && !acik()) yukle(); });
+  if (document.activeElement === input) setTimeout(yukle, 0);
   const enSon = () => ogeler.length - ((yeni || (bulunamadi && input.value.trim())) ? 0 : 1);
   input.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' && e.altKey) { yazildi = true; if (!acik()) yukle(); e.preventDefault(); return; }
@@ -293,7 +296,7 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
     else if (e.key === 'Enter' && aktif === ogeler.length && (yeni || bulunamadi)) { e.preventDefault(); yeniSec(); }
     else if (e.key === 'Enter' && aktif >= 0 && aktif < ogeler.length) { e.preventDefault(); secildi(ogeler[aktif]); }
     else if (e.key === 'Enter' && yazildi && bulunamadi && input.value.trim()) { e.preventDefault(); bulunamadiSor(); }
-    else if (e.key === 'Escape') { kapat(); e.stopPropagation(); }
+    else if (e.key === 'Escape') { kapat(); e.preventDefault(); e.stopPropagation(); } // pencereyi kapatmasın, yalnız listeyi
   });
   const secildi = (o) => { kapat(); secimYapildi = true; sonaEkle(o); sec(o, input); };
   // "+ Yeni …": yeni kayıt penceresi; kaydedilirse seçilmiş sayılır

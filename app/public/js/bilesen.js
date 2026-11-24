@@ -489,3 +489,29 @@ export function belgeUst(ctx, baslik, sag = '') {
 
 export const tabloBos = (metin, kolon = 1) => html`<tr><td colspan="${kolon}" class="bos-durum">${metin}</td></tr>`;
 export { esc };
+
+// ---------- Yeni satış fişi (üst çubuktaki "+ Satış fişi" ve fiş listesi) ----------
+// Cari seçilir → taslak fiş oluşur → fiş ekranı ilk kalem satırı hazır açılır. cari: hazır seçili cari (cari kartındayken)
+export async function yeniSatisFisi(ctx, { cari = null } = {}) {
+  let secilen = cari;
+  const bugun = bugunStr();
+  const r = await pencere({
+    baslik: 'Yeni satış fişi', kaydetMetin: 'Fişi aç',
+    icerik: html`<label class="alan"><span>Cari *</span><input id="yf-cari" value="${cari?.unvan || ''}" placeholder="Müşteri ara… (ünvan, telefon)" autofocus></label>
+      <label class="alan"><span>Tarih</span><input type="date" name="tarih" value="${bugun}"></label>
+      <p class="soluk" style="margin:.2rem 0 0;font-size:.85rem">Doğrudan / tezgâh satışı içindir. İşe bağlı fiş iş detayından oluşturulur.</p>`,
+    acildi: (d) => {
+      const i = $('#yf-cari', d);
+      cariSecici(i, (c) => { secilen = c; i.value = c.unvan; });
+      i.addEventListener('input', () => { secilen = null; });
+      if (cari) setTimeout(() => d.querySelector('button[type=submit]')?.focus(), 50);
+    },
+    kaydet: async (v) => {
+      if (!secilen) throw new Error('Listeden bir cari seçin (yoksa "+ Yeni cari" ile açın).');
+      return api.post('/fisler', { cari_id: secilen.id, tarih: v.tarih || bugun });
+    },
+  });
+  if (!r?.id) return;
+  try { sessionStorage.setItem('fis-ilk-satir', String(r.id)); } catch { /* */ }
+  ctx.git(`fis/${r.id}`);
+}

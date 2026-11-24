@@ -1,6 +1,6 @@
 import { api } from '../api.js';
 import { html, $, para, tarih, durumRozet, debounce, csvIndir, pencere, bugunStr } from '../ui.js';
-import { cariSecici, cariYeniYakala } from '../bilesen.js';
+import { cariSecici } from '../bilesen.js';
 
 export default async function (el, _p, ctx) {
   ctx.baslik('Satış Fişleri');
@@ -35,18 +35,7 @@ export default async function (el, _p, ctx) {
   $('#bit', el).onchange = (e) => { f.bit = e.target.value; ciz(); };
   $('#csv', el).onclick = () => csvIndir('satis-fisleri', ['Fiş no', 'Tarih', 'Cari', 'Durum', 'KDV hariç', 'KDV', 'Genel toplam', 'Maliyet', 'Kâr'],
     veri.map((x) => [x.fis_no, tarih(x.tarih), x.unvan, x.durum, Number(x.ara_toplam), Number(x.kdv_toplam), Number(x.genel_toplam), Number(x.maliyet_toplam), Number(x.kar)]));
-  $('#yeni', el).onclick = async () => {
-    let secilen = null;
-    const r = await pencere({
-      baslik: 'Yeni satış fişi',
-      icerik: html`<p class="soluk" style="margin-top:0">İşe bağlı fişler iş detayından oluşturulur. Buradan tezgâhtan / doğrudan satış fişi açabilirsiniz.</p>
-        <label class="alan"><span>Cari *</span><input id="c" placeholder="Ara…" autofocus></label>`,
-      acildi: (d) => { const i = $('#c', d); const s = (c) => { secilen = c; i.value = c.unvan; }; cariSecici(i, s); cariYeniYakala(d, s); },
-      kaydetMetin: 'Fişi oluştur',
-      kaydet: async () => { if (!secilen) throw new Error('Cari seçin.'); return api.post('/fisler', { cari_id: secilen.id }); },
-    });
-    if (r) ctx.git(`fis/${r.id}`);
-  };
+  $('#yeni', el).onclick = async () => { const { yeniSatisFisi } = await import('../bilesen.js'); yeniSatisFisi(ctx); };
   el.addEventListener('click', (e) => { const t = e.target.closest('[data-git]'); if (t) ctx.git(t.dataset.git); });
   await ciz();
 }

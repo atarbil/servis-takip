@@ -77,8 +77,8 @@ const kontrol = (ad, ok, ek) => { console.log(ok ? 'OK  ' : 'HATA', ad, ok ? '' 
   await grupAc('Renk, yazı ve logo');
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAIAAAAt/+nTAAAAOUlEQVR42u3OMQ0AAAgDsM2/aDDBRUjrtJl6AQICAgICAgICAgICAgICAgICAgICAgICAgICAgICgkUDPV8BIVsECpEAAAAASUVORK5CYII=', 'base64');
   await s.setInputFiles('[data-gorsel=logo]', { name: 'logo.png', mimeType: 'image/png', buffer: png });
-  await s.waitForSelector('.fm-kagit [data-logo-boyut]', { timeout: 5000 });
-  kontrol('Şablona özel logo yüklendi', !!(await s.$('.fm-kagit [data-logo] img[src*="/dosya/sablon/"]')));
+  const ozelLogo = await s.waitForSelector('.fm-kagit [data-logo] img[src*="/dosya/sablon/"]', { timeout: 8000 }).catch(() => null);
+  kontrol('Şablona özel logo yüklendi', !!ozelLogo);
   const logo = await s.$('.fm-kagit [data-logo]');
   if (logo) {
     const g0 = await logo.evaluate((e) => e.offsetWidth);

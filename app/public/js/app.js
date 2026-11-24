@@ -392,6 +392,7 @@ function kabukCiz() {
         </nav>
         <span class="bosluk"></span>
         <div class="kur-kutu" id="kur" hidden></div>
+        <button class="btn birincil" id="btn-fis" title="Yeni satış fişi"><span class="uzun">+ Satış fişi</span><span class="kisa" aria-hidden="true">🧾</span></button>
         <button class="btn birincil" id="btn-hizli">+ İş ekle</button>
         ${kullaniciGrup('yalniz-masa')}
       </header>
@@ -404,6 +405,14 @@ function kabukCiz() {
     $('#btn-hizli').onclick = async () => {
       const { hizliIs } = await import('./sayfa/havuz.js');
       hizliIs(ctx);
+    };
+    $('#btn-fis').onclick = async () => {
+      const { yeniSatisFisi } = await import('./bilesen.js');
+      // Cari kartındaysak o cari hazır gelsin
+      const m = location.hash.match(/^#\/cari\/(\d+)/);
+      let cari = null;
+      if (m) { try { cari = await api.get(`/cariler/${m[1]}`); } catch { /* */ } }
+      yeniSatisFisi(ctx, { cari });
     };
   }
   $$('#btn-cikis, [data-cikis]').forEach((b) => { b.onclick = cikis; });

@@ -352,6 +352,11 @@ export default async function (el, [id], ctx) {
   const hashDinle = () => { if (!document.body.contains(el)) { window.removeEventListener('beforeunload', ayrilma); window.removeEventListener('hashchange', hashDinle); } };
   window.addEventListener('hashchange', hashDinle);
 
+  // Üst çubuktaki "+ Satış fişi" ile yeni açıldıysa ilk kalem satırı hazır, imleç ürün kutusunda
+  let ilkSatir = false;
+  try { ilkSatir = sessionStorage.getItem('fis-ilk-satir') === String(f.id); sessionStorage.removeItem('fis-ilk-satir'); } catch { /* */ }
+  if (ilkSatir && f.durum === 'taslak' && !satirlar.length) satirlar.push(bosSatir());
   ciz();
+  if (ilkSatir) setTimeout(() => $('tr[data-i="0"] .urun-ara', el)?.focus(), 60);
   void tarih;
 }

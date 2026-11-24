@@ -4,13 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Üst çubukta "+ Satış fişi" düğmesi (24.11.2026)
-Kullanıcı: "İş ekle butonunun yanına satış fişi butonu ekleyelim, aynı şekilde."
-- Sağ üstte **"+ İş ekle"nin yanında aynı görünümde "+ Satış fişi"** düğmesi (yalnız yönetici; her sayfadan erişilir).
-- Tıklayınca "+ İş ekle" gibi küçük bir pencere: **Cari** seçimi (yeni açılır listeyle; "+ Yeni cari" dahil), isteğe bağlı tarih.
-  "Fişi aç" → taslak satış fişi oluşur ve fiş ekranı açılır, imleç ilk kalem satırında (ürün yazmaya hazır).
-- Bulunduğunuz sayfa bir cari kartıysa o cari hazır seçili gelir.
-- Telefonda üst çubuğa sığmazsa düğme simgeye (🧾) dönüşür; ikisi de üst çubukta kalır.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -19,6 +13,13 @@ Kullanıcı: "İş ekle butonunun yanına satış fişi butonu ekleyelim, aynı 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 18. derleme: Üst çubukta "+ Satış fişi"
+- Sağ üstte "+ İş ekle"nin yanında aynı görünümde **"+ Satış fişi"** (yönetici). Pencere: cari (açılır liste, "+ Yeni cari") ve tarih;
+  **Fişi aç** → taslak fiş açılır, ilk kalem satırı hazır, imleç ürün kutusunda. Cari kartındayken o cari seçili gelir.
+  Dar ekranda düğme 🧾 simgesine dönüşür. Fiş listesindeki "+ Yeni fiş" de aynı pencereyi kullanır.
+- Açılır listeler: pencere açılınca kendiliğinden odaklanan kutuda liste hemen açılır (son kullanılanlar); **Esc yalnız listeyi
+  kapatır**, pencereyi kapatmaz.
 
 ### 24.11.2026 — 17. derleme: Cari / ürün açılır listeleri
 - Liste artık **üst katmanda** açılıyor: kalem tablosunun ya da pencerenin içinde kesilmiyor; kutunun hemen altında (yer yoksa
