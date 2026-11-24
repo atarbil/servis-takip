@@ -132,7 +132,7 @@ const kontrol = (ad, ok, ek) => { console.log(ok ? 'OK  ' : 'HATA', ad, ok ? '' 
 
   // Varsayılan yap + yazdırmada kullanılır
   await api('POST', `/sablonlar/${id}/varsayilan`);
-  const pf = (await api('POST', '/teklifler', { tur: 'teklif', cari_id: (await api('GET', '/cariler')).veri[0].id, tarih: '2026-11-22', satirlar: [{ aciklama: 'Test ürün', miktar: 2, birim: 'adet', birim_fiyat: 100, kdv_orani: 20 }] })).veri;
+  const pf = (await api('POST', '/teklifler', { tur: 'teklif', cari_id: (await api('GET', '/cariler')).veri[0].id, tarih: '2026-11-22', satirlar: [{ urun_id: (await api('POST', '/urunler', { ad: 'Test ürün' })).veri.id, aciklama: 'Test ürün', miktar: 2, birim: 'adet', birim_fiyat: 100, kdv_orani: 20 }] })).veri;
   await s.goto(`${T}/#/teklif/${pf.id}`); await s.waitForSelector('[data-a=yazdir]');
   await s.click('[data-a=yazdir]');
   await s.waitForSelector('dialog[open] [name=sablon]');

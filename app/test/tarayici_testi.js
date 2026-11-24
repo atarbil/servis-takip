@@ -244,7 +244,21 @@ async function sec(p, inputSec, metin, secim) {
   await y.waitForSelector('.bildirim >> text=Ürün onaylandı');
   await y.goBack();
   await y.waitForSelector('#satirlar');
-  await y.click('[data-ekle=iscilik]');
+  // İşçilik de kartlı kalem: yazılan ad stokta yoksa "yeni stok kartı açılsın mı?" sorulur → Hizmet kartı açılır
+  await y.click('[data-ekle=urun]');
+  await y.fill('tr[data-i]:last-child .urun-ara', 'Montaj işçiliği');
+  await y.waitForTimeout(400);
+  await y.click('#f-tarih');
+  await y.waitForSelector(`${pen} >> text=stokta bulunamadı`);
+  ok('Stokta olmayan ad yazılınca "yeni stok kartı açılsın mı?" soruldu');
+  await penKaydet(y);
+  await y.waitForSelector(`${pen} [name=tur]`);
+  await y.selectOption(`${pen} [name=tur]`, 'hizmet');
+  await y.fill(`${pen} [name=birim]`, 'saat');
+  await y.fill(`${pen} [name=onerilen_satis]`, '1.500');
+  await penKaydet(y);
+  await y.waitForSelector('tr[data-i]:last-child .urun-adi >> text=Montaj işçiliği');
+  ok('Hizmet kartı açıldı ve satıra bağlandı');
   await y.fill('tr[data-i]:last-child [data-k=birim_fiyat]', '1.500');
   await y.waitForTimeout(200);
   const toplam = await y.locator('#toplam .genel').innerText();

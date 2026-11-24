@@ -41,9 +41,10 @@ export default async function (el, [id], ctx) {
   // Excel gibi klavye ile gezinme (yeniden çizimde odak korunur)
   let izgara = null;
   function ciz() { const o = izgara?.odakNe(); cizIc(); if (o) izgara.odakla(o); }
+  const enterYeniSatir = () => { try { return localStorage.getItem('enterYeniSatir') === '1'; } catch { return false; } };
   const bosSatir = () => ({ urun_id: null, aciklama: '', miktar: 1, birim: 'adet', birim_fiyat: 0, iskonto_orani: 0, kdv_orani: 20 });
   izgara = izgaraBagla(el, {
-    yeniSatir: () => { satirlar.push(bosSatir()); degisti = true; ciz(); },
+    yeniSatir: () => { if (!enterYeniSatir()) return false; satirlar.push(bosSatir()); degisti = true; ciz(); return true; },
     satirSil: (i) => { satirlar.splice(i, 1); degisti = true; ciz(); },
     satirEkle: (i) => { satirlar.splice(i, 0, bosSatir()); degisti = true; ciz(); },
     kisayollar: {
@@ -95,12 +96,13 @@ export default async function (el, [id], ctx) {
       </div></div>
 
       <div class="kart"><div class="kart-ust"><h3>Kalemler</h3><span class="bosluk"></span>
-        ${ac ? html`<label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatları KDV dahil gir</label>` : ''}</div>
-        <div class="tablo-kap fis-tablo-kap"><table class="tablo fis-satirlar"><thead><tr><th>Ürün / açıklama</th><th class="sayi">Miktar</th><th>Birim</th>
+        ${ac ? html`<label class="kutu-sec enter-yeni" style="margin:0 .8rem 0 0" title="İşaretliyse son hücrede Enter yeni satır açar"><input type="checkbox" id="enter-yeni-satir" ${enterYeniSatir() ? 'checked' : ''}> Enter ile yeni satır aç</label>
+          <label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatları KDV dahil gir</label>` : ''}</div>
+        <div class="tablo-kap fis-tablo-kap"><table class="tablo fis-satirlar"><thead><tr><th>Ürün / hizmet</th><th class="sayi">Miktar</th><th>Birim</th>
           <th class="sayi">Birim fiyat${t.doviz !== 'TRY' ? ` (${t.doviz})` : ''} ${kdvDahil && ac ? '(KDV dahil)' : '(KDV hariç)'}</th><th class="sayi">İsk.%</th><th class="sayi">KDV%</th><th class="sayi">Tutar</th>${ac ? html`<th></th>` : ''}</tr></thead>
           <tbody>${satirlar.map((s, i) => (ac ? html`<tr data-i="${i}">
             <td style="min-width:260px">${s.urun_id ? html`<div><b>${s.aciklama}</b> <button type="button" class="btn-metin" style="color:var(--ana);font-size:.82rem" data-urun-degistir="${i}">değiştir</button></div>`
-              : html`<input data-k="aciklama" class="urun-ara" value="${s.aciklama || ''}" placeholder="Ürün ara veya serbest açıklama yazın…">`}
+              : html`<input data-k="aciklama" class="urun-ara" value="${s.aciklama || ''}" placeholder="Ürün / hizmet ara… (ad, kod, model)">`}
               <input data-k="notu" value="${s.notu || ''}" placeholder="Not: model, garanti, teslim süresi…" style="margin-top:.3rem;font-size:.86rem;min-height:32px"></td>
             <td><input class="s-mik sayi" data-k="miktar" inputmode="decimal" value="${sayiGiris(s.miktar)}"></td>
             <td><input class="s-birim" data-k="birim" value="${s.birim || 'adet'}"></td>
@@ -114,7 +116,7 @@ export default async function (el, [id], ctx) {
           ${!satirlar.length ? html`<tr><td colspan="8" class="bos-durum">Kalem ekleyin</td></tr>` : ''}</tbody></table></div>
         ${ac ? html`<div class="kart-govde btn-grup" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil kucuk" data-ekle>+ Kalem</button><button class="btn ikincil kucuk" data-stok-listesi>📦 Stok listesi</button>
           <button class="btn ikincil kucuk" data-barkod>📷 Barkodla ürün</button>
-          <span class="soluk" style="font-size:.84rem">Listeden ürün seçebilir veya stokta olmayan bir kalemi serbest yazabilirsiniz.</span></div><div class="fatura-ipucu">⌨️ ${KISAYOL_YARDIM}</div>` : ''}</div>
+          <span class="soluk" style="font-size:.84rem">Her kalem bir stok kartı olmalı. Stokta olmayan bir ad yazarsanız yeni kart açmanız istenir.</span></div><div class="fatura-ipucu">⌨️ ${KISAYOL_YARDIM}</div>` : ''}</div>
       <div class="kart"><div class="kart-govde"><div class="toplam-kutu" id="toplam"></div></div></div>
       ${t.id ? html`<div class="btn-grup" style="justify-content:flex-end">${t.durum !== 'iptal' && !t.fis_id ? html`<button class="btn tehlike-cizgi" data-a="iptal">Belgeyi iptal et</button>` : ''}
         <button class="btn tehlike-cizgi" data-a="sil" title="Sil (30 gün geri alınabilir)">🗑 Sil</button></div>` : ''}`);
@@ -129,8 +131,9 @@ export default async function (el, [id], ctx) {
         if (!Number(satirlar[i].birim_fiyat) && u.onerilen_satis) satirlar[i].birim_fiyat = urunBelgeFiyati(u);
         degisti = true; ciz();
         setTimeout(() => $(`tr[data-i="${i}"] [data-k=miktar]`, el)?.select(), 30);
-      });
+      }, { bulunamadi: true, iptal: () => { satirlar[i].aciklama = ''; ciz(); } });
     });
+    $('#enter-yeni-satir', el).onchange = (e) => { try { localStorage.setItem('enterYeniSatir', e.target.checked ? '1' : '0'); } catch { /* */ } };
     $('#kdv-dahil', el).onchange = (e) => { kdvDahil = e.target.checked; try { localStorage.setItem('kdvDahil', kdvDahil ? '1' : '0'); } catch { /* */ } ciz(); };
   }
   function toplamCiz() {
@@ -182,7 +185,9 @@ export default async function (el, [id], ctx) {
   async function kaydet() {
     if (!cari) throw new Error('Cari seçin.');
     if (!satirlar.length) throw new Error('En az bir kalem ekleyin.');
-    for (const s of satirlar) if (!String(s.aciklama || '').trim()) throw new Error('Açıklaması boş kalem var.');
+    satirlar = satirlar.filter((s) => s.urun_id || String(s.aciklama || '').trim());
+    if (!satirlar.length) throw new Error('En az bir kalem ekleyin.');
+    for (const s of satirlar) if (!s.urun_id) throw new Error(`"${s.aciklama}" bir stok kartına bağlı değil. Listeden seçin ya da yeni stok kartı açın.`);
     const govde = { tur: t.tur, cari_id: cari.id, tarih: t.tarih, gecerlilik: t.gecerlilik || null, giris_metni: t.giris_metni, kapanis_metni: t.kapanis_metni,
       aciklama: t.aciklama, kase_imza: t.kase_imza, doviz: t.doviz || 'TRY', kur: t.kur, tl_karsilik_goster: !!t.tl_karsilik_goster,
       satirlar: satirlar.map((s) => ({ urun_id: s.urun_id || null, aciklama: s.aciklama, notu: s.notu, miktar: s.miktar, birim: s.birim, birim_fiyat: s.birim_fiyat, iskonto_orani: s.iskonto_orani, kdv_orani: s.kdv_orani })) };
@@ -222,7 +227,11 @@ export default async function (el, [id], ctx) {
         const v = satirlar.find((s) => s.urun_id === u.id);
         if (v) v.miktar = Number(v.miktar) + 1; else satirlar.push({ urun_id: u.id, aciklama: u.ad, miktar: 1, birim: u.birim, birim_fiyat: urunBelgeFiyati(u), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) });
         degisti = true; ciz();
-      } catch (err) { bildir(err.message, 'hata'); }
+      } catch {
+        const { urunBulunamadi } = await import('../bilesen.js');
+        const u = await urunBulunamadi('', { barkod: b });
+        if (u) { satirlar.push({ urun_id: u.id, aciklama: u.ad, miktar: 1, birim: u.birim, birim_fiyat: urunBelgeFiyati(u), iskonto_orani: 0, kdv_orani: Number(u.kdv_orani ?? 20) }); degisti = true; ciz(); }
+      }
       return;
     }
     if (e.target.closest('[data-tcmb]')) { t.kur = kurDegeri(piyasa, t.doviz); degisti = true; return ciz(); }

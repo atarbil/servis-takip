@@ -50,11 +50,14 @@ const kontrol = (ad, kosul, ek) => { if (kosul) console.log('OK  ', ad); else { 
   await tus('Escape'); o = await odak();
   kontrol('Esc hücreyi geri aldı', o.k === 'iskonto_orani' && o.v === '', o);
   await p.keyboard.type('10');
-  // Son hücrede (KDV) Enter -> yeni satır
+  // Son hücrede (KDV) Enter: "Enter ile yeni satır aç" işaretsizken yeni satır AÇMAZ
+  kontrol('"Enter ile yeni satır aç" varsayılan kapalı', !(await p.isChecked('#enter-yeni-satir')));
   await tus('Enter', 'Enter'); o = await odak();
-  kontrol('Son hücrede Enter yeni satır açtı', o.i === '1' && o.k === 'tip', o);
-  await tus('ArrowRight'); o = await odak();
-  kontrol('Yeni satırda açıklama hücresi', o.k === 'aciklama' && o.i === '1', o);
+  kontrol('Kutu kapalıyken son hücrede Enter yeni satır açmadı', (await p.$$('tr[data-i]')).length === 1 && o.i === '0' && o.k === 'kdv_orani', o);
+  await p.check('#enter-yeni-satir');
+  await p.click('tr[data-i="0"] [data-k=kdv_orani]');
+  await tus('Enter'); o = await odak();
+  kontrol('Kutu açıkken son hücrede Enter yeni satır açtı, imleç ürün hücresinde', o.i === '1' && o.k === 'aciklama', o);
   await p.keyboard.type('klavye kablo', { delay: 20 });
   await p.waitForSelector('.secici-liste:not([hidden]) .secici-oge');
   await tus('Enter'); await p.waitForTimeout(250);

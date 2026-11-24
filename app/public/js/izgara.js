@@ -45,7 +45,7 @@ export function izgaraBagla(kok, { yeniSatir, satirSil, satirEkle, kisayollar = 
   async function sonrakiVeyaYeni(h) {
     if (git(h, 'sag')) return;
     if (!yeniSatir) return;
-    await yeniSatir();
+    if (await yeniSatir() === false) return; // yeni satır kapalı (ör. "Enter ile yeni satır aç" işaretsiz): hücrede kal
     const son = satirlar().at(-1);
     if (son) odakla(hucreler(son)[0]);
   }

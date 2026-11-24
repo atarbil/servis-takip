@@ -2,7 +2,7 @@
 const { zorunlu, metin, sayi, sec, setIfadesi, doviz, gorselKaydet } = require('../lib/yardim');
 const { kurGetir } = require('../lib/kur');
 
-const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'satis_doviz', 'kdv_orani', 'kritik_stok', 'aktif', 'raf_yeri'];
+const ALANLAR = ['kod', 'ad', 'marka', 'model', 'ana_grup', 'alt_grup', 'birim', 'onerilen_satis', 'satis_doviz', 'kdv_orani', 'kritik_stok', 'aktif', 'raf_yeri', 'tur'];
 
 module.exports = (r, { db, web, G, Y, AYAR }) => {
   const yon = (req) => req.kullanici.rol === 'yonetici';

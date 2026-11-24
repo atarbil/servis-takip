@@ -7,17 +7,15 @@ const { hizliIsEkle } = require('../lib/hizliis');
 async function fisSatirlariEkle(q, fisId, satirlar) {
   let sira = Number((await q.bir('SELECT coalesce(max(sira), -1) + 1 AS s FROM satis_fisi_satirlari WHERE fis_id = $1', [fisId])).s);
   for (const s of satirlar) {
-    const tip = ['urun', 'iscilik', 'hizmet'].includes(s.tip) ? s.tip : (s.urun_id ? 'urun' : 'hizmet');
-    let urun = null;
-    if (tip === 'urun') {
-      urun = await q.bir('SELECT id, ad, birim, kdv_orani, onerilen_satis FROM urunler WHERE id = $1', [s.urun_id]);
-      if (!urun) throw require('../lib/web').hata(400, 'Malzeme satırında ürün seçilmeli.');
-    }
+    // Her kalem stok kartına bağlı olmalı (ürün ya da hizmet kartı)
+    const urun = s.urun_id ? await q.bir('SELECT id, ad, birim, kdv_orani, onerilen_satis, tur FROM urunler WHERE id = $1', [s.urun_id]) : null;
+    if (!urun) throw require('../lib/web').hata(400, `"${metin(s.aciklama) || 'Boş satır'}" bir stok kartına bağlı değil. Listeden ürün seçin ya da yeni stok kartı açın.`, 'KART_YOK');
+    const tip = urun.tur === 'hizmet' ? 'hizmet' : 'urun';
     const fiyat = sayi(s.birim_fiyat, 'Fiyat');
     await q(`INSERT INTO satis_fisi_satirlari (fis_id, sira, tip, urun_id, aciklama, miktar, birim, birim_fiyat, iskonto_orani, kdv_orani, birim_maliyet, stoktan_dus)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, 0, true)`,
-    [fisId, sira++, tip, urun?.id || null, urun ? urun.ad : metin(s.aciklama), sayi(s.miktar, 'Miktar') || 1,
-      metin(s.birim) || urun?.birim || (tip === 'iscilik' ? 'saat' : 'adet'),
+    [fisId, sira++, tip, urun.id, urun.ad, sayi(s.miktar, 'Miktar') || 1,
+      metin(s.birim) || urun.birim || 'adet',
       fiyat ?? Number(urun?.onerilen_satis || 0),
       sayi(s.kdv_orani, 'KDV') ?? (urun ? Number(urun.kdv_orani) : 20)]);
   }

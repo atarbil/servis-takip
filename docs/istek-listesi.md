@@ -4,28 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Tüm kalemler stok kartlı olsun; açıklama (serbest metin) satırı hiçbir yerde olmasın (24.11.2026)
-Kullanıcı: "Stok kartı olmayan ürünü açıklama satırı olarak işlemesin. Satış fişine yazılan ya da müşteriye kayıt olarak işlenecek
-tüm kalemler stok olarak açılmak zorunda olsun. Açıklama olayı hiçbir yerde olmasın."
-- **Kural:** satış fişi, alış faturası, teklif / proforma, "✓ Teslim et / Tamamla", "+ İş ekle → İşi ben yaptım" satırları ve
-  iş malzemeleri — hepsinde her satır bir **stok kartına bağlı** olmak zorunda. Kartsız (yalnız yazı) satır kaydedilemez; hem ekranda
-  hem veritabanında (kayıt kuralı) engellenir.
-- **Bulunamayan ürün:** ürün hücresine yazılan ad stokta yoksa (Enter / hücreden çıkınca / barkod okutunca) sorulur:
-  **"'…' stokta bulunamadı. Yeni stok kartı açılsın mı?"** — **Evet:** ürün kartı yazılan adla (barkodla okutulduysa barkodla) dolu
-  açılır; birim, KDV, satış fiyatı girilip kaydedilince satıra bağlanır, fiyatı gelir. **Hayır:** yazı silinir, satır boş kalır
-  (açıklama satırı seçeneği yok).
-- **İşçilik / hizmet de kart olur:** ürün kartına **"Tür: Ürün / Hizmet"** eklenir. Hizmet kartı (ör. "Kamera montaj işçiliği",
-  "Servis ücreti") stok miktarı tutmaz, stok düşmez, kritik stok uyarısı vermez; ama fiyatı, KDV'si, raporlarda satış adedi/cirosu olur.
-  Satır tipi (ürün / işçilik / hizmet) seçimi kalkar; kartın türünden gelir.
-- **Satır notu** (seri no, garanti vb.) **kalır** — kartlı kalemin altına yazılan ek not (kullanıcı onayladı, 24.11.2026).
-- **Eski kayıtlar için düzeltme / dönüştürme yapılmayacak** (kullanıcı: test aşamasındayız, eski verileri en sonda silecek).
-  Kural yalnız yeni kayıt ve düzenlemelerde uygulanır; veritabanı kuralı eski satırlara dokunmaz.
-
-### 2. Satış fişi: Enter ile yeni satır açılması onaya bağlı olsun (24.11.2026)
-- Bugün: birim fiyat → Enter → miktar → Enter (son hücre) yeni satırı **kendiliğinden** açıyor.
-- İstenen: tablonun **sağ üst köşesinde onay kutusu**: **"☐ Enter ile yeni satır aç"**. İşaretli değilse son hücrede Enter
-  yeni satır açmaz (odak satırda kalır / Kaydet'e geçmez); yeni satır "+ Satır" ya da Ctrl+Insert ile açılır. İşaretliyse bugünkü gibi.
-- Seçim kullanıcıya göre hatırlansın (her açılışta sıfırlanmasın). Alış ve teklif ekranlarında da aynı kutu.
+_(şu an bekleyen istek yok)_
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
@@ -34,6 +13,23 @@ tüm kalemler stok olarak açılmak zorunda olsun. Açıklama olayı hiçbir yer
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 16. derleme: Kartlı kalemler, yeni satır onayı
+- **Her kalem stok kartlı:** satış fişi, teklif / proforma, alış faturası, "Teslim et / Tamamla" ve "İşi ben yaptım" satırlarında
+  serbest açıklama satırı kalktı. Kartsız satır ekranda kaydedilmez; sunucu ve veritabanı da reddeder (KART_YOK). Eski kayıtlara dokunulmadı.
+- **Bulunamayan ürün:** yazılan ad listede yoksa Enter'da ya da kutudan çıkınca **"… stokta bulunamadı. Yeni stok kartı açılsın mı?"**
+  sorulur; benzer kartlar düğme olarak gösterilir (tıklayınca o seçilir). "+ Yeni stok kartı aç" yazılan adla kart formunu açar,
+  kaydedince satıra bağlanır. Vazgeç: yazı silinir. Açılır listede de en altta **"+ '…' için yeni stok kartı aç"** seçeneği var
+  (↓ ile gelinip Enter). Barkod bulunamazsa aynı soru, barkod kartta hazır.
+- **Hizmet kartı:** ürün kartında **Tür: Ürün (stoklu) / Hizmet - işçilik (stok tutulmaz)**. Hizmet kartı stok miktarı tutmaz,
+  stok hareketi oluşmaz; alışta son alış fiyatı maliyet olur; fişte satır türü karttan gelir. Ürün listesinde "hizmet" rozeti.
+  Fişteki satır türü seçimi ve "+ İşçilik / + Hizmet" düğmeleri kalktı (Tür sütunu karttan).
+- **Satır notu** (seri no, garanti…) kalemin altında kalmaya devam ediyor.
+- **"Enter ile yeni satır aç"** onay kutusu (satış fişi, teklif, alış — kalem tablosunun sağ üstünde). Varsayılan **kapalı**:
+  son hücrede Enter yeni satır açmaz, imleç hücrede kalır; yeni satır "+ Satır" / Ctrl+Insert ile. İşaretlenirse eski davranış.
+  Seçim tarayıcıda hatırlanır.
+- Testler güncellendi: API (kartsız satır reddi, hizmet kartı stok tutmaz), tarayıcı (stokta olmayan ad → kart aç → hizmet kartı),
+  klavye (kutu kapalı/açık Enter davranışı).
 
 ### 23.11.2026 — 15. derleme: Form tasarımında sabit yazılar
 - **Belge başlığı önizlemede tıklanıp yazılır** (PROFORMA FATURA, TAHSİLAT MAKBUZU…); Enter ile biter, boş bırakılırsa varsayılana döner.

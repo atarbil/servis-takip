@@ -38,9 +38,10 @@ export default async function (el, [id], ctx) {
   // Excel gibi klavye ile gezinme (yeniden çizimde odak korunur)
   let izgara = null;
   function ciz() { const o = izgara?.odakNe(); cizIc(); if (o) izgara.odakla(o); }
+  const enterYeniSatir = () => { try { return localStorage.getItem('enterYeniSatir') === '1'; } catch { return false; } };
   const bosSatir = () => ({ urun_id: null, ad: '', miktar: 1, birim_fiyat: 0, kdv_orani: 20 });
   izgara = izgaraBagla(el, {
-    yeniSatir: () => { satirlar.push(bosSatir()); ciz(); },
+    yeniSatir: () => { if (!enterYeniSatir()) return false; satirlar.push(bosSatir()); ciz(); return true; },
     satirSil: (i) => { satirlar.splice(i, 1); ciz(); },
     satirEkle: (i) => { satirlar.splice(i, 0, bosSatir()); ciz(); },
     kisayollar: {
@@ -71,7 +72,8 @@ export default async function (el, [id], ctx) {
         </div>
         <label class="alan" style="margin:0"><span>Açıklama</span><input id="a-aciklama" value="${a.aciklama || ''}" ${taslak ? '' : 'readonly'}></label></div></div>
       <div class="kart"><div class="kart-ust"><h3>Ürünler</h3><span class="bosluk"></span>
-        ${taslak ? html`<label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatları KDV dahil gir</label>` : ''}</div>
+        ${taslak ? html`<label class="kutu-sec enter-yeni" style="margin:0 .8rem 0 0" title="İşaretliyse son hücrede Enter yeni satır açar"><input type="checkbox" id="enter-yeni-satir" ${enterYeniSatir() ? 'checked' : ''}> Enter ile yeni satır aç</label>
+          <label class="kutu-sec" style="margin:0"><input type="checkbox" id="kdv-dahil" ${kdvDahil ? 'checked' : ''}> Fiyatları KDV dahil gir</label>` : ''}</div>
         <div class="tablo-kap fis-tablo-kap"><table class="tablo fis-satirlar"><thead><tr><th>Ürün</th><th class="sayi">Miktar</th><th class="sayi">Birim fiyat${dovizli() ? ` (${a.doviz})` : ''} ${kdvDahil && taslak ? '(KDV dahil)' : '(KDV hariç)'}</th><th class="sayi">KDV%</th><th class="sayi">Tutar</th>${taslak ? html`<th></th>` : ''}</tr></thead>
         <tbody>${satirlar.map((s, i) => taslak ? html`<tr data-i="${i}">
             <td style="min-width:240px"><input class="urun-ara" data-k="ad" value="${s.ad || ''}" placeholder="Ürün ara veya yeni oluştur…">${!s.urun_id ? html`<small style="color:var(--turuncu)">listeden seçin</small>` : ''}</td>
@@ -90,9 +92,10 @@ export default async function (el, [id], ctx) {
     $$('.urun-ara', el).forEach((inp) => {
       const i = Number(inp.closest('tr').dataset.i);
       const sec = (u) => { Object.assign(satirlar[i], { urun_id: u.id, ad: u.ad, birim: u.birim, kdv_orani: Number(u.kdv_orani ?? 20) }); if (!girisFiyat(satirlar[i]) && u.ort_maliyet) maliyettenFiyat(satirlar[i], Number(u.ort_maliyet)); ciz(); setTimeout(() => $(`tr[data-i="${i}"] [data-k=miktar]`, el)?.select(), 30); };
-      urunSecici(inp, sec, { yeniIzin: true });
+      urunSecici(inp, sec, { yeniIzin: true, bulunamadi: true, iptal: () => { satirlar[i].ad = ''; ciz(); } });
       inp._sec = sec;
     });
+    $('#enter-yeni-satir', el).onchange = (e) => { try { localStorage.setItem('enterYeniSatir', e.target.checked ? '1' : '0'); } catch { /* */ } };
     $('#kdv-dahil', el).onchange = (e) => { kdvDahil = e.target.checked; ciz(); };
     $('#a-doviz', el).onchange = (e) => {
       const eski = a.doviz; a.doviz = e.target.value;
@@ -144,7 +147,9 @@ export default async function (el, [id], ctx) {
     if (!cari) throw new Error('Tedarikçi seçin.');
     const no = $('#a-no', el).value.trim();
     if (!no) throw new Error('Fatura numarası girin.');
-    if (satirlar.some((s) => !s.urun_id)) throw new Error('Tüm satırlarda listeden ürün seçin.');
+    satirlar = satirlar.filter((s) => s.urun_id || String(s.ad || '').trim());
+    const kartsiz = satirlar.find((s) => !s.urun_id);
+    if (kartsiz) throw new Error(`"${kartsiz.ad}" bir stok kartına bağlı değil. Listeden seçin ya da yeni stok kartı açın.`);
     if (dovizli() && !(Number(a.kur) > 0)) throw new Error(`${a.doviz} kurunu girin.`);
     const govde = { doviz: a.doviz, kur: a.kur, cari_id: cari.id, belge_no: no, tarih: $('#a-tarih', el).value, vade: $('#a-vade', el).value || null, aciklama: $('#a-aciklama', el).value,
       satirlar: satirlar.map((s) => ({ urun_id: s.urun_id, miktar: s.miktar, birim_fiyat: s.birim_fiyat, doviz_fiyat: s.doviz_fiyat, kdv_orani: s.kdv_orani })) };
@@ -178,9 +183,9 @@ export default async function (el, [id], ctx) {
         if (v) v.miktar = Number(v.miktar) + 1; else { const y = { urun_id: u.id, ad: u.ad, birim: u.birim, miktar: 1, birim_fiyat: 0, kdv_orani: Number(u.kdv_orani ?? 20) }; maliyettenFiyat(y, Number(u.ort_maliyet || 0)); satirlar.push(y); }
         ciz();
       } catch (err) {
-        if (err.kod === 'BARKOD_TANIMSIZ' && await onayla(`"${b}" barkodlu ürün tanımlı değil. Yeni ürün olarak oluşturulsun mu?`, { evet: 'Oluştur' })) {
-          const { urunFormu } = await import('../bilesen.js');
-          const u = await urunFormu(null, { barkodlar: [b] });
+        if (err.kod === 'BARKOD_TANIMSIZ' || err.durum === 404) {
+          const { urunBulunamadi } = await import('../bilesen.js');
+          const u = await urunBulunamadi('', { barkod: b });
           if (u) { satirlar.push({ urun_id: u.id, ad: u.ad, birim: u.birim || 'adet', miktar: 1, birim_fiyat: 0, kdv_orani: Number(u.kdv_orani ?? 20) }); ciz(); }
         } else if (err.kod !== 'BARKOD_TANIMSIZ') bildir(err.message, 'hata');
       }

@@ -25,7 +25,7 @@ export default async function (el, _p, ctx) {
         <td class="ana-hucre" data-et="">${u.ad}${u.onay_bekliyor ? html` <span class="rozet turuncu">Onay bekliyor</span>` : ''}${u.kod ? html`<div class="alt-satir">${u.kod}</div>` : ''}</td>
         <td data-et="Marka / model">${[u.marka, u.model].filter(Boolean).join(' · ')}</td>
         <td data-et="Grup">${[u.ana_grup, u.alt_grup].filter(Boolean).join(' › ')}</td>
-        <td class="sayi" data-et="Stok"><span class="${u.stok_miktari < 0 ? 'negatif' : u.kritik_stok != null && u.stok_miktari <= u.kritik_stok ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</span></td>
+        <td class="sayi" data-et="Stok">${u.tur === 'hizmet' ? html`<span class="rozet mavi">hizmet</span>` : html`<span class="${u.stok_miktari < 0 ? 'negatif' : u.kritik_stok != null && u.stok_miktari <= u.kritik_stok ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</span>`}</td>
         <td class="sayi" data-et="Ort. maliyet">${para(u.ort_maliyet)}</td><td class="sayi" data-et="Satış">${u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : ''}</td>
         <td data-et="Barkod" style="font-family:ui-monospace,monospace;font-size:.82rem">${u.barkodlar || ''}</td></tr>`)
         : html`<tr><td colspan="7" class="bos-durum">Ürün bulunamadı</td></tr>`}</tbody>

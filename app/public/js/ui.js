@@ -155,7 +155,8 @@ export function formVerisi(form) {
 
 // ---------- Otomatik tamamlamalı seçici ----------
 // getir(q) -> Promise<dizi>, goster(oge) -> html, sec(oge)
-export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', ekstra }) {
+// bulunamadi(metin, input): yazılan metin listeden seçilmeden kutudan çıkılırsa çağrılır (ör. "stokta yok, kart açılsın mı?")
+export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', ekstra, bulunamadi }) {
   const kutu = document.createElement('div');
   kutu.className = 'secici-liste';
   kutu.hidden = true;
@@ -166,7 +167,8 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   let yukleniyor = false; let enterBekliyor = false; // yazıp hemen Enter'a basılırsa güncel sonuç gelince seçilir
   const ciz = () => {
     kutu.innerHTML = String(html`${ogeler.map((o, i) => html`<div class="secici-oge ${i === aktif ? 'aktif' : ''}" data-i="${i}">${goster(o)}</div>`)}
-      ${!ogeler.length ? html`<div class="secici-bos">${bosMetin}</div>` : ''}${ekstra ? ekstra(input.value) : ''}`);
+      ${!ogeler.length ? html`<div class="secici-bos">${bosMetin}</div>` : ''}${ekstra ? ekstra(input.value) : ''}
+      ${bulunamadi && input.value.trim() ? html`<div class="secici-oge secici-yeni ${aktif === ogeler.length ? 'aktif' : ''}" data-yeni-kart>+ "${input.value.trim()}" için yeni stok kartı aç</div>` : ''}`);
     kutu.hidden = false;
     // Kaydırılan bir alanın içindeyse (ör. iş ekle penceresinin satır listesi) liste kesilmesin: ekrana sabitlenir
     if (input.closest('[data-secici-sabit]') && matchMedia('(min-width: 861px)').matches) {
@@ -179,28 +181,47 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
     try {
       const s = await getir(input.value.trim()); if (benim !== sira) return;
       ogeler = s; aktif = s.length ? 0 : -1; yukleniyor = false; ciz();
-      if (enterBekliyor) { enterBekliyor = false; if (aktif >= 0) secildi(ogeler[aktif]); }
+      if (enterBekliyor) { enterBekliyor = false; if (aktif >= 0) secildi(ogeler[aktif]); else bulunamadiSor(); }
     } catch { yukleniyor = false; enterBekliyor = false; }
   };
   // yazildi: odaklandıktan sonra kullanıcı yazdı mı? Yazmadan ↑↓/Enter listeyi değil tabloyu gezdirir (Excel gibi kalem tablosu).
   let yazildi = false;
-  input.addEventListener('input', () => { yazildi = true; yukleniyor = true; enterBekliyor = false; clearTimeout(zmn); zmn = setTimeout(yukle, 180); });
+  let secimYapildi = false;
+  input.addEventListener('input', () => { yazildi = true; secimYapildi = false; yukleniyor = true; enterBekliyor = false; clearTimeout(zmn); zmn = setTimeout(yukle, 180); });
   input.addEventListener('focus', () => { yazildi = false; yukle(); });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' && e.altKey) { yazildi = true; if (kutu.hidden) yukle(); e.preventDefault(); return; }
     if (e.key === 'Enter' && yazildi && yukleniyor) { e.preventDefault(); enterBekliyor = true; return; }
     if (kutu.hidden || (!yazildi && input.closest('tr[data-i]'))) return;
-    if (e.key === 'ArrowDown') { aktif = Math.min(aktif + 1, ogeler.length - 1); ciz(); e.preventDefault(); }
+    if (e.key === 'ArrowDown') { aktif = Math.min(aktif + 1, ogeler.length - (bulunamadi && input.value.trim() ? 0 : 1)); ciz(); e.preventDefault(); }
+    else if (e.key === 'Enter' && bulunamadi && aktif === ogeler.length && ogeler.length) { e.preventDefault(); bulunamadiSor(); }
     else if (e.key === 'ArrowUp') { aktif = Math.max(aktif - 1, 0); ciz(); e.preventDefault(); }
     else if (e.key === 'Enter' && aktif >= 0) { e.preventDefault(); secildi(ogeler[aktif]); }
+    else if (e.key === 'Enter' && yazildi && bulunamadi && input.value.trim()) { e.preventDefault(); bulunamadiSor(); }
     else if (e.key === 'Escape') { kutu.hidden = true; e.stopPropagation(); }
   });
-  const secildi = (o) => { kutu.hidden = true; sec(o, input); };
+  const secildi = (o) => { kutu.hidden = true; secimYapildi = true; sec(o, input); };
+  // Yazılan metin listede yoksa (Enter ile ya da kutudan çıkınca) bir kez sorulur
+  function bulunamadiSor() {
+    const deger = input.value.trim();
+    if (!bulunamadi || !deger || secimYapildi || input.dataset.sorgulaniyor) return;
+    kutu.hidden = true;
+    input.dataset.sorgulaniyor = '1';
+    Promise.resolve(bulunamadi(deger, input)).finally(() => { delete input.dataset.sorgulaniyor; });
+  }
   kutu.addEventListener('mousedown', (e) => {
+    if (e.target.closest('[data-yeni-kart]')) { e.preventDefault(); bulunamadiSor(); return; }
     const el = e.target.closest('[data-i]');
     if (el) { e.preventDefault(); secildi(ogeler[Number(el.dataset.i)]); }
   });
-  input.addEventListener('blur', () => setTimeout(() => { kutu.hidden = true; }, 150));
+  input.addEventListener('blur', () => {
+    const deger = input.value.trim(); const yazdi = yazildi;
+    setTimeout(() => {
+      kutu.hidden = true;
+      // Yazılan metin listeden seçilmeden bırakıldıysa (Enter, Tab ya da başka yere tıklama)
+      if (yazdi && deger && input.isConnected && input.value.trim() === deger) bulunamadiSor();
+    }, 180);
+  });
   return { kapat: () => { kutu.hidden = true; } };
 }
 

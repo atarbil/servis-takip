@@ -57,6 +57,10 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Cariler eklendi', musteri.id && tedarikci.id);
   const kamera = (await y('POST', '/urunler', { ad: 'IP Kamera 4MP', kod: 'KAM-01', onerilen_satis: 2000, barkodlar: ['8690000000011'] })).veri;
   const kablo = (await y('POST', '/urunler', { ad: 'CAT6 Kablo', birim: 'metre', onerilen_satis: 25, barkodlar: ['8690000000028'] })).veri;
+  // Hizmet kartları: stok tutulmaz (işçilik / servis ücreti de kartlı kalemdir)
+  const iscilikK = (await y('POST', '/urunler', { ad: 'Montaj işçiliği', tur: 'hizmet', birim: 'saat', onerilen_satis: 1500, acilis_stok: 5 })).veri;
+  const kurulumK = (await y('POST', '/urunler', { ad: 'Kurulum ve ayar', tur: 'hizmet', onerilen_satis: 50 })).veri;
+  kontrol('Hizmet kartında açılış stoğu tutulmaz', Number((await y('GET', `/urunler/${iscilikK.id}`)).veri.stok_miktari) === 0 && (await y('GET', `/urunler/${iscilikK.id}`)).veri.tur === 'hizmet');
   // Marka, model, ana grup, alt grup ve çok alanlı arama
   const hik = (await y('POST', '/urunler', { ad: 'Dome Kamera 2MP', marka: 'Hikvision', model: 'DS-2CD1123G0E-I', ana_grup: 'Güvenlik Kamerası', alt_grup: 'IP Kamera', onerilen_satis: 1500 })).veri;
   await y('POST', '/urunler', { ad: 'NVR 8 Kanal', marka: 'Dahua', model: 'NVR4108HS', ana_grup: 'Güvenlik Kamerası', alt_grup: 'Kayıt Cihazı' });
@@ -186,7 +190,10 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   x = await y('GET', `/fisler/${fisId}`);
   kontrol('Fiş taslağı 3 satır', x.veri.satirlar.length === 3, x.veri.satirlar);
   const satirlar = x.veri.satirlar.map((s) => ({ ...s, birim_fiyat: s.urun_id === kamera.id ? 2000 : s.urun_id === kablo.id ? 25 : 15 }));
-  satirlar.push({ tip: 'iscilik', aciklama: 'Montaj işçiliği', miktar: 1, birim_fiyat: 1500, kdv_orani: 20 });
+  // Kartsız (serbest yazı) satır kaydedilemez
+  x = await y('PUT', `/fisler/${fisId}`, { satirlar: [...satirlar, { tip: 'iscilik', aciklama: 'Montaj işçiliği', miktar: 1, birim_fiyat: 1500 }] });
+  kontrol('Kartsız satır reddedildi', x.durum === 400 && x.veri.kod === 'KART_YOK', x.veri);
+  satirlar.push({ urun_id: iscilikK.id, aciklama: 'Montaj işçiliği', miktar: 1, birim: 'saat', birim_fiyat: 1500, kdv_orani: 20 });
   x = await y('PUT', `/fisler/${fisId}`, { satirlar, vade: new Date().toISOString().slice(0, 10) });
   kontrol('Fiş kaydedildi', x.veri.ara_toplam === 10370 && x.veri.genel_toplam === 12444, x.veri);
   x = await y('POST', `/fisler/${fisId}/onayla`);
@@ -231,10 +238,10 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   // Fişte ürün adı değiştirilemez, not kaydedilir
   x = await y('POST', '/fisler', { cari_id: musteri.id });
   x = await y('PUT', `/fisler/${x.veri.id}`, { satirlar: [{ tip: 'urun', urun_id: kamera.id, aciklama: 'Başka bir şey', notu: 'Seri: AB123, 2 yıl garanti', miktar: 1, birim_fiyat: 100 },
-    { tip: 'hizmet', aciklama: 'Kurulum ve ayar', miktar: 1, birim_fiyat: 50 }] });
+    { urun_id: kurulumK.id, aciklama: 'serbest yazı yok sayılır', miktar: 1, birim_fiyat: 50 }] });
   kontrol('Ürün satırı adı stok kartından geldi', x.veri.satirlar[0].aciklama === 'IP Kamera 4MP', x.veri.satirlar[0].aciklama);
   kontrol('Satır notu kaydedildi', x.veri.satirlar[0].notu === 'Seri: AB123, 2 yıl garanti', x.veri.satirlar[0].notu);
-  kontrol('Hizmet açıklaması serbest', x.veri.satirlar[1].aciklama === 'Kurulum ve ayar');
+  kontrol('Hizmet satırı adı ve türü kartından', x.veri.satirlar[1].aciklama === 'Kurulum ve ayar' && x.veri.satirlar[1].tip === 'hizmet', x.veri.satirlar[1]);
   await y('POST', `/fisler/${x.veri.id}/iptal`);
 
   // Kur, sayaçlar, fiyatlandırma
@@ -333,14 +340,14 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   const stokOnce = Number((await y('GET', `/urunler/${ofKam.id}`)).veri.stok_miktari);
   const bakOnce = Number((await y('GET', `/cariler/${musteri.id}`)).veri.bakiye);
   x = await y('POST', '/isler/ofis', { mesaj: 'Ofiste ofKam değişimi', cari_id: musteri.id, satirlar: [
-    { tip: 'hizmet', aciklama: 'Kamera montaj hizmeti', miktar: 1, birim_fiyat: '750' },
+    { urun_id: kurulumK.id, miktar: 1, birim_fiyat: '750' },
     { tip: 'urun', urun_id: ofKam.id, miktar: 2 },
-    { tip: 'iscilik', aciklama: 'İşçilik', miktar: 1.5 }] });
+    { urun_id: iscilikK.id, miktar: 1.5 }] });
   kontrol('İşi ben yaptım: iş + taslak fiş', x.durum === 200 && x.veri.is_id && x.veri.fis_id, x.veri);
   const ofIs = (await y('GET', `/isler/${x.veri.is_id}`)).veri;
   kontrol('İş tamamlandı, cariye bağlı', ofIs.durum === 'tamamlandi' && ofIs.cari_id === musteri.id, ofIs.durum);
   let of = (await y('GET', `/fisler/${x.veri.fis_id}`)).veri;
-  kontrol('Fiş satırları: hizmet 750, ürün adı stoktan, işçilik saat', of.satirlar.length === 3 && Number(of.satirlar[0].birim_fiyat) === 750
+  kontrol('Fiş satırları: hizmet 750, ürün adı stoktan, işçilik saat (kart birimi)', of.satirlar.length === 3 && Number(of.satirlar[0].birim_fiyat) === 750
     && of.satirlar[1].aciklama === ofKam.ad && Number(of.satirlar[1].miktar) === 2 && of.satirlar[2].birim === 'saat', of.satirlar);
   kontrol('Fiyatlandırma listesinde', (await y('GET', '/fiyatlandirma')).veri.some((f) => f.id === x.veri.is_id));
   await y('PUT', `/fisler/${of.id}`, { cari_id: musteri.id, satirlar: of.satirlar.map((r, i) => ({ ...r, birim_fiyat: [750, 1000, 400][i] })) });
@@ -350,8 +357,10 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('Malzeme stoktan düştü', Number((await y('GET', `/urunler/${ofKam.id}`)).veri.stok_miktari) === stokOnce - 2);
   kontrol('İş fiş kesildi oldu', (await y('GET', `/isler/${ofIs.id}`)).veri.durum === 'fis_kesildi');
   kontrol('Satırsız reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [] })).durum === 400);
-  kontrol('Carisiz reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', satirlar: [{ tip: 'hizmet', aciklama: 'a' }] })).durum === 400);
-  kontrol('Teknisyen kullanamaz', (await t('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'hizmet', aciklama: 'a' }] })).durum === 403);
+  kontrol('İşi ben yaptım: kartsız satır reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ tip: 'hizmet', aciklama: 'serbest' }] })).durum === 400);
+  kontrol('Hizmet kartı satıştan sonra stok tutmaz', Number((await y('GET', `/urunler/${iscilikK.id}`)).veri.stok_miktari) === 0);
+  kontrol('Carisiz reddedilir', (await y('POST', '/isler/ofis', { mesaj: 'x', satirlar: [{ urun_id: kurulumK.id }] })).durum === 400);
+  kontrol('Teknisyen kullanamaz', (await t('POST', '/isler/ofis', { mesaj: 'x', cari_id: musteri.id, satirlar: [{ urun_id: kurulumK.id }] })).durum === 403);
 
   // ---------- Havuzdaki işi "Teslim et / Tamamla" ----------
   {
@@ -366,15 +375,15 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
     kontrol('İş tamamlandı, fiyatlandırmada', (await y('GET', `/isler/${tIs}`)).veri.durum === 'tamamlandi' && (await y('GET', '/fiyatlandirma')).veri.some((x) => x.id === tIs));
     await y('POST', `/fisler/${tf.id}/onayla`);
     kontrol('Onayla: stoktan 50 düştü, iş fiş kesildi', Number((await y('GET', `/urunler/${kablo.id}`)).veri.stok_miktari) === st0 - 50 && (await y('GET', `/isler/${tIs}`)).veri.durum === 'fis_kesildi');
-    kontrol('Kapanmış iş tekrar teslim edilemez', (await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ tip: 'hizmet', aciklama: 'x' }] })).durum === 400);
+    kontrol('Kapanmış iş tekrar teslim edilemez', (await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ urun_id: kurulumK.id }] })).durum === 400);
 
     // Carisiz havuz işi: pencerede cari seçilir; hizmet + malzeme + imza
     r = await y('POST', '/isler/hizli', { mesaj: 'Ofis ağ kurulumu (cari sonra)' });
     const t2 = r.veri.id;
-    kontrol('Carisiz iş cari seçilmeden kapanmaz', (await y('POST', `/isler/${t2}/teslim-et`, { satirlar: [{ tip: 'hizmet', aciklama: 'x' }] })).veri?.hata?.includes('Cari') ?? true);
-    kontrol('İmza için ad gerekir', (await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, imza: PNG, satirlar: [{ tip: 'hizmet', aciklama: 'x' }] })).durum === 400);
+    kontrol('Carisiz iş cari seçilmeden kapanmaz', (await y('POST', `/isler/${t2}/teslim-et`, { satirlar: [{ urun_id: kurulumK.id }] })).veri?.hata?.includes('Cari') ?? true);
+    kontrol('İmza için ad gerekir', (await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, imza: PNG, satirlar: [{ urun_id: kurulumK.id }] })).durum === 400);
     r = await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, teslim_alan_ad: 'Mehmet Bey', imza: PNG,
-      satirlar: [{ tip: 'hizmet', aciklama: 'Ağ kurulumu', birim_fiyat: 1500 }, { tip: 'urun', urun_id: kablo.id, miktar: 20 }] });
+      satirlar: [{ urun_id: kurulumK.id, birim_fiyat: 1500 }, { tip: 'urun', urun_id: kablo.id, miktar: 20 }] });
     kontrol('Hizmet + malzeme + imza', r.durum === 200 && r.veri.imza === true, r.veri);
     const t2d = (await y('GET', `/isler/${t2}`)).veri;
     kontrol('Cari işe bağlandı, teslim onayı kaydedildi', t2d.cari_id === musteri.id && t2d.teslim?.teslim_alan_ad === 'Mehmet Bey', { cari: t2d.cari_id, teslim: t2d.teslim });

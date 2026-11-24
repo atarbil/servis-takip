@@ -122,7 +122,8 @@ function istemci() {
     kontrol('Virman silinince iki bacağı da gider', x.veri.adet === 2 && Number(h.find((a) => a.id === kasa.id).bakiye) === kasa0 && Number(h[1].bakiye) === Number(ikinci.bakiye) - 50, x.veri);
   }
 
-  const tk = (await y('POST', '/teklifler', { tur: 'teklif', cari_id: cari.id, satirlar: [{ aciklama: 'x', miktar: 1, birim_fiyat: 1 }] })).veri;
+  const kartId = (await y('POST', '/urunler', { ad: 'Silme testi hizmeti', tur: 'hizmet' })).veri.id;
+  const tk = (await y('POST', '/teklifler', { tur: 'teklif', cari_id: cari.id, satirlar: [{ urun_id: kartId, miktar: 1, birim_fiyat: 1 }] })).veri;
   x = await y('POST', '/sil', { tur: 'teklif', id: tk.id });
   kontrol('Teklif silindi, listede yok', x.durum === 200 && !(await y('GET', '/teklifler')).veri.some((a) => a.id === tk.id));
   const env = (await y('POST', '/envanter', { cari_id: cari.id, tur: 'NVR' })).veri;
@@ -139,7 +140,7 @@ function istemci() {
   kontrol('Geri alınan kullanıcı girebilir', (await t('POST', '/giris', { kullanici_adi: 'silusta', sifre: 'usta1234' })).durum === 200);
 
   // Kalıcı silme
-  x = await y('POST', '/sil', { tur: 'teklif', id: (await y('POST', '/teklifler', { tur: 'teklif', cari_id: cari.id, satirlar: [{ aciklama: 'y', miktar: 1, birim_fiyat: 1 }] })).veri.id });
+  x = await y('POST', '/sil', { tur: 'teklif', id: (await y('POST', '/teklifler', { tur: 'teklif', cari_id: cari.id, satirlar: [{ urun_id: kartId, miktar: 1, birim_fiyat: 1 }] })).veri.id });
   await y('POST', `/silinenler/${x.veri.silinen_id}/kalici`);
   kontrol('Kalıcı silinen geri alınamaz ve kutuda görünmez', (await y('POST', `/silinenler/${x.veri.silinen_id}/geri-al`)).durum === 400
     && !(await y('GET', '/silinenler')).veri.some((s) => s.id === x.veri.silinen_id));

@@ -16,7 +16,7 @@ export default async function (el, [id], ctx) {
       <div class="btn-grup" style="margin-top:.6rem"><button class="btn birincil" data-a="onayla">Maliyet gir ve onayla</button>
         <button class="btn ikincil" data-a="birlestir">Zaten var olan bir ürün → birleştir</button></div></div>` : ''}
     <div class="istatistik">
-      <div class="ist vurgu"><small>Stok</small><b class="${u.stok_miktari < 0 ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</b></div>
+      ${u.tur === 'hizmet' ? html`<div class="ist vurgu"><small>Tür</small><b>Hizmet</b><small>stok tutulmaz</small></div>` : html`<div class="ist vurgu"><small>Stok</small><b class="${u.stok_miktari < 0 ? 'negatif' : ''}">${miktar(u.stok_miktari)} ${u.birim}</b></div>`}
       <div class="ist"><small>Ortalama maliyet</small><b>${para(u.ort_maliyet)}</b></div>
       <div class="ist"><small>Satış fiyatı (KDV hariç)</small><b>${u.onerilen_satis != null ? dovizPara(u.onerilen_satis, u.satis_doviz) : '—'}</b></div>
       <div class="ist"><small>Stok değeri</small><b>${para(Math.max(0, u.stok_miktari) * u.ort_maliyet)}</b></div>

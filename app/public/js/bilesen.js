@@ -146,12 +146,18 @@ export async function dovizCeviriciPencere(ctx) {
 // ---------- Ürün seçici ----------
 export const urunAltBilgi = (u) => [u.marka, u.model, [u.ana_grup, u.alt_grup].filter(Boolean).join(' › '), u.kod].filter(Boolean).join(' · ');
 
-export function urunSecici(input, sec, { yonetici = true, yeniIzin = false } = {}) {
+// bulunamadi: true → listeden seçilmeden bırakılan metin için "stokta yok, kart açılsın mı?" sorulur; seçilen/açılan kart sec'e gider.
+// iptal(input) → kullanıcı kart açmazsa çağrılır (satır boşaltılır).
+export function urunSecici(input, sec, { yonetici = true, yeniIzin = false, bulunamadi = false, iptal } = {}) {
   return secici(input, {
     getir: (q) => api.get('/urunler', { q, limit: 30 }),
-    goster: (u) => html`<div class="urun-oneri"><div class="ad"><b>${u.ad}</b>${u.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
+    bulunamadi: bulunamadi ? async (metin) => {
+      const u = await urunBulunamadi(metin);
+      if (u) sec(u, input); else iptal?.(input);
+    } : undefined,
+    goster: (u) => html`<div class="urun-oneri"><div class="ad"><b>${u.ad}</b>${u.tur === 'hizmet' ? html` <span class="rozet mavi">hizmet</span>` : ''}${u.onay_bekliyor ? html` <span class="rozet turuncu">onay bekliyor</span>` : ''}
         <small>${urunAltBilgi(u)}</small></div>
-      ${yonetici && u.stok_miktari !== undefined ? html`<div class="deger"><span class="${u.stok_miktari > 0 ? 'stokta' : 'stok-yok'}">${miktar(u.stok_miktari)} ${u.birim}</span>
+      ${yonetici && u.tur === 'hizmet' ? html`<div class="deger">${u.onerilen_satis != null ? html`<small>${dovizPara(u.onerilen_satis, u.satis_doviz)}</small>` : ''}</div>` : yonetici && u.stok_miktari !== undefined ? html`<div class="deger"><span class="${u.stok_miktari > 0 ? 'stokta' : 'stok-yok'}">${miktar(u.stok_miktari)} ${u.birim}</span>
         ${u.onerilen_satis != null ? html`<small>${dovizPara(u.onerilen_satis, u.satis_doviz)}</small>` : ''}</div>` : ''}</div>`,
     sec,
     bosMetin: 'Ürün bulunamadı',
@@ -228,6 +234,27 @@ export async function stokListesi({ fiyat = 'satis', baslik = 'Stok listesi' } =
     kaydet: () => { if (!secilen.size) throw new Error('Listeden en az bir ürün seçin.'); return [...secilen.values()]; },
   });
 }
+// Stokta bulunamayan ürün: benzer kartları gösterir, yoksa yeni stok kartı açmayı önerir.
+// Seçilen ya da yeni açılan ürünü döndürür; vazgeçilirse null. (Kartsız / açıklama satırı yoktur.)
+export async function urunBulunamadi(metin, { barkod = null } = {}) {
+  const benzer = metin ? await api.get('/urunler', { q: metin.split(/\s+/).slice(0, 2).join(' '), limit: 6 }).catch(() => []) : [];
+  let secilen = null;
+  const r = await pencere({
+    baslik: barkod ? 'Barkod stokta yok' : 'Ürün stokta bulunamadı',
+    kaydetMetin: '+ Yeni stok kartı aç', iptalMetin: 'Vazgeç',
+    icerik: html`<p style="margin-top:0"><b>"${barkod || metin}"</b> ${barkod ? 'barkodlu bir ürün' : ''} stokta bulunamadı. <b>Yeni stok kartı açılsın mı?</b></p>
+      <p class="soluk" style="margin:.2rem 0 .6rem">Belgelere yalnız stok kartı olan kalemler yazılabilir. İşçilik / servis ücreti gibi kalemler için kart türünü <b>Hizmet</b> seçin.</p>
+      ${benzer.length ? html`<div class="alan"><span>Benzer kartlar — bunlardan biri mi?</span><div class="benzer-urunler">${benzer.map((u, i) => html`<button type="button" class="btn ikincil kucuk" data-benzer="${i}">${u.ad}${u.tur === 'hizmet' ? ' (hizmet)' : ''}</button>`)}</div></div>` : ''}`,
+    acildi: (d, kapat) => {
+      d.addEventListener('click', (e) => { const b = e.target.closest('[data-benzer]'); if (b) { secilen = benzer[Number(b.dataset.benzer)]; kapat('secildi'); } });
+    },
+    kaydet: () => 'yeni',
+  });
+  if (r === 'secildi' || secilen) return secilen;
+  if (r !== 'yeni') return null;
+  return urunFormu(null, barkod ? { barkodlar: [barkod], ad: metin || '' } : { ad: metin });
+}
+
 export function urunYeniYakala(kok, sonra) {
   kok.addEventListener('mousedown', async (e) => {
     const el = e.target.closest('[data-yeni-urun]');
@@ -248,7 +275,8 @@ export async function urunFormu(urun, varsayilan = {}) {
     genis: true,
     icerik: html`
       <div class="satir2">
-        <label class="alan"><span>Ürün adı *</span><input name="ad" value="${u.ad || ''}" required></label>
+        <label class="alan"><span>Ürün / hizmet adı *</span><input name="ad" value="${u.ad || ''}" required></label>
+        <label class="alan"><span>Tür</span><select name="tur" id="urun-tur"><option value="urun" ${u.tur !== 'hizmet' ? 'selected' : ''}>Ürün (stoklu)</option><option value="hizmet" ${u.tur === 'hizmet' ? 'selected' : ''}>Hizmet / işçilik (stok tutulmaz)</option></select></label>
         <label class="alan"><span>Ürün kodu</span><input name="kod" value="${u.kod || ''}"></label>
         <label class="alan"><span>Marka</span><input name="marka" value="${u.marka || ''}" list="marka-liste" placeholder="Örn: Hikvision">
           <datalist id="marka-liste">${gruplar.markalar.map((k) => html`<option value="${k}">`)}</datalist></label>
@@ -263,8 +291,8 @@ export async function urunFormu(urun, varsayilan = {}) {
           <select name="satis_doviz" title="Fiyatın para birimi">${['TRY', 'USD', 'EUR'].map((d) => html`<option value="${d}" ${(u.satis_doviz || 'TRY') === d ? 'selected' : ''}>${d === 'TRY' ? '₺ TL' : d}</option>`)}</select></div>
           <small>Dolar/Euro seçilirse fişte günün kuruyla TL'ye çevrilir</small></label>
         <label class="alan"><span>KDV %</span><input name="kdv_orani" inputmode="decimal" value="${u.kdv_orani ?? 20}"></label>
-        <label class="alan"><span>Kritik stok seviyesi</span><input name="kritik_stok" inputmode="decimal" value="${u.kritik_stok ?? ''}"></label>
-        ${!urun ? html`<label class="alan"><span>Açılış stoğu</span><input name="acilis_stok" inputmode="decimal" placeholder="0"></label>
+        <label class="alan stoklu"><span>Kritik stok seviyesi</span><input name="kritik_stok" inputmode="decimal" value="${u.kritik_stok ?? ''}"></label>
+        ${!urun ? html`<label class="alan stoklu"><span>Açılış stoğu</span><input name="acilis_stok" inputmode="decimal" placeholder="0"></label>
           <label class="alan"><span>Birim maliyet (KDV hariç)</span><input name="ort_maliyet" inputmode="decimal" placeholder="0,00">
           <small>Alış faturası girdikçe otomatik güncellenir</small></label>` : ''}
       </div>
@@ -276,6 +304,9 @@ export async function urunFormu(urun, varsayilan = {}) {
       </div>
       ${urun ? html`<label class="kutu-sec"><input type="checkbox" name="aktif" ${u.aktif !== false ? 'checked' : ''}> Aktif</label>` : ''}`,
     acildi: (d) => {
+      const turGuncelle = () => { const h = $('#urun-tur', d).value === 'hizmet'; d.querySelectorAll('.stoklu').forEach((x) => { x.hidden = h; }); };
+      $('#urun-tur', d).addEventListener('change', (e) => { turGuncelle(); const b = d.querySelector('[name=birim]'); if (e.target.value === 'hizmet' && b.value === 'adet') b.value = 'adet'; });
+      turGuncelle();
       const ciz = () => { $('#barkod-cipler', d).innerHTML = String(html`${barkodlar.map((b, i) => html`<span class="cip">${b}<button type="button" data-sil="${i}">×</button></span>`)}`); };
       ciz();
       const ekle = (b) => { b = String(b || '').trim(); if (b && !barkodlar.includes(b)) barkodlar.push(b); ciz(); $('#barkod-yeni', d).value = ''; };
@@ -287,6 +318,7 @@ export async function urunFormu(urun, varsayilan = {}) {
     kaydet: async (v) => {
       if (!v.ad) throw new Error('Ürün adı gerekli.');
       for (const k of ['onerilen_satis', 'kdv_orani', 'kritik_stok', 'acilis_stok', 'ort_maliyet']) if (k in v) v[k] = sayiCoz(v[k]);
+      if (v.tur === 'hizmet') { delete v.acilis_stok; v.kritik_stok = null; }
       v.barkodlar = barkodlar;
       if (urun) { await api.put(`/urunler/${urun.id}`, v); return { ...urun, ...v }; }
       const r = await api.post('/urunler', v);

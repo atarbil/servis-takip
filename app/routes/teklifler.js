@@ -41,8 +41,8 @@ module.exports = (r, { db, web, Y }) => {
     let sira = 0;
     for (const s of satirlar) {
       const urunId = s.urun_id || null;
-      const aciklama = urunId ? (metin(s.aciklama) || '-') : metin(s.aciklama);
-      if (!aciklama) throw web.hata(400, 'Satır açıklaması boş olamaz.');
+      if (!urunId) throw web.hata(400, `"${metin(s.aciklama) || 'Boş satır'}" bir stok kartına bağlı değil. Listeden ürün seçin ya da yeni stok kartı açın.`, 'KART_YOK');
+      const aciklama = metin(s.aciklama) || '-';
       await q(`INSERT INTO teklif_satirlari (teklif_id, sira, urun_id, aciklama, notu, miktar, birim, birim_fiyat, iskonto_orani, kdv_orani)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [id, ++sira, urunId, aciklama, metin(s.notu), sayi(s.miktar, 'Miktar') || 1, metin(s.birim) || 'adet',

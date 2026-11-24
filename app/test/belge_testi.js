@@ -38,11 +38,15 @@ const veriUrl = (dosya, tur) => `data:image/${tur};base64,${fs.readFileSync(dosy
   const meb = await api('POST', '/cariler', { unvan: 'ŞEBİNKARAHİSAR İLÇE MİLLİ EĞİTİM MÜDÜRLÜĞÜ', vergi_no: '4710295984', il: 'Giresun' });
   const fisko = await api('POST', '/cariler', { unvan: 'FİSKOBİRLİK ENTEGRE FINDIK İŞLEME TESİSLERİ SANAYİ VE TİCARET ANONİM ŞİRKETİ',
     adres: 'GAZİLER MAH. ATATÜRK BLV. 483 MERKEZ/GİRESUN', vergi_dairesi: 'GİRESUN VERGİ DAİRESİ MÜD.', vergi_no: '3360326902' });
+  // Her kalem stok kartlı: belge örneğindeki ürünlerin kartları
+  const kart = async (ad) => (await api('POST', '/urunler', { ad })).id;
+  const [hp, br, inpos] = [await kart('HP Proone 240 G10 B6JC3ES Core I5-1334U 8gb 512GB SSD 23.8″ Fhd Freedos All In One Pc'),
+    await kart('Brother MFC-L8690CDW Wifi Çok Fonksiyonlu Lazer Yazıcı'), await kart('inPOS m530 EFT-POS')];
   const pf = await api('POST', '/teklifler', { tur: 'proforma', cari_id: meb.id, tarih: '2026-10-30', satirlar: [
-    { aciklama: 'HP Proone 240 G10 B6JC3ES Core I5-1334U 8gb 512GB SSD 23.8″ Fhd Freedos All In One Pc', miktar: 5, birim: 'adet', birim_fiyat: 43750, kdv_orani: 20 },
-    { aciklama: 'Brother MFC-L8690CDW Wifi Çok Fonksiyonlu Lazer Yazıcı', miktar: 6, birim: 'adet', birim_fiyat: 34000, kdv_orani: 20 }] });
+    { urun_id: hp, aciklama: 'HP Proone 240 G10 B6JC3ES Core I5-1334U 8gb 512GB SSD 23.8″ Fhd Freedos All In One Pc', miktar: 5, birim: 'adet', birim_fiyat: 43750, kdv_orani: 20 },
+    { urun_id: br, aciklama: 'Brother MFC-L8690CDW Wifi Çok Fonksiyonlu Lazer Yazıcı', miktar: 6, birim: 'adet', birim_fiyat: 34000, kdv_orani: 20 }] });
   const tk = await api('POST', '/teklifler', { tur: 'teklif', cari_id: fisko.id, tarih: '2026-11-19', satirlar: [
-    { aciklama: 'inPOS m530 EFT-POS', miktar: 80, birim: 'adet', birim_fiyat: 6670, kdv_orani: 20 }] });
+    { urun_id: inpos, aciklama: 'inPOS m530 EFT-POS', miktar: 80, birim: 'adet', birim_fiyat: 6670, kdv_orani: 20 }] });
   console.log('Proforma', pf.belge_no, pf.genel_toplam, '| Teklif', tk.belge_no, tk.genel_toplam);
   if (pf.genel_toplam !== 507300 || tk.genel_toplam !== 640320) hatalar.push('Toplamlar örneklerle uyuşmuyor');
 
