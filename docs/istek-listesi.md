@@ -5,7 +5,23 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Ekibe atanan işte "Servis" kalemi kullanılan malzemeye eklensin (24.11.2026)
+- Kullanıcı: "Planlanan işi ekibin üzerine atınca, servis için gidildi ise kullanılan malzeme bölümüne servis ekleyelim".
+- Varsayım (soru cevaplanmadı, kullanıcı başka konuya geçti): **atama penceresinde "Servis için gidiliyor" kutusu**; işaretliyse
+  işin kullanılan malzemesine **1 adet "Servis"** kalemi eklenir (stoksuz hizmet; stoktan düşmez). Fiyat: **Ayarlar → Servis ücreti**
+  (bir kez yazılır; boşsa fiyatsız). Teknisyen sahada miktarı değiştirebilir / silebilir; satış fişine stoksuz "Servis" satırı olarak
+  geçer. Aynı işe ikinci kez atanınca tekrar eklenmez. (Kullanıcı farklı isterse: her atamada otomatik ya da teknisyende "+ Servis".)
+
+### 2. Cari açarken vergi numarası ile sorgulama (24.11.2026)
+- Kullanıcı: "Cari oluştururken vergi numarası ile sorgulama yapabilir misin?"
+- GİB'in herkese açık, ücretsiz bir VKN → ünvan API'si yok (Dijital Vergi Dairesi / e-Devlet sorgusu giriş ya da doğrulama
+  kodu istiyor). Yapılabilecekler:
+  1. **Numara doğrulama:** 10 haneli VKN ve 11 haneli TCKN kontrol hanesi algoritmasıyla anında "geçerli / geçersiz".
+  2. **Programdaki bilgilerden doldurma:** aynı vergi no'lu cari varsa "Bu numara zaten kayıtlı: … (aç)" uyarısı; yüklenmiş resmi
+     faturalarda (alış / satış XML'leri) bu numara geçiyorsa ünvan, vergi dairesi, adres, il / ilçe, telefon, e-posta tek tıkla doldurulur.
+  3. **GİB'de sorgula** düğmesi: GİB mükellef / vergi levhası sorgulama sayfasını yeni sekmede açar (kullanıcı doğrulama kodunu girer).
+  4. İleride Mysoft bağlantısı açılırsa (beklemede): entegratörün mükellef sorgusuyla ünvan + e-Fatura kullanıcısı mı bilgisi otomatik.
+
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
