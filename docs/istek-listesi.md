@@ -29,8 +29,13 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
     Toner, telefon gibi yalnız teslim edilecek işlerde de aynı alan kullanılır. Eklenen malzeme işin malzemesi olur (mevcut
     kural: stoktan düşer, iş tamamlanınca fişe gider).
   - Teknisyen ekranında işin malzemeleri görünür; teknisyen sahada **ilave malzeme** ekler (mevcut özellik). Kalemlerde küçük
-    etiket: ofisin eklediği "verildi", sahada eklenen "sahada".
-  - İş türü, iade akışı, teslimat ekranı **yok** (iptal edildi).
+    etiket: ofisin eklediği "verildi", teknisyenin eklediği "ilave".
+  - İş türü ve iade akışı **yok**.
+- Kullanıcı ek (23:58): **etiket "sahada" değil "ilave"** olsun (ofisin eklediği "verildi", teknisyenin eklediği "ilave").
+  **Personel işi bitirirken teslimat / müşteri onay ekranı** olsun → mevcut "Müşteri imzası al" adımı bir **teslim özeti ekranına**
+  dönüşür: müşteri telefonda şunu görür — iş başlığı / adres, **teslim edilen malzemeler** (verildi + ilave, miktarlarıyla; fiyat
+  yok), yapılan iş / teknisyen notu, teslim metni (Ayarlar); altında teslim alan adı, isteğe bağlı not, **imza** → "Onaylıyorum".
+  Onaydan sonra iş tamamlanabilir (mevcut kural: imzasız kapatılmaz). Yazdırılan teslim formunda da aynı malzeme listesi.
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
