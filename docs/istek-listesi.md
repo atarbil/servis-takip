@@ -4,22 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. KDV durumu ekranı: "bu ay KDV çıkacak mı?" (24.11.2026, sade hâli)
-- Kullanıcı: alış ve kestiği faturalara göre KDV durumunu görmek istiyor; sonra netleştirdi: **"hiçbir yedekleme (kayıt) yapmasın,
-  sadece o ay KDV çıkacak mı çıkmayacak mı o önemli"**.
-- Tasarım (Finans → **KDV durumu**), sade:
-  - Ay seçimi (varsayılan: bu ay).
-  - **İndirilecek KDV:** programdaki o ayın **onaylı alış faturalarından** (fatura tarihine göre). Taslak bekleyen alış varsa
-    "x taslak alış faturası sayılmadı" uyarısı + bağlantı.
-  - **Hesaplanan KDV:** kullanıcı o ayın kestiği faturaların XML'ini (ya da zip) yükler; sunucuda **yalnız bellekte okunur,
-    hiçbir şey kaydedilmez** (ne dosya ne fatura özeti). Her seferinde ayın tüm satış XML'leri birlikte yüklenir (haftalık /
-    günlük güncel durum için o güne kadarki hepsi). Aynı fatura iki kez gelirse bir kez sayılır (ETTN); seçilen ayın dışındaki
-    faturalar ayrıca belirtilip sayılmaz; satıcı VKN firmanınki değilse uyarı. İADE faturaları hesaplanandan düşülür;
-    tevkifatlı satışta yalnız firmanın beyan edeceği kısım sayılır.
-  - **Önceki aydan devreden KDV:** elle girilen kutu (yalnız bu tarayıcıda hatırlanır; sunucuya yazılmaz).
-  - **Sonuç** büyük ve net: **"Bu ay KDV ÇIKIYOR — ödenecek ≈ X ₺"** ya da **"Bu ay KDV ÇIKMIYOR — sonraki aya devreden ≈ Y ₺"**.
-    Altında üç satır: hesaplanan, indirilecek, devreden; KDV oranına göre küçük döküm (satış / alış). Ekstra liste, grafik yok.
-  - Not satırı: bilgi amaçlıdır; kesin tutar için mali müşavir.
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
@@ -31,6 +16,20 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 22. derleme: KDV durumu ("bu ay KDV çıkıyor mu?")
+- Finans → **KDV durumu**. Dönem (ay) seçilir; büyük sonuç kartı: **"Bu ay KDV ÇIKIYOR — ödenecek ≈ X ₺"** (kırmızı) ya da
+  **"Bu ay KDV ÇIKMIYOR — sonraki aya devreden ≈ Y ₺"** (yeşil).
+- **Hesaplanan KDV:** kestiğiniz faturaların e-Fatura / e-Arşiv XML'leri (ya da zip) yüklenir. **Hiçbir şey kaydedilmez** —
+  sunucu yalnız okuyup KDV özetini döner; özetler yalnız o sekmede bellekte durur (Temizle ile silinir, sekme kapanınca gider).
+  Aynı fatura iki kez sayılmaz (ETTN); seçilen ayın dışındakiler, satıcısı firma olmayanlar (yanlışlıkla yüklenen alış XML'i)
+  ve kursuz dövizli faturalar sayılmaz ve uyarılır. Tevkifatta alıcının ödeyeceği kısım düşülür; iade faturaları ayrıca belirtilir.
+  Dövizli faturalar faturadaki kurla TL'ye çevrilir. Büyük yüklemeler parça parça gönderilir.
+- **İndirilecek KDV:** programdaki o ayın **onaylı alış faturalarından** (fatura tarihi); taslak bekleyenler "sayılmadı" uyarısında,
+  bağlantılı.
+- **Önceki aydan devreden KDV** kutusu (yalnız bu tarayıcıda hatırlanır). KDV oranlarına göre açılır döküm.
+- Ay değiştirilince yüklenenler yeniden yüklenmeden o aya göre hesaplanır.
+- Test: yeni kdv_testi.js.
 
 ### 24.11.2026 — 21. derleme: Program içi sekmeler
 - Üst çubuğun altında **sekme şeridi**: menüden ya da bağlantıdan açılan her sayfa (fiş, teklif, alış, cari, iş, ürün, listeler…)

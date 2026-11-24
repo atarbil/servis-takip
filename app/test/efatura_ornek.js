@@ -3,7 +3,7 @@
 const zlib = require('zlib');
 
 function ornekXml({ no = 'ABC2026000000123', ettn = '6f1c2b8e-3d4a-4b5c-9e7f-0a1b2c3d4e5f', vkn = '1234567890', unvan = 'Teknoloji Dağıtım A.Ş.', aliciVkn = '9876543210',
-  doviz = 'TRY', kur = null, tip = 'SATIS', satirlar } = {}) {
+  doviz = 'TRY', kur = null, tip = 'SATIS', satirlar, tarih = '2026-11-20', tevkifat = 0 } = {}) {
   const s = satirlar || [
     { ad: 'Hikvision DS-2CD1043G2-I 4MP IP Kamera', satici: 'HKV-1043G2', barkod: '6941264012345', miktar: 10, birim: 'C62', fiyat: 1250, isk: 10, kdv: 20 },
     { ad: 'CAT6 UTP Kablo 305m', satici: 'KBL-C6-305', miktar: 2, birim: 'C62', fiyat: 3400, isk: 0, kdv: 20 },
@@ -37,7 +37,7 @@ function ornekXml({ no = 'ABC2026000000123', ettn = '6f1c2b8e-3d4a-4b5c-9e7f-0a1
   <cbc:ID>${no}</cbc:ID>
   <cbc:CopyIndicator>false</cbc:CopyIndicator>
   <cbc:UUID>${ettn.toUpperCase()}</cbc:UUID>
-  <cbc:IssueDate>2026-11-20</cbc:IssueDate>
+  <cbc:IssueDate>${tarih}</cbc:IssueDate>
   <cbc:IssueTime>14:05:00</cbc:IssueTime>
   <cbc:InvoiceTypeCode>${tip}</cbc:InvoiceTypeCode>
   <cbc:Note><![CDATA[Yalnız #...# — test <notu>]]></cbc:Note>
@@ -60,7 +60,10 @@ function ornekXml({ no = 'ABC2026000000123', ettn = '6f1c2b8e-3d4a-4b5c-9e7f-0a1
   </cac:Party></cac:AccountingCustomerParty>
   <cac:PaymentMeans><cbc:PaymentMeansCode>42</cbc:PaymentMeansCode><cbc:PaymentDueDate>2026-12-20</cbc:PaymentDueDate></cac:PaymentMeans>
   ${kur ? `<cac:PricingExchangeRate><cbc:SourceCurrencyCode>${doviz}</cbc:SourceCurrencyCode><cbc:TargetCurrencyCode>TRY</cbc:TargetCurrencyCode><cbc:CalculationRate>${kur}</cbc:CalculationRate></cac:PricingExchangeRate>` : ''}
-  <cac:TaxTotal><cbc:TaxAmount currencyID="${doviz}">${r(kdvT)}</cbc:TaxAmount></cac:TaxTotal>
+  <cac:TaxTotal><cbc:TaxAmount currencyID="${doviz}">${r(kdvT)}</cbc:TaxAmount>
+    <cac:TaxSubtotal><cbc:TaxableAmount currencyID="${doviz}">${r(ara)}</cbc:TaxableAmount><cbc:TaxAmount currencyID="${doviz}">${r(kdvT)}</cbc:TaxAmount><cbc:Percent>20</cbc:Percent>
+      <cac:TaxCategory><cac:TaxScheme><cbc:Name>KDV</cbc:Name><cbc:TaxTypeCode>0015</cbc:TaxTypeCode></cac:TaxScheme></cac:TaxCategory></cac:TaxSubtotal></cac:TaxTotal>
+  ${tevkifat ? `<cac:WithholdingTaxTotal><cbc:TaxAmount currencyID="${doviz}">${r(tevkifat)}</cbc:TaxAmount></cac:WithholdingTaxTotal>` : ''}
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="${doviz}">${r(ara)}</cbc:LineExtensionAmount>
     <cbc:TaxExclusiveAmount currencyID="${doviz}">${r(ara)}</cbc:TaxExclusiveAmount>

@@ -1384,3 +1384,31 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
   .sekme-dugme:not([hidden]) { display: inline-flex; }
 }
 @media print { .sekme-serit { display: none !important; } }
+
+/* 22. derleme: KDV durumu */
+.kdv-ay { display: flex; align-items: center; gap: .5rem; font-weight: 600; color: var(--soluk); }
+.kdv-ay input { min-height: 40px; }
+.kdv-sonuc { border-radius: 16px; padding: 1.3rem 1.5rem; margin-bottom: 1rem; color: #fff; background: linear-gradient(135deg, #475569, #334155); }
+.kdv-sonuc.cikiyor { background: linear-gradient(135deg, #dc2626, #9f1239); }
+.kdv-sonuc.cikmiyor { background: linear-gradient(135deg, #16a34a, #0f766e); }
+.kdv-sonuc-ust { font-size: .85rem; opacity: .85; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+.kdv-hukum { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -.01em; margin: .15rem 0; }
+.kdv-tutar { font-size: 1.25rem; } .kdv-tutar b { font-size: 1.5rem; }
+.kdv-tutar-yazi { opacity: .9; }
+.kdv-izgara { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 960px) { .kdv-izgara { grid-template-columns: 1fr; } }
+.kdv-baslik { margin: 0 0 .6rem; font-size: 1rem; }
+.kdv-hesap { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.kdv-hesap td { padding: .55rem .2rem; border-bottom: 1px solid var(--cizgi2); }
+.kdv-hesap td:last-child { text-align: right; white-space: nowrap; font-weight: 600; }
+.kdv-hesap td small { display: block; color: var(--soluk); font-weight: 400; font-size: .76rem; }
+.kdv-hesap input { width: 150px; text-align: right; }
+.kdv-hesap tr.kdv-net td { border-top: 2px solid var(--yazi); border-bottom: 0; font-size: 1.15rem; font-weight: 800; padding-top: .7rem; }
+.kdv-hesap tr.kdv-net.negatif td:last-child { color: var(--kirmizi); } .kdv-hesap tr.kdv-net.pozitif td:last-child { color: var(--yesil); }
+.kdv-hesap tr.soluk-satir td { color: var(--soluk); border-bottom: 0; padding-top: 0; }
+.kdv-oran { margin-top: .8rem; } .kdv-oran summary { cursor: pointer; color: var(--soluk); font-weight: 600; padding: .3rem 0; }
+.kdv-birak { padding: 1.2rem 1rem; }
+.kdv-yuklenen { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .6rem; }
+.kdv-yuklenen .btn-metin { color: var(--kirmizi); }
+.kdv-hatalar { margin-bottom: .6rem; font-size: .85rem; } .kdv-hatalar summary { cursor: pointer; color: var(--turuncu); font-weight: 600; }
+.kdv-not { font-size: .8rem; margin: .4rem 0 0; }

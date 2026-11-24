@@ -94,7 +94,21 @@ function efaturaOku(xmlMetin) {
   });
   if (!satirlar.length) uyarilar.push('Faturada kalem bulunamadı.');
 
+  // Belge geneli vergi dökümü: KDV (0015) oran bazında; tevkifat (alıcının ödeyeceği KDV)
+  const kdvDokum = [];
+  for (const tt of hepsi(k, 'TaxTotal')) {
+    for (const t of hepsi(tt, 'TaxSubtotal')) {
+      const kod = yazi(t, 'TaxCategory/TaxScheme/TaxTypeCode');
+      const ad = yazi(t, 'TaxCategory/TaxScheme/Name');
+      if (kod && kod !== '0015' && !/KDV|KATMA/i.test(ad)) continue;
+      kdvDokum.push({ oran: sayi(yazi(t, 'Percent')), matrah: sayi(yazi(t, 'TaxableAmount')), kdv: sayi(yazi(t, 'TaxAmount')) });
+    }
+  }
+  const tevkifat = r2(hepsi(k, 'WithholdingTaxTotal').reduce((t, w) => t + sayi(yazi(w, 'TaxAmount')), 0));
+
   return {
+    kdvDokum,
+    tevkifat,
     profil: yazi(k, 'ProfileID'),
     tip,
     no: yazi(k, 'ID'),

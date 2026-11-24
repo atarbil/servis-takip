@@ -28,6 +28,7 @@ export const YONETICI_MENU = [
   ] },
   { grup: 'finans', ad: 'Finans', ikon: 'kasa', alt: [
     { yol: 'kasa', ad: 'Kasa / Banka', ikon: 'kasa' },
+    { yol: 'kdv', ad: 'KDV durumu', ikon: 'rapor' },
     { yol: 'raporlar', ad: 'Raporlar', ikon: 'rapor' },
   ] },
 ];
@@ -464,7 +465,7 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura', kdv: 'kdv',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 // Her girişte yeniden yüklenen sayfalar (canlı döngüsü olanlar)
