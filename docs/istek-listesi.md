@@ -11,6 +11,9 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
   Satış fişleri ve Alış faturaları (onay dahil), Teklif / proforma, Kasa / banka, Resmi fatura yükleme, Resmi faturalar, KDV durumu,
   Raporlar. Görmez / değiştiremez: Ayarlar, kullanıcılar, form tasarımı, program güncelleme, ekip konumları, iş havuzu / takvim
   planlama (yalnız okuma?), stok kartı fiyat / maliyet düzenleme (?). Kullanıcı ekleme penceresinde rol seçeneği.
+- **Karar (kullanıcı 23:46): Muhasebe kârlılıkla ilgili hiçbir şey görmesin** — fiş / teklif / alışta maliyet ve kâr sütunu,
+  "Maliyet / kâr" kutusu, panel ve raporlardaki kâr / kâr oranı / maliyet rakamları, ürün kartında ortalama maliyet, cari yıllık
+  özetteki kâr, detaylı ekstre dışı maliyet bilgileri gizli; sunucu da bu alanları muhasebe rolüne göndermez (yalnız gizlemek değil).
 
 ### 2. Teknisyenler de iş ekleyebilsin (24.11.2026)
 - Kullanıcı: "Teknisyenler de iş ekleyebilsin".
