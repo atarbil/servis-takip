@@ -21,6 +21,11 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
   - Altta özet kutusu: Devir · Dönem borç toplamı (aldıkları) · Dönem alacak toplamı (ödedikleri) · **Kalan bakiye** (borçlu / alacaklı).
   - Çıktı A4 dikey, kalemler sayfa arasında bölünebilir, başlık her sayfada tekrar.
 
+### 2. Cari listesi açılınca varsayılan "Müşteriler" (24.11.2026)
+- Kullanıcı: "Cari listesine girdiğim zaman varsayılan olarak müşteriler ekranı gelsin".
+- Cariler listesindeki tür kutusu açılışta **Müşteriler** seçili gelir (müşteri + "her ikisi" olan cariler). Tümü / Tedarikçiler
+  elle seçilebilir; aynı sekme içinde seçim korunur.
+
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
