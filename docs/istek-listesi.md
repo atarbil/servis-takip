@@ -31,7 +31,8 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
      bir sonraki faturada otomatik gelir.
   6. Toplam kontrolü: okunan satırların toplamı faturadaki genel toplamla tutmuyorsa uyarı.
   7. Sonuç **taslak alış faturası** olur; kullanıcı kontrol edip Onayla'ya basınca stok ve maliyet girer. Otomatik onay yok.
-  8. Yüklenen PDF alış faturasına ek olarak saklanır.
+  8. **Yüklenen dosya saklanmaz** (kullanıcı kararı 24.11.2026): yalnız okunur, taslak alış faturası oluşturulur; dosya diske
+     yazılmaz / okuma bitince bellekten atılır, yedeğe de girmez.
 - Açık kararlar: Claude API kullanımı (ücretli API anahtarı, fatura içeriği Anthropic'e gider) mi, yalnız XML/metin okuma mı?
   Anahtar sunucuda .env'e `read -s` ile girilir, sohbete yazılmaz.
 
