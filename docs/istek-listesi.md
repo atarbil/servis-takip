@@ -4,16 +4,29 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Satış fişi: "Tür" sütunu kalksın; "+ Satır" yanında "+ İşçilik / + Eğitim / + Hizmet" (24.11.2026)
+### 1. Satış fişi: "Tür" sütunu kalksın; "+ İşçilik / + Eğitim / + Hizmet" stoksuz satır ekler (24.11.2026)
 Kullanıcı: "Satış fişinde türü kaldıralım, + Satır'ın yanına işçilik / eğitim / hizmet diye 3 başlık açalım."
-Yorum (tüm kalemler kartlı kuralıyla uyumlu):
-- Kalem tablosundaki **"Tür" sütunu kaldırılır** (fiş ekranında ve yazdırmada yok).
-- Hizmet kartlarına **hizmet grubu** eklenir: **İşçilik · Eğitim · Hizmet** (ürün kartı formunda Tür = Hizmet seçilince görünür).
-- Kalem araç çubuğunda **"+ Satır"ın yanında üç düğme: "+ İşçilik", "+ Eğitim", "+ Hizmet"**. Her biri yeni satır açar ve
-  ürün kutusunda **yalnız o gruptaki hizmet kartlarını** listeler (boşken hepsi, yazınca süzülür). Listede yoksa
-  "yeni kart aç" penceresi **Tür = Hizmet ve o grup seçili** gelir.
-- "+ Satır" her şeyi (ürün + hizmet) aramaya devam eder.
-- Aynı düğmeler teklif ekranında da (alışta hizmet nadir, eklenmez) — kullanıcıya teyit edilecek.
+Düzeltme (17:49): "Grup olarak değil; dediğin butonlara basılınca direkt **stoksuz** satış fişine satır eklesin."
+- Kalem tablosundaki **"Tür" sütunu kaldırılır.**
+- **"+ Satır"ın yanında üç düğme: "+ İşçilik", "+ Eğitim", "+ Hizmet".** Basılınca fişe **stok kartı gerektirmeyen** bir satır
+  eklenir: açıklama kutusunda varsayılan yazı ("İşçilik" / "Eğitim" / "Hizmet") seçili gelir, üzerine yazılabilir
+  (ör. "Kamera montaj işçiliği", "NVR kullanım eğitimi"); miktar (işçilik/eğitimde birim "saat"), fiyat, KDV girilir.
+  Stoktan düşmez, maliyeti yoktur (kâr = tutar). Satırda adın yanında küçük rozet: İşçilik / Eğitim / Hizmet.
+- **Kural güncellemesi:** "her kalem stok kartlı" kuralı **ürün satırları** için geçerli kalır (yazılan ürün stokta yoksa
+  "yeni stok kartı açılsın mı?" sorusu sürer). İşçilik / Eğitim / Hizmet satırları yalnız bu üç düğmeyle açılır; serbest yazılı
+  ürün satırı yine yoktur. Hizmet kartları (Tür = Hizmet) "+ Satır" ile seçilmeye devam edebilir.
+- Veritabanı: satır tipine "eğitim" eklenir; kartsız satıra yalnız işçilik / eğitim / hizmet tipinde izin verilir.
+- Yazdırmada bu satırlar normal kalem olarak çıkar (kod / barkod / resim boş).
+- Aynı üç düğme ve kural "Teslim et / İşi ben yaptım" satırlarında da.
+
+### 2. Teklif ekranı tasarım olarak satış fişinin aynısı olsun (24.11.2026)
+- Teklif / proforma düzenleme ekranı satış fişi ekranının düzenine geçer: üstte cari kutusu (bakiye ile) + sağda belge bilgileri
+  (no, tarih, geçerlilik, döviz/kur), Excel gibi kalem tablosu (aynı sütunlar, klavye kısayolları, F4 stok listesi, barkod,
+  "Enter ile yeni satır aç", "Fiyatlar KDV dahil"), aynı **+ Satır / + İşçilik / + Eğitim / + Hizmet** düğmeleri, altta yazıyla
+  tutar + KDV dökümü + toplam kutusu, sağ üstte Kaydet / Yazdır / (Satış fişine dönüştür) düğmeleri; telefonda aynı alt çubuk.
+- Teklife özel alanlar (giriş / kapanış metni, kaşe-imza, TL karşılığı) satış fişindeki açıklama alanı gibi başlık kartında
+  ya da tablonun altında katlanır bir "Teklif metinleri" bölümünde.
+- Maliyet / kâr sütunu teklifte de isteğe bağlı (yazdırmaya çıkmaz).
 
 ## İsteğe bağlı fikirler
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
