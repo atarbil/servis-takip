@@ -51,7 +51,7 @@ export default async function (el, [id], ctx) {
     if (!a) return;
     try {
       if (a === 'duzenle') { if (await urunFormu(u)) ctx.yenile(); }
-      else if (a === 'sil') { if (await silOnay('urun', u.id)) ctx.git('urunler'); }
+      else if (a === 'sil') { if (await silOnay('urun', u.id)) ctx.kapatVeGit('urunler'); }
       else if (a === 'resim-sil') { await api.post(`/urunler/${id}/resim`, {}); ctx.yenile(); }
       else if (a === 'sayim') {
         const r = await pencere({

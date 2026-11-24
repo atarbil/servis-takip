@@ -38,5 +38,5 @@ export default async function (el, _p, ctx) {
   }
   await ciz();
   // Sayfa açıkken dakikada bir yenile (yeni atanan işler gelsin)
-  const zmn = setInterval(() => { if (!document.body.contains(el)) return clearInterval(zmn); if (!document.hidden && !document.querySelector('dialog[open], .tam-ekran')) ciz().catch(() => {}); }, 60000);
+  const zmn = setInterval(() => { if (el.kapandi) return clearInterval(zmn); if (!el.isConnected) return; if (!document.hidden && !document.querySelector('dialog[open], .tam-ekran')) ciz().catch(() => {}); }, 60000);
 }

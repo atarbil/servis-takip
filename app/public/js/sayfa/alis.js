@@ -39,6 +39,7 @@ export default async function (el, [id], ctx) {
 
   // Excel gibi klavye ile gezinme (yeniden çizimde odak korunur)
   let izgara = null;
+  let kaydedildi = () => {};
   function ciz() { const o = izgara?.odakNe(); cizIc(); if (o) izgara.odakla(o); }
   const enterYeniSatir = () => { try { return localStorage.getItem('enterYeniSatir') === '1'; } catch { return false; } };
   const bosSatir = () => ({ urun_id: null, ad: '', miktar: 1, birim_fiyat: 0, kdv_orani: 20 });
@@ -212,6 +213,7 @@ export default async function (el, [id], ctx) {
     a = a.id ? await api.put(`/alislar/${a.id}`, govde) : await api.post('/alislar', govde);
     satirlar = a.satirlar.map((s) => ({ ...s }));
     if (id === 'yeni') history.replaceState(null, '', `#/alis/${a.id}`);
+    kaydedildi();
   }
 
   el.addEventListener('click', async (e) => {
@@ -253,7 +255,7 @@ export default async function (el, [id], ctx) {
     if (!act) return;
     try {
       if (act === 'kaydet') { await kaydet(); bildir('Kaydedildi.', 'basari'); ciz(); }
-      else if (act === 'sil') { if (await silOnay('alis_faturasi', a.id)) ctx.git('alislar'); }
+      else if (act === 'sil') { if (await silOnay('alis_faturasi', a.id)) ctx.kapatVeGit('alislar'); }
       else if (act === 'onayla') {
         await kaydet(); ciz();
         if (!satirlar.length) throw new Error('Faturada ürün yok.');
@@ -278,5 +280,11 @@ export default async function (el, [id], ctx) {
     Object.assign(satirlar[i], { urun_id: u.id, ad: u.ad, kod: u.kod, birim: u.birim || 'adet', kdv_orani: Number(u.kdv_orani ?? 20) });
     ciz();
   });
+  // Program içi sekme: kaydedilmemiş değişiklik var mı
+  let degisti = false;
+  el.addEventListener('input', () => { degisti = true; });
+  el.addEventListener('click', (e) => { if (e.target.closest('[data-sil], [data-stok-listesi], [data-barkod], [data-ekle], [data-urun-degistir], [data-tcmb]')) degisti = true; }, true);
+  el.kirliMi = () => degisti && a.durum === 'taslak' && (!!a.id || satirlar.some((x) => x.urun_id));
+  kaydedildi = () => { degisti = false; };
   ciz();
 }

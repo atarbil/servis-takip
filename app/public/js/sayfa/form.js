@@ -363,14 +363,16 @@ export default async function (el, [id], ctx) {
     }
   });
   const tuslar = (e) => {
-    if (!el.isConnected) return removeEventListener('keydown', tuslar);
+    if (el.kapandi) return removeEventListener('keydown', tuslar);
+    if (!el.isConnected) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); kaydet(); return; }
     if (e.target.closest?.('[data-metin], input, textarea')) return; // metin kutusunda tarayıcının kendi geri alması
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey && gi > 0) { e.preventDefault(); gi--; gecmisYukle(); }
     if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey)) && gi < gecmis.length - 1) { e.preventDefault(); gi++; gecmisYukle(); }
   };
   addEventListener('keydown', tuslar);
-  const ayrilma = (e) => { if (!el.isConnected) return removeEventListener('beforeunload', ayrilma); if (degisti) { e.preventDefault(); e.returnValue = ''; } };
+  el.kirliMi = () => degisti;
+  const ayrilma = (e) => { if (el.kapandi) return removeEventListener('beforeunload', ayrilma); if (degisti) { e.preventDefault(); e.returnValue = ''; } };
   addEventListener('beforeunload', ayrilma);
 
   // ---------- Önizleme verisi: gerçek belgeler ----------

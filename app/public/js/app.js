@@ -75,6 +75,7 @@ const IKON = {
   etiket: 'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
   cihaz: 'M4 5h16v10H4zM8 19h8M12 15v4',
   belge: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h6',
+  sekme: 'M4 7h6l2 2h8v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 7V5a1 1 0 0 1 1-1h5l2 2',
   cikis: 'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3',
 };
 export const ikon = (ad, boyut = 20) => html`<svg class="ikon" width="${boyut}" height="${boyut}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IKON[ad] || ''}"/></svg>`;
@@ -86,16 +87,19 @@ const ctx = {
   get yonetici() { return this.kullanici?.rol === 'yonetici'; },
   git(yol) { location.hash = '#/' + yol.replace(/^#?\//, ''); },
   // Sayfa başlığı: menüde adı değiştirilmiş sayfalar yeni adla görünür
-  baslik(metin) {
+  baslikMetni(metin) {
     const m = DUZ_MENU.find((x) => x.ad === metin);
-    const ad = (m && this.menuAdlari?.[m.yol]) || metin;
+    return (m && this.menuAdlari?.[m.yol]) || metin;
+  },
+  baslik(metin) {
+    const ad = this.baslikMetni(metin);
     document.title = `${ad} · ${this.ayarlar.firma_adi || 'Servis Takip'}`; const b = $('#ust-baslik'); if (b) b.textContent = ad;
   },
   async ekipler(yenile = false) {
     if (!this._ekipler || yenile) this._ekipler = await api.get('/ekipler');
     return this._ekipler;
   },
-  yenile() { yonlendir(); },
+  yenile() { if (aktif) sekmeYukle(aktif); else yonlendir(); },
 };
 window.__ctx = ctx;
 
@@ -111,6 +115,8 @@ async function basla() {
   menuAdlariYukle();
   kabukCiz();
   mobilBaslat();
+  seritBagla();
+  sekmeleriGeriYukle();
   window.addEventListener('hashchange', yonlendir);
   yonlendir();
 }
@@ -393,10 +399,12 @@ function kabukCiz() {
         </nav>
         <span class="bosluk"></span>
         <div class="kur-kutu" id="kur" hidden></div>
+        <button class="btn-ikon sekme-dugme" id="btn-sekmeler" title="Açık sayfalar" aria-label="Açık sayfalar"><span>${ikon('sekme')}</span><b id="sekme-sayi">1</b></button>
         <button class="btn birincil" id="btn-fis" title="Yeni satış fişi"><span class="uzun">+ Satış fişi</span><span class="kisa" aria-hidden="true">🧾</span></button>
         <button class="btn birincil" id="btn-hizli">+ İş ekle</button>
         ${kullaniciGrup('yalniz-masa')}
       </header>
+      <div class="sekme-serit" id="sekme-serit" role="tablist" aria-label="Açık sayfalar"></div>
       <div class="yan-ortu" id="yan-ortu"></div>
       <main id="sayfa"></main>
       <nav class="alt-menu">${MOBIL_ALT.map((y) => { const m = DUZ_MENU.find((x) => x.yol === y); return html`<a href="#/${m.yol}" data-yol="${m.yol}">${ikon(m.ikon)}<span>${menuAdi(m).replace('İş ', '')}</span></a>`; })}
@@ -459,46 +467,240 @@ const SAYFALAR = {
   urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
-let sonYukleme = 0;
+// Her girişte yeniden yüklenen sayfalar (canlı döngüsü olanlar)
+const HEP_YENILE = new Set(['guncelleme']);
+const MENU_ESLES = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', efatura: 'efatura', urun: 'urunler', teklif: 'teklifler', form: 'formlar' };
 
-async function yonlendir() {
-  const [yolKismi, sorguKismi] = location.hash.replace(/^#\/?/, '').split('?');
-  ctx.sorgu = Object.fromEntries(new URLSearchParams(sorguKismi || ''));
-  const parca = yolKismi.split('/').filter(Boolean);
-  let [ad, ...params] = parca;
+// ---------- Program içi sekmeler ----------
+// Açılan her sayfa bir sekmedir; sekmeler arasında geçişte sayfa yeniden yüklenmez (yazılanlar, kaydırma yeri kalır).
+// Görünmeyen sekmenin sayfası DOM'dan ayrılır ama bellekte durur (aynı kimlikli elemanlar çakışmaz).
+const SEKME_SINIRI = 12;
+const sekmeler = [];
+let aktif = null;
+let veriSurumu = 0;
+let sekmeSayac = 0;
+const sekmeAcik = () => ctx.yonetici;
+const kirliMi = (s) => { try { return !!s.el?.kirliMi?.(); } catch { return false; } };
+
+function yolCoz(hashYol) {
+  const [yolKismi, sorguKismi] = hashYol.split('?');
+  const sorgu = Object.fromEntries(new URLSearchParams(sorguKismi || ''));
+  let [ad, ...params] = yolKismi.split('/').filter(Boolean);
   if (!ad) ad = ctx.yonetici ? 'panel' : 'islerim';
-  if (!ctx.yonetici && !TEKNISYEN_IZINLI.has(ad)) ad = 'islerim';
+  if (!ctx.yonetici && !TEKNISYEN_IZINLI.has(ad)) { ad = 'islerim'; params = []; }
   if (!ctx.yonetici && ad === 'saha' && !params[0]) ad = 'islerim';
-  const modul = SAYFALAR[ad];
-  const eski = $('#sayfa');
-  if (!eski) return;
-  // Sayfa değişince açık pencereler kapanır (geri tuşu, menü, panel bağlantısı)
-  document.querySelectorAll('dialog[open]').forEach((d) => { try { d.close(); } catch { /* */ } });
-  // Eski sayfanın olay dinleyicilerini temizlemek için yeni eleman
+  return { ad, params, sorgu, anahtar: [ad, ...params].join('/') };
+}
+function varsayilanBaslik(ad) {
+  const m = DUZ_MENU.find((x) => x.yol === (MENU_ESLES[ad] || ad));
+  const ek = { fis: 'Satış fişi', alis: 'Alış faturası', teklif: 'Teklif', cari: 'Cari', urun: 'Ürün', is: 'İş', saha: 'İş', form: 'Form' }[ad];
+  return ek || (m ? menuAdi(m) : ad);
+}
+function sekmeleriSakla() {
+  if (!sekmeAcik()) return;
+  try {
+    localStorage.setItem(`sekmeler-${ctx.kullanici.id}`, JSON.stringify({ liste: sekmeler.map((x) => ({ hash: x.hash, baslik: x.baslik })), aktif: aktif?.hash }));
+  } catch { /* */ }
+}
+function sekmeleriGeriYukle() {
+  if (!sekmeAcik()) return;
+  try {
+    const k = JSON.parse(localStorage.getItem(`sekmeler-${ctx.kullanici.id}`) || 'null');
+    for (const x of (k?.liste || []).slice(0, SEKME_SINIRI)) {
+      const y = yolCoz(x.hash);
+      if (!SAYFALAR[y.ad] || sekmeler.some((z) => z.anahtar === y.anahtar)) continue;
+      sekmeler.push({ no: ++sekmeSayac, anahtar: y.anahtar, hash: x.hash, baslik: x.baslik || varsayilanBaslik(y.ad), ad: y.ad, el: null, sonKullanim: 0 });
+    }
+    // Adres boşsa son açık sekmeye dönülür
+    if (k?.aktif && !location.hash.replace(/^#\/?/, '')) history.replaceState(null, '', `#/${k.aktif}`);
+  } catch { /* */ }
+}
+
+// Sekmenin sayfasını (yeniden) yükler
+async function sekmeYukle(s) {
+  const y = yolCoz(s.hash);
+  const eski = s.el;
   const el = document.createElement('main');
   el.id = 'sayfa';
-  el.className = `sayfa-${ad}`;
-  eski.replaceWith(el);
-  window.scrollTo(0, 0);
-  const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', efatura: 'efatura', urun: 'urunler', teklif: 'teklifler' }[ad] || ad;
-  $$('[data-yol]').forEach((a) => a.classList.toggle('aktif', a.dataset.yol === menuAd));
-  // Bulunulan sayfanın grubu vurgulanır; açık menüler kapanır
-  $$('.um-grup').forEach((g) => g.classList.toggle('aktif-grup', !!g.querySelector(`[data-yol="${menuAd}"]`)));
-  menuKapat(); cekmece(false);
-  sayacYukle();
-  const benim = ++sonYukleme;
+  el.className = `sayfa-${y.ad}`;
+  if (eski) { eski.kapandi = true; if (eski.isConnected) eski.replaceWith(el); }
+  s.el = el; s.surum = veriSurumu; s.dokunuldu = false; s.ad = y.ad;
+  if (aktif === s && !el.isConnected) yerlestir(el);
+  // Kullanıcı bir şey yazdıysa sekme kendiliğinden yenilenmez
+  el.addEventListener('input', () => { s.dokunuldu = true; seritCizGecikmeli(); });
+  el.addEventListener('click', seritCizGecikmeli);
+  const sctx = Object.create(ctx);
+  sctx.sorgu = y.sorgu;
+  sctx.baslik = (metin) => { s.baslik = ctx.baslikMetni(metin); if (aktif === s) ctx.baslik(metin); seritCiz(); sekmeleriSakla(); };
+  sctx.yenile = () => sekmeYukle(s);
+  sctx.kapatVeGit = (yol) => { sekmeKapat(s, true, false); ctx.git(yol); };
+  const modul = SAYFALAR[y.ad];
   if (!modul) { el.innerHTML = '<div class="bos-durum">Sayfa bulunamadı.</div>'; return; }
   el.innerHTML = '<div class="yukleniyor"><span></span></div>';
   try {
     const m = await import(`./sayfa/${modul}.js`);
-    if (benim !== sonYukleme) return;
-    await m.default(el, params, ctx);
+    if (s.el !== el) return;
+    await m.default(el, y.params, sctx);
   } catch (e) {
-    if (benim !== sonYukleme) return;
+    if (s.el !== el) return;
     console.error(e);
     el.innerHTML = String(html`<div class="bos-durum hata"><b>Sayfa yüklenemedi</b><p>${e.message}</p>
       <button class="btn ikincil" onclick="location.reload()">Yenile</button></div>`);
   }
+}
+function yerlestir(el) {
+  const simdiki = document.getElementById('sayfa');
+  if (simdiki === el) return;
+  if (simdiki) simdiki.replaceWith(el);
+}
+
+function sekmeEtkinlestir(s) {
+  if (aktif && aktif !== s) { aktif.kaydirma = window.scrollY; aktif.gizlendi = Date.now(); }
+  const onceki = aktif;
+  aktif = s;
+  s.sonKullanim = Date.now();
+  // Bu tarayıcıda veri değiştiyse ya da sekme 2 dakikadan uzun arkada kaldıysa (başka kullanıcılar değiştirmiş olabilir)
+  // ve kullanıcı sayfada bir şey yazmadıysa yeniden yüklenir
+  const eskidi = s.surum < veriSurumu || (s.gizlendi && Date.now() - s.gizlendi > 120000);
+  const yenile = !s.el || HEP_YENILE.has(s.ad) || (eskidi && !s.dokunuldu && !kirliMi(s));
+  if (s.el && !yenile) {
+    yerlestir(s.el);
+    if (s.baslik) ctx.baslik(s.baslik);
+    window.scrollTo(0, onceki === s ? window.scrollY : s.kaydirma || 0);
+  } else {
+    if (s.el) yerlestir(s.el);
+    window.scrollTo(0, 0);
+    sekmeYukle(s);
+  }
+  const menuAd = MENU_ESLES[s.ad] || s.ad;
+  $$('[data-yol]').forEach((a) => a.classList.toggle('aktif', a.dataset.yol === menuAd));
+  $$('.um-grup').forEach((g) => g.classList.toggle('aktif-grup', !!g.querySelector(`[data-yol="${menuAd}"]`)));
+  menuKapat(); cekmece(false);
+  sayacYukle();
+  sinirUygula();
+  seritCiz();
+  sekmeleriSakla();
+}
+
+// Sınırı aşınca en uzun süredir kullanılmayan, kaydedilmemiş değişikliği olmayan sekme kapanır
+function sinirUygula() {
+  const sinir = sekmeAcik() ? SEKME_SINIRI : 1;
+  while (sekmeler.length > sinir) {
+    const aday = sekmeler.filter((x) => x !== aktif && !kirliMi(x)).sort((a2, b2) => a2.sonKullanim - b2.sonKullanim)[0];
+    if (!aday) break;
+    sekmeKapat(aday, true, false);
+  }
+}
+
+async function sekmeKapat(s, zorla = false, git = true) {
+  const i = sekmeler.indexOf(s);
+  if (i < 0) return;
+  if (!zorla && kirliMi(s)) {
+    if (aktif !== s) location.hash = `#/${s.hash}`;
+    const { onayla } = await import('./ui.js');
+    if (!await onayla(html`<b>${s.baslik}</b> sekmesinde kaydedilmemiş değişiklikler var. Kaydetmeden kapatılsın mı?`, { evet: 'Kaydetmeden kapat', tehlike: true })) return;
+  }
+  sekmeler.splice(i, 1);
+  if (s.el) s.el.kapandi = true;
+  if (aktif === s) {
+    aktif = null;
+    if (git) {
+      const sonraki = [...sekmeler].sort((a2, b2) => b2.sonKullanim - a2.sonKullanim)[0];
+      const hedef = sonraki ? sonraki.hash : (ctx.yonetici ? 'panel' : 'islerim');
+      if (location.hash.replace(/^#\/?/, '') === hedef) yonlendir(); else location.hash = `#/${hedef}`;
+    }
+  }
+  seritCiz();
+  sekmeleriSakla();
+}
+
+let seritZmn = 0;
+function seritCizGecikmeli() { cancelAnimationFrame(seritZmn); seritZmn = requestAnimationFrame(() => setTimeout(seritCiz, 0)); }
+function seritCiz() {
+  const serit = $('#sekme-serit');
+  const sayi = $('#sekme-sayi');
+  if (sayi) sayi.textContent = sekmeler.length;
+  const dugme = $('#btn-sekmeler'); if (dugme) dugme.hidden = !sekmeAcik();
+  if (!serit) return;
+  serit.hidden = !sekmeAcik() || !sekmeler.length;
+  serit.innerHTML = String(html`${sekmeler.map((x) => html`<a class="sekme ${x === aktif ? 'aktif' : ''} ${kirliMi(x) ? 'kirli' : ''}" href="#/${x.hash}" role="tab" aria-selected="${x === aktif}" data-sekme="${x.no}" title="${x.baslik}">
+      <span class="sekme-ad">${x.baslik || varsayilanBaslik(x.ad)}</span><i class="sekme-nokta" title="Kaydedilmemiş değişiklik"></i>
+      <button type="button" class="sekme-kapat" data-sekme-kapat="${x.no}" title="Kapat" aria-label="Sekmeyi kapat" tabindex="-1">✕</button></a>`)}
+    ${sekmeler.length > 1 ? html`<button type="button" class="sekme-tumu" data-sekme-tumu title="Bu sekme dışındakileri kapat">Diğerlerini kapat</button>` : ''}`);
+  serit.querySelector('.sekme.aktif')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+function sekmeBul(no) { return sekmeler.find((x) => x.no === Number(no)); }
+function seritBagla() {
+  document.addEventListener('click', (e) => {
+    const k = e.target.closest('[data-sekme-kapat]');
+    if (k) { e.preventDefault(); e.stopPropagation(); const s = sekmeBul(k.dataset.sekmeKapat); if (s) sekmeKapat(s); return; }
+    if (e.target.closest('[data-sekme-tumu]')) { for (const x of [...sekmeler]) if (x !== aktif && !kirliMi(x)) sekmeKapat(x, true, false); return; }
+    if (e.target.closest('#btn-sekmeler')) sekmeListesi();
+  });
+  // Orta tık ile kapat
+  document.addEventListener('auxclick', (e) => {
+    const t = e.target.closest('.sekme[data-sekme]');
+    if (t && e.button === 1) { e.preventDefault(); const s = sekmeBul(t.dataset.sekme); if (s) sekmeKapat(s); }
+  });
+  // Ctrl+Alt+→ / ← sekmeler arasında, Ctrl+Alt+W kapatır
+  document.addEventListener('keydown', (e) => {
+    if (!sekmeAcik() || !e.ctrlKey || !e.altKey || !aktif) return;
+    const i = sekmeler.indexOf(aktif);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const h = sekmeler[(i + (e.key === 'ArrowRight' ? 1 : -1) + sekmeler.length) % sekmeler.length];
+      if (h && h !== aktif) { e.preventDefault(); location.hash = `#/${h.hash}`; }
+    } else if (e.key.toLowerCase() === 'w') { e.preventDefault(); sekmeKapat(aktif); }
+  });
+  // Kayıt sonrası adres değişirse (ör. #/fis/yeni → #/fis/12) sekme de güncellenir
+  const asil = history.replaceState.bind(history);
+  history.replaceState = (st, baslik, url) => {
+    asil(st, baslik, url);
+    if (aktif && url != null && String(url).includes('#')) {
+      const h = String(url).replace(/^[^#]*#\/?/, '');
+      const y = yolCoz(h);
+      aktif.hash = h; aktif.anahtar = y.anahtar; aktif.ad = y.ad;
+      seritCiz(); sekmeleriSakla();
+    }
+  };
+  window.addEventListener('veri-degisti', () => { veriSurumu++; if (aktif) aktif.surum = veriSurumu; seritCizGecikmeli(); });
+}
+// Telefonda: açık sayfalar listesi
+async function sekmeListesi() {
+  const { pencere } = await import('./ui.js');
+  pencere({
+    baslik: 'Açık sayfalar',
+    icerik: html`<div class="sekme-liste">${[...sekmeler].sort((a2, b2) => b2.sonKullanim - a2.sonKullanim).map((x) => html`<div class="sekme-liste-oge ${x === aktif ? 'aktif' : ''}">
+      <a href="#/${x.hash}" data-git>${x.baslik || varsayilanBaslik(x.ad)}${kirliMi(x) ? html` <span class="rozet turuncu">kaydedilmedi</span>` : ''}</a>
+      <button type="button" class="btn-ikon" data-liste-kapat="${x.no}" aria-label="Kapat">✕</button></div>`)}</div>`,
+    kaydetMetin: null, iptalMetin: 'Kapat',
+    acildi: (d, kapat) => {
+      d.addEventListener('click', async (e) => {
+        if (e.target.closest('[data-git]')) { kapat(); return; }
+        const b = e.target.closest('[data-liste-kapat]');
+        if (b) { const s = sekmeBul(b.dataset.listeKapat); kapat(); if (s) await sekmeKapat(s); }
+      });
+    },
+  });
+}
+
+async function yonlendir() {
+  const hashYol = location.hash.replace(/^#\/?/, '');
+  const y = yolCoz(hashYol);
+  if (!$('#sayfa')) return;
+  // Sayfa değişince açık pencereler kapanır (geri tuşu, menü, panel bağlantısı)
+  document.querySelectorAll('dialog[open]').forEach((d) => { try { d.close(); } catch { /* */ } });
+  let s = sekmeler.find((x) => x.anahtar === y.anahtar);
+  if (s && s.hash !== hashYol && (s.hash.split('?')[1] || '') !== (hashYol.split('?')[1] || '')) {
+    // Aynı sayfa başka sorguyla: değişiklik yoksa yeni sorguyla yüklenir, varsa ayrı sekme açılır
+    if (kirliMi(s)) s = null;
+    else { s.hash = hashYol; s.surum = -1; s.dokunuldu = false; }
+  }
+  if (!s) {
+    s = { no: ++sekmeSayac, anahtar: y.anahtar, hash: hashYol, baslik: varsayilanBaslik(y.ad), ad: y.ad, el: null, sonKullanim: 0 };
+    const i = aktif ? sekmeler.indexOf(aktif) : -1;
+    if (i >= 0) sekmeler.splice(i + 1, 0, s); else sekmeler.push(s);
+  }
+  sekmeEtkinlestir(s);
 }
 
 // ---------- PWA ----------

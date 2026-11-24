@@ -332,7 +332,7 @@ export default async function (el, [id], ctx) {
     if (!a) return;
     try {
       if (a === 'kaydet') { await kaydet(); bildir('Fiş kaydedildi.', 'basari'); ciz(); }
-      else if (a === 'sil') { degisti = false; if (await silOnay('satis_fisi', f.id)) ctx.git(f.is_id ? `is/${f.is_id}` : 'fisler'); }
+      else if (a === 'sil') { degisti = false; if (await silOnay('satis_fisi', f.id)) ctx.kapatVeGit(f.is_id ? `is/${f.is_id}` : 'fisler'); }
       else if (a === 'kurguncelle') {
         ctx.kur = null;
         kur = await kurAl(ctx);
@@ -368,10 +368,10 @@ export default async function (el, [id], ctx) {
   });
 
   // Kaydedilmemiş değişiklik uyarısı
-  const ayrilma = (e) => { if (degisti && document.body.contains(el)) { e.preventDefault(); e.returnValue = ''; } };
+  // (sayfa başka bir sekmedeyken de geçerli; sekme kapanınca dinleyici kalkar)
+  el.kirliMi = () => degisti && f.durum === 'taslak';
+  const ayrilma = (e) => { if (el.kapandi) { window.removeEventListener('beforeunload', ayrilma); return; } if (el.kirliMi()) { e.preventDefault(); e.returnValue = ''; } };
   window.addEventListener('beforeunload', ayrilma);
-  const hashDinle = () => { if (!document.body.contains(el)) { window.removeEventListener('beforeunload', ayrilma); window.removeEventListener('hashchange', hashDinle); } };
-  window.addEventListener('hashchange', hashDinle);
 
   // Üst çubuktaki "+ Satış fişi" ile yeni açıldıysa ilk kalem satırı hazır, imleç ürün kutusunda
   let ilkSatir = false;

@@ -219,5 +219,7 @@ export default async function (el, _p, ctx) {
     }
   });
 
+  // Program içi sekme: aktarılmayı bekleyen fatura varsa kapatırken sorulur
+  el.kirliMi = () => faturalar.some((x) => x._durum === 'bekliyor');
   ciz();
 }

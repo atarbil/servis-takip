@@ -334,7 +334,7 @@ export default async function (el, [id], ctx) {
     if (!a) return;
     try {
       if (a === 'kaydet') { await kaydet(); bildir('Kaydedildi.', 'basari'); ciz(); }
-      else if (a === 'sil') { degisti = false; if (await silOnay('teklif', t.id)) ctx.git('teklifler'); }
+      else if (a === 'sil') { degisti = false; if (await silOnay('teklif', t.id)) ctx.kapatVeGit('teklifler'); }
       else if (a === 'yazdir') {
         if (degisti && !kilitli()) { await kaydet(); ciz(); }
         if (!t.id) return;
@@ -372,5 +372,7 @@ export default async function (el, [id], ctx) {
     } catch (err) { bildir(err.message, 'hata', 6000); }
   });
 
+  // Program içi sekme: kaydedilmemiş değişiklik var mı
+  el.kirliMi = () => degisti && !kilitli() && (!!t.id || satirlar.some((x) => x.urun_id || String(x.aciklama || '').trim()));
   ciz();
 }

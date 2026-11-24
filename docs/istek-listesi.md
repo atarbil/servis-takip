@@ -4,16 +4,7 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Program içi sekmeler: açılan sayfalar kapanmadan sekme olarak dursun (24.11.2026)
-- Kullanıcı: "açtığım sayfalar kapanmadan program içi sekme olarak dursun, gir çık yapmayayım".
-- Öneri: üst çubuğun altında sekme şeridi (tarayıcı sekmesi gibi). Menüden / listeden açılan her sayfa (fiş, teklif, alış,
-  cari kartı, iş, ürün…) yeni sekme olur; aynı kayıt zaten açıksa o sekmeye geçilir. Sekmeler arasında geçişte sayfa
-  **yeniden yüklenmez** — yazılan ama kaydedilmeyen satırlar, kaydırma yeri, filtreler olduğu gibi kalır.
-- Sekmede başlık (ör. "Fiş FS-2026-0012", "Ahmet Market"), kaydedilmemiş değişiklik varsa nokta işareti, ✕ ile kapatma
-  (kaydedilmemişse "kapatılsın mı?" sorusu); orta tık / Ctrl+W kapatır, Ctrl+Tab sonraki sekme.
-- Açık sekmeler tarayıcıda hatırlanır (sayfa yenilenince / ertesi gün aynı sekmeler gelir; içerik sunucudan yeniden okunur).
-- Sınır: en fazla ~12 sekme; fazlası açılınca en eski kullanılmayan kapanır (kaydedilmemiş olan kapanmaz, sorar).
-- Telefonda şerit yerine "Açık sayfalar" listesi (üst çubukta sayaç düğmesi).
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
@@ -25,6 +16,21 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 21. derleme: Program içi sekmeler
+- Üst çubuğun altında **sekme şeridi**: menüden ya da bağlantıdan açılan her sayfa (fiş, teklif, alış, cari, iş, ürün, listeler…)
+  bir sekme olur; aynı sayfa zaten açıksa o sekmeye geçilir.
+- Sekmeler arasında geçişte sayfa **yeniden yüklenmez**: yazılan ama kaydedilmeyen satırlar, arama kutuları, kaydırma yeri kalır.
+- Kaydedilmemiş değişikliği olan sekmede turuncu nokta; böyle bir sekmeyi kapatırken "Kaydetmeden kapatılsın mı?" sorulur.
+  Kapatınca en son kullanılan sekmeye dönülür.
+- ✕ ya da **orta tık** kapatır; **Ctrl+Alt+→ / ←** sekmeler arasında gezer, **Ctrl+Alt+W** kapatır; "Diğerlerini kapat".
+- Arkadaki sekme, bu bilgisayarda bir kayıt değiştiyse ya da 2 dakikadan uzun arkada kaldıysa ve içine bir şey yazılmadıysa,
+  açılınca kendini yeniler (güncel bakiye / liste). Yazılmış bir şey varsa dokunulmaz.
+- Yeni belge kaydedilince sekme adresi ve adı güncellenir (ör. "Yeni teklif" → "TK-2026-0003"); silinen kaydın sekmesi kapanır.
+- En fazla 12 sekme; fazlası açılınca en uzun süredir kullanılmayan (değişikliği olmayan) sekme kapanır.
+- Açık sekmeler hatırlanır: sayfa yenilenince / ertesi gün aynı sekmeler gelir (içerik sunucudan yeniden okunur).
+- Telefonda şerit yerine üst çubukta sayaçlı **"Açık sayfalar"** düğmesi (listeden geç / kapat). Teknisyen ekranında sekme yok.
+- Test: yeni sekme_testi.js.
 
 ### 24.11.2026 — 20. derleme: Alış faturası fiş düzeninde, e-Fatura XML'den alış faturası
 - **Alış faturası ekranı satış fişinin düzeninde:** solda tedarikçi kutusu (adres, VD/VN, telefon, cari bakiye, cari kartı

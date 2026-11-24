@@ -123,7 +123,7 @@ export default async function (el, [id], ctx) {
     try {
       if (a === 'tahsilat' || a === 'odeme') { if (await finansPenceresi(a, { cari: c })) ctx.yenile(); }
       else if (a === 'duzenle') { if (await cariFormu(c)) ctx.yenile(); }
-      else if (a === 'sil') { if (await silOnay('cari', c.id)) ctx.git('cariler'); }
+      else if (a === 'sil') { if (await silOnay('cari', c.id)) ctx.kapatVeGit('cariler'); }
       else if (a === 'is') { const r = await yeniIsPenceresi(ctx, { cari: c, havuza: true }); if (r) ctx.git(`is/${r.id}`); }
       else if (a === 'fis') { const r = await api.post('/fisler', { cari_id: c.id }); ctx.git(`fis/${r.id}`); }
       else if (a === 'teklif' || a === 'proforma') { const { yeniBelge } = await import('./teklifler.js'); yeniBelge(ctx, a, c); }

@@ -128,7 +128,7 @@ export default async function (el, [id], ctx) {
       else if (a === 'cari') cariBagla();
       else if (a === 'duzenle') duzenle();
       else if (a === 'teslimet') { const { teslimEtPenceresi } = await import('./havuz.js'); await teslimEtPenceresi(ctx, is); }
-      else if (a === 'sil') { if (await silOnay('is', is.id)) ctx.git('isler'); }
+      else if (a === 'sil') { if (await silOnay('is', is.id)) ctx.kapatVeGit('isler'); }
       else if (a === 'cihaz') cihazSec();
     } catch (err) { bildir(err.message, 'hata'); }
   });
