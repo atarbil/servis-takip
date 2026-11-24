@@ -35,6 +35,22 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 - Menü: Finans → **Resmi fatura yükleme** tek giriş; Stok altındaki ayrı "e-Fatura aktar" menüsü kalkar (Alış faturaları listesindeki
   düğme bu ekrana gider). KDV durumu ekranı ve Resmi faturalar listesi ayrı menülerde kalır, yükleme düğmeleri bu ekrana yönlendirir.
 
+### 4. Stoksuz, cariye işlenmeyen alış faturaları da KDV'ye girsin (24.11.2026)
+- Kullanıcı: "stoksuz ve cariye işlenmeyecek faturalar var; stok ve cari bakiye oluşturmadan onları nasıl KDV listesine dahil edeceğiz".
+  (ör. akaryakıt, telefon/internet, kira, kargo, yemek, peşin ödenmiş masraflar)
+- Çözüm: Resmi fatura yükleme ekranında her **alış** faturası için seçim:
+  - **Stoklu alış** → bugünkü akış (ürün eşleştirme → taslak alış faturası → Onayla: stok + maliyet + cari).
+  - **Yalnız KDV (gider)** → **resmi alış faturası** olarak kaydedilir (satış resmi faturalarıyla aynı tablo, yön = alış):
+    stok yok, cari bakiyesi yok, kasa yok; yalnız KDV durumu ekranında **indirilecek KDV**'ye girer. İsteğe bağlı gider türü
+    (Akaryakıt, Telefon / internet, Kira, Kargo, Yemek, Diğer). Tedarikçi cari olarak açılmaz (istenirse eşleştirilir, yalnız bilgi).
+  - Tedarikçi bazında hatırlanır: o tedarikçiden gelen sonraki faturalar aynı seçimle gelir (ör. akaryakıt firması hep "Yalnız KDV").
+  - Yalnız KDV kaydı sonradan "Stoklu alışa çevir" ile alış akışına alınabilir (kayıt silinir, taslak alış açılır).
+- **Elle KDV kaydı:** e-Fatura olmayan kâğıt fatura / fiş için küçük form (tarih, firma, belge no, KDV hariç tutar, KDV oranı → KDV,
+  toplam; yön alış ya da satış). Aynı listede "elle" etiketiyle.
+- KDV durumu: indirilecek KDV = onaylı alış faturaları + resmi alış (yalnız KDV) kayıtları; sol sütunda ikisi birlikte, türü etiketli
+  ("Stoklu" / "Gider"). Aynı ETTN iki yerde sayılmaz (alış faturası olarak aktarılmışsa yalnız KDV kaydı açılamaz, tersi de).
+- Finans → Resmi faturalar listesinde Satış / Alış (gider) sekmeleri.
+
 ### 1. KDV durumu: iki sütunlu ekran — solda alış, sağda satış (24.11.2026)
 - Kullanıcı: "2 sütunlu bir ekran olsun, sol alış sağ satış gibi; fatura tutarı, KDV tutarı, toplam tutar şeklinde".
 - Tasarım:
