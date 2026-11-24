@@ -17,6 +17,11 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
     Sayılmayanlar (başka ay / başka firma / tekrar) listede soluk ve nedeni yazılı; tevkifatlı faturada tevkifat ayrıca görünür.
   - İki sütunun altında karşılaştırma: Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden.
   - Telefonda sütunlar alt alta (önce sonuç, sonra Alış, sonra Satış).
+  - Kullanıcı ek (21:35): **"tutarların hangi cariden geldiği de yazsın"** →
+    - Her satırda cari adı belirgin (alışta tedarikçi, satışta müşteri) + küçük vergi no. Satış XML'indeki alıcı, programdaki
+      cariyle vergi no'dan (yoksa ünvandan) eşleştirilir; eşleşen cari adı cari kartına bağlantılı, eşleşmeyen "programda kayıtlı değil" etiketli.
+    - Her sütunda **"Cariye göre"** görünümü: faturalar cari bazında toplanır (cari, fatura sayısı, fatura tutarı, KDV, toplam);
+      tıklayınca o carinin faturaları açılır. Varsayılan görünüm: fatura fatura liste.
 
 
 ## İsteğe bağlı fikirler
