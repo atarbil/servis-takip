@@ -71,10 +71,10 @@ export default async function (el, [id], ctx) {
     const kod = x.urun_kod || x._kod || '';
     if (!ac) {
       return html`<tr><td class="no">${i + 1}</td><td class="kod">${kod}</td>
-        <td>${turRozet(x)} ${x.aciklama}${x.notu ? html`<div class="alt-satir">${x.notu}</div>` : ''}</td>
-        <td class="sayi">${sayiGiris(x.miktar)}</td><td class="brm">${x.birim}</td><td class="sayi">${dp(x.birim_fiyat)}</td>
-        <td class="sayi">${Number(x.iskonto_orani) || ''}</td><td class="sayi">${Number(x.kdv_orani)}</td><td class="sayi tutar"><b>${paraSade(h.net)}</b></td>
-        <td class="sayi maliyet soluk">${x.urun_id ? paraSade(ml) : ''}</td></tr>`;
+        <td class="aciklama-hucre">${turRozet(x)} ${x.aciklama}${x.notu ? html`<div class="alt-satir">${x.notu}</div>` : ''}</td>
+        <td class="sayi" data-et="Miktar">${sayiGiris(x.miktar)}</td><td class="brm" data-et="Birim">${x.birim}</td><td class="sayi" data-et="Birim fiyat">${dp(x.birim_fiyat)}</td>
+        <td class="sayi" data-et="İsk. %">${Number(x.iskonto_orani) || ''}</td><td class="sayi" data-et="KDV %">${Number(x.kdv_orani)}</td><td class="sayi tutar" data-et="Tutar"><b>${paraSade(h.net)}</b></td>
+        <td class="sayi maliyet soluk" data-et="Maliyet">${x.urun_id ? paraSade(ml) : ''}</td></tr>`;
     }
     return html`<tr data-i="${i}" class="${!x.urun_id && !stoksuzMu(x) ? 'eksik' : ''}">
       <td class="no">${i + 1}</td>

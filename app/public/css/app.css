@@ -624,7 +624,7 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
 .fatura-tablo td .doviz-not { padding: 0 .45rem .2rem; text-align: right; }
 .fatura-tablo tr.bos-satir td { text-align: center; color: var(--soluk); padding: 1.4rem; }
 .fatura-tablo tbody tr:not([data-i]) td.sayi { padding-right: .5rem; }
-.fatura-tablo tbody tr:not([data-i]) td:nth-child(4) { padding: .4rem; }
+.fatura-tablo tbody tr:not([data-i]) td.aciklama-hucre { padding: .4rem; }
 .fatura-ipucu { font-size: .74rem; color: var(--soluk2); padding: .4rem .8rem; border-bottom: 1px solid var(--cizgi); }
 .fatura-alt { display: flex; gap: 1.5rem; justify-content: space-between; align-items: flex-start; padding: .9rem 1.2rem; background: #fbfcfe; border-radius: 0 0 var(--r) var(--r); }
 .fatura-yazi { font-size: .86rem; display: grid; gap: .35rem; max-width: 60%; }
@@ -651,7 +651,7 @@ dialog.pencere footer { display: flex; gap: .5rem; padding: .8rem 1.2rem; border
   .fatura-tablo tr[data-i], .fatura-tablo tbody tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .3rem; padding: .6rem .5rem; border-bottom: 1px solid var(--cizgi); position: relative; }
   .fatura-tablo td { border: 0; height: auto; }
   .fatura-tablo td.no, .fatura-tablo td.kod { display: none; }
-  .fatura-tablo td.aciklama-hucre, .fatura-tablo tbody tr:not([data-i]) td:nth-child(4) { grid-column: 1 / -1; order: -1; min-width: 0; padding-right: 2rem; }
+  .fatura-tablo td.aciklama-hucre { grid-column: 1 / -1; order: -1; min-width: 0; padding-right: 2rem; }
   .fatura-tablo td.tur { grid-column: 1 / -1; order: -2; width: auto; }
   .fatura-tablo td input, .fatura-tablo td select { border: 1px solid var(--cizgi); border-radius: 8px; background: #fff; }
   .fatura-tablo td.tutar, .fatura-tablo td.maliyet { width: auto; align-self: center; }
@@ -1316,3 +1316,45 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
 .teklif-metinleri-ic { display: grid; gap: .6rem; padding-bottom: .8rem; }
 .teklif-metinleri .metin-cifti { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 @media (max-width: 720px) { .teklif-metinleri .metin-cifti { grid-template-columns: 1fr; } }
+
+/* 20. derleme: alış faturası fiş düzeninde, e-Fatura XML aktarımı */
+.fatura-tablo td.brm .brm-yazi { display: block; padding: 0 .45rem; color: var(--soluk); }
+.hata-kutu { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.efatura-birak { display: block; border: 2px dashed #c7d2fe; border-radius: 14px; background: #f8faff; padding: 1.6rem 1rem; text-align: center; cursor: pointer; margin-bottom: 1rem; transition: background .15s, border-color .15s; }
+.efatura-birak:hover, .efatura-birak.uzerinde { background: var(--ana-acik); border-color: var(--ana); }
+.efatura-birak-ic { display: grid; gap: .25rem; justify-items: center; }
+.efatura-ikon { font-size: 2rem; }
+.efatura-sekmeler { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .4rem; margin-bottom: .8rem; }
+.efatura-sekme { flex: none; display: grid; text-align: left; gap: .1rem; padding: .5rem .8rem; border: 1px solid var(--cizgi); border-radius: 10px; background: #fff; cursor: pointer; min-width: 200px; font: inherit; }
+.efatura-sekme small { color: var(--soluk); }
+.efatura-sekme.secili { border-color: var(--ana); box-shadow: 0 0 0 2px var(--ana-acik); }
+.efatura-durum { font-size: .72rem; font-weight: 650; color: var(--soluk); }
+.efatura-sekme.aktarildi .efatura-durum { color: var(--yesil, #15803d); }
+.efatura-sekme.mukerrer .efatura-durum { color: #b91c1c; }
+.ef-cari-eslesme { margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--cizgi); line-height: 1.6; }
+.ef-cari-ara input { width: 100%; margin-top: .35rem; }
+.ef-tablo td { padding: .35rem .5rem !important; height: auto; vertical-align: top; }
+.ef-tablo td.sayi small { display: block; font-size: .72rem; }
+.ef-fatura-urun { min-width: 220px; }
+.ef-fatura-urun small { display: block; color: var(--soluk); font-size: .74rem; }
+.ef-eslesme, .ef-eslesme-th { width: 34%; min-width: 260px; }
+.ef-kart { display: grid; gap: .25rem; }
+.ef-kart.zayif { box-shadow: inset 3px 0 0 var(--turuncu); padding-left: .4rem; }
+.ef-kart-alt { font-size: .78rem; }
+.ef-kart-alt .btn-metin, .ef-kart .btn-metin { color: var(--ana); font-size: .78rem; justify-self: start; }
+.ef-kart input, .ef-kart select { border: 1px solid var(--cizgi); border-radius: 6px; padding: .3rem .45rem; font: inherit; width: 100%; }
+.ef-yeni-ust { display: flex; gap: .4rem; align-items: center; }
+.ef-yeni-ust select { width: auto; font-size: .8rem; padding: .15rem .3rem; }
+.ef-not { font-size: .8rem; margin-bottom: .3rem; }
+@media (max-width: 860px) { .ef-eslesme, .ef-eslesme-th { width: auto; min-width: 0; } }
+@media (max-width: 860px) {
+  .fatura-tablo tbody tr:not([data-i]) td { padding: .1rem .2rem; }
+  .fatura-tablo tbody tr:not([data-i]) td.sayi, .fatura-tablo tbody tr:not([data-i]) td.brm { text-align: left; }
+  .fatura-tablo tbody tr:not([data-i]) td.aciklama-hucre { font-weight: 600; padding-right: .4rem; }
+  .fatura-tablo.maliyetsiz td.maliyet { display: none; }
+  .ef-tablo tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ef-tablo td.ef-fatura-urun, .ef-tablo td.ef-eslesme { grid-column: 1 / -1; min-width: 0; width: auto; }
+  .ef-tablo td.ef-fatura-urun { order: -1; }
+  .ef-tablo td.ef-eslesme { order: 5; background: #f8fafc; border-radius: 8px; padding: .5rem !important; }
+  .ef-tablo td.sayi { text-align: left; }
+}

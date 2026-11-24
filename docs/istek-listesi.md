@@ -4,52 +4,51 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-### 1. Alış faturası ekranı satış fişinin düzeninde olsun (24.11.2026)
-- Kullanıcı: alış faturası ekranında satır ve sütunlar kaymış; satış fişi ekranı gibi tasarlansın.
-- Şu an alış ekranı eski tablo düzeninde (Ürün / Miktar / Birim fiyat / KDV% / Tutar; butonlar tablonun altında).
-- Yapılacak: satış fişi / teklifteki fatura düzeni —
-  - Üstte tedarikçi cari kutusu (adres, VD/VN, telefon, cari bakiye) ve sağda belge bilgileri (fatura no, tarih, vade,
-    para birimi + kur, açıklama).
-  - Fişteki Excel tipi kalem tablosu: # / Kod / Ürün açıklaması (+ satır notu) / Miktar / Birim / Birim fiyat / İsk. % / KDV % / Tutar,
-    sabit sütun genişlikleri, kaymayan hizalama; telefonda fişteki gibi kart görünümü.
-  - Tablonun üstünde düğmeler: + Satır, Stok listesi, Barkod, "Enter ile yeni satır aç", KDV dahil.
-  - En altta "Yalnız: …", KDV dökümü, TL karşılığı ve toplam bloğu.
-- Alışta kalemler stok kartlı kalır (bulunamayan ürün → yeni stok kartı sorusu); mevcut işlemler (kaydet, onayla, iptal, sil,
-  döviz) aynen korunur.
-
-### 2. Gelen faturayı yükle → yapay zeka okusun → taslak alış faturası (24.11.2026)
-- Kullanıcı: gelen faturayı PDF olarak yükleyebileceğim bir ekran; tedarikçi var mı, fatura tarihi / no, faturadaki ürünleri
-  tanısın, aynı stok varsa stok değeri olarak girsin. "Küçük bir yapay zeka sayfası".
-- Önerilen akış (Stok / Alış altında "Fatura yükle" sayfası):
-  1. e-Fatura XML (veya zip) sürükle-bırak / dosya seç.
-  2. XML'den okunur → tedarikçi ünvanı, VKN/TCKN,
-     fatura no, tarih, vade, para birimi, satırlar (kod, ad, miktar, birim, birim fiyat, iskonto, KDV), toplamlar.
-  3. Tedarikçi eşleşmesi: önce VKN/TCKN, sonra ünvan. Yoksa "faturadaki bilgilerle yeni tedarikçi açılsın mı?".
-  4. Aynı tedarikçi + fatura no daha önce girildiyse uyarı (mükerrer engeli).
-  5. Ürün eşleşmesi: barkod → tedarikçinin ürün kodu (hatırlanan eşleşme) → ad benzerliği. Her satırda önerilen stok kartı ve
-     güven göstergesi; kullanıcı değiştirebilir / "yeni stok kartı aç". Onaylanan eşleşme tedarikçi koduyla saklanır,
-     bir sonraki faturada otomatik gelir.
-  6. Toplam kontrolü: okunan satırların toplamı faturadaki genel toplamla tutmuyorsa uyarı.
-  7. Sonuç **taslak alış faturası** olur; kullanıcı kontrol edip Onayla'ya basınca stok ve maliyet girer. Otomatik onay yok.
-  8. **Yüklenen dosya saklanmaz** (kullanıcı kararı 24.11.2026): yalnız okunur, taslak alış faturası oluşturulur; dosya diske
-     yazılmaz / okuma bitince bellekten atılır, yedeğe de girmez.
-- **Karar (24.11.2026): faturalar e-Fatura XML (UBL-TR) olarak geliyor → okuma XML'den yapılır, yapay zeka / API gerekmez.**
-  - Kabul edilen dosya: .xml (ve içinde XML bulunan .zip — GİB portalından inen paketler). Birden çok dosya bir kerede yüklenebilir.
-  - Okunacak alanlar: AccountingSupplierParty (ünvan, VKN/TCKN, vergi dairesi, adres, telefon, e-posta), ID (fatura no), IssueDate,
-    PaymentMeans/PaymentDueDate (vade), DocumentCurrencyCode + PricingExchangeRate (döviz/kur), InvoiceLine (SellersItemIdentification,
-    BuyersItemIdentification, StandardItemIdentification/barkod, Item/Name, InvoicedQuantity + unitCode → birim, PriceAmount,
-    AllowanceCharge → iskonto, TaxSubtotal/Percent → KDV), LegalMonetaryTotal (toplam kontrolü). Fatura tipi İADE ise uyarı.
-  - Alıcı VKN'si Ayarlar'daki firma VKN'si değilse uyarı ("bu fatura size kesilmemiş olabilir").
-  - Sunucu tarafında sıfır bağımlılıkla küçük bir XML okuyucu (namespace'li UBL için yeterli); zip için Node'un zlib'i.
-  - PDF / fotoğraf okuma (Claude API) şimdilik yok; ileride istenirse eklenir.
+### 1. Program içi sekmeler: açılan sayfalar kapanmadan sekme olarak dursun (24.11.2026)
+- Kullanıcı: "açtığım sayfalar kapanmadan program içi sekme olarak dursun, gir çık yapmayayım".
+- Öneri: üst çubuğun altında sekme şeridi (tarayıcı sekmesi gibi). Menüden / listeden açılan her sayfa (fiş, teklif, alış,
+  cari kartı, iş, ürün…) yeni sekme olur; aynı kayıt zaten açıksa o sekmeye geçilir. Sekmeler arasında geçişte sayfa
+  **yeniden yüklenmez** — yazılan ama kaydedilmeyen satırlar, kaydırma yeri, filtreler olduğu gibi kalır.
+- Sekmede başlık (ör. "Fiş FS-2026-0012", "Ahmet Market"), kaydedilmemiş değişiklik varsa nokta işareti, ✕ ile kapatma
+  (kaydedilmemişse "kapatılsın mı?" sorusu); orta tık / Ctrl+W kapatır, Ctrl+Tab sonraki sekme.
+- Açık sekmeler tarayıcıda hatırlanır (sayfa yenilenince / ertesi gün aynı sekmeler gelir; içerik sunucudan yeniden okunur).
+- Sınır: en fazla ~12 sekme; fazlası açılınca en eski kullanılmayan kapanır (kaydedilmemiş olan kapanmaz, sorar).
+- Telefonda şerit yerine "Açık sayfalar" listesi (üst çubukta sayaç düğmesi).
 
 ## İsteğe bağlı fikirler
+- **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
+  çekip "Fatura yükle" akışına düşürme; onaylı satış fişinden e-Fatura / e-Arşiv kesme. Gerekenler: Mysoft'tan API kullanıcısı
+  + test hesabı + API dokümanı; şifre sunucuda gizli girilir.
 - Excel'den toplu ürün ve cari (açılış bakiyesi) aktarımı.
 - Teklif / proforma / teslim formunu WhatsApp'tan link olarak gönderme; vadesi geçenlere hatırlatma mesajı.
 - Yedeklerin ikinci bir konuma (ör. Google Drive) otomatik kopyalanması.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 24.11.2026 — 20. derleme: Alış faturası fiş düzeninde, e-Fatura XML'den alış faturası
+- **Alış faturası ekranı satış fişinin düzeninde:** solda tedarikçi kutusu (adres, VD/VN, telefon, cari bakiye, cari kartı
+  bağlantısı), sağda fatura no / tarih / vade / para birimi + kur / açıklama; fişteki kalem tablosu (# / Kod / Ürün / Miktar /
+  Birim / Birim fiyat / KDV % / Tutar — sabit sütunlar, kayma yok), tablonun üstünde + Satır, Stok listesi, Barkod,
+  "Enter ile yeni satır aç", "Fiyatlar KDV dahil"; altta "Yalnız: …", KDV dökümü ve toplam bloğu. Telefonda kart görünümü.
+  Ürün seçilince doğrudan miktara geçer; "değiştir" ile satırın kartı değiştirilir.
+- **e-Fatura aktar (XML)** — Stok menüsünde ve Alış faturaları listesinde:
+  - .xml ya da .zip (GİB / entegratör paketi) sürükle-bırak; birden çok fatura bir kerede. **Dosya saklanmaz**, yalnız okunur.
+  - Okunanlar: tedarikçi (ünvan, VKN/TCKN, vergi dairesi, adres, telefon, e-posta), fatura no, ETTN, tarih, vade, tür,
+    para birimi ve kur, kalemler (ad, tedarikçi kodu, barkod, miktar, birim, liste fiyatı, iskonto, net fiyat, KDV), toplamlar.
+  - Tedarikçi eşleşmesi önce vergi no, sonra ünvan; yoksa fatura bilgileriyle **yeni tedarikçi** açılır (istenirse başka cari seçilir).
+    Müşteri tipindeki cari tedarikçi olarak kullanılınca "her ikisi" olur.
+  - Ürün eşleşmesi: barkod → **hatırlanan eşleşme** (tedarikçinin ürün kodu / adı) → ürün kodu → ad benzerliği (%). Zayıf
+    benzerlik turuncu işaretlenir. Her kalemde "değiştir" / "yeni kart aç" (ürün ya da hizmet; faturadaki barkod karta yazılır).
+    Onaylanan eşleşme saklanır; aynı tedarikçinin sonraki faturasında kendiliğinden gelir.
+  - Uyarılar: daha önce girilmiş fatura (ETTN ya da tedarikçi + no; aktarılamaz), İADE faturası, tevkifat, belge altı iskonto,
+    alıcı vergi no'su firmanınki değil (Ayarlar → Vergi no), satır toplamı / KDV faturadaki toplamla tutmuyor.
+  - "Taslak alış faturası oluştur" → taslak açılır; kontrol edip **Onayla** ile stok ve maliyet girer (otomatik onay yok).
+    Birden çok faturada sıradakine geçilir, "Bu faturayı atla" var.
+- Silinen alış faturasının numarası yeniden kullanılabilir (fatura no tekilliği yalnız silinmemiş kayıtlarda).
+- Telefonda onaylı fiş / teklif / alış satırları düzgün kart görünümünde (etiketli).
+- Testler: yeni efatura_testi.js (XML/zip okuma, eşleştirme, hafıza, USD, uyarılar, mükerrer, silinen fatura, onay → stok;
+  alış ekranı düzeni, e-Fatura sayfası akışı, telefon görünümü).
 
 ### 24.11.2026 — 19. derleme: Stoksuz işçilik / eğitim / hizmet satırları, fiş düzeninde teklif
 - Satış fişinde **"Tür" sütunu kaldırıldı.** "+ Satır"ın yanında **"+ İşçilik", "+ Eğitim", "+ Hizmet"** düğmeleri: basılınca

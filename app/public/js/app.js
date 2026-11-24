@@ -24,6 +24,7 @@ export const YONETICI_MENU = [
   { grup: 'stok', ad: 'Stok', ikon: 'kutu', alt: [
     { yol: 'urunler', ad: 'Ürünler / Stok', ikon: 'kutu' },
     { yol: 'alislar', ad: 'Alış Faturaları', ikon: 'alis' },
+    { yol: 'efatura', ad: 'e-Fatura aktar (XML)', ikon: 'belge' },
   ] },
   { grup: 'finans', ad: 'Finans', ikon: 'kasa', alt: [
     { yol: 'kasa', ad: 'Kasa / Banka', ikon: 'kasa' },
@@ -455,7 +456,7 @@ const SAYFALAR = {
   panel: 'panel', havuz: 'havuz', takvim: 'takvim', isler: 'isler', is: 'is', saha: 'saha', islerim: 'islerim',
   cariler: 'cariler', cari: 'cari', fisler: 'fisler', fis: 'fis', alislar: 'alislar', alis: 'alis',
   fiyatlandirma: 'fiyatlandirma', teklifler: 'teklifler', teklif: 'teklif', envanter: 'envanter',
-  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form',
+  urunler: 'urunler', urun: 'urun', kasa: 'kasa', raporlar: 'raporlar', ayarlar: 'ayarlar', silinenler: 'silinenler', 'dis-servis': 'disservis', guncelleme: 'guncelleme', formlar: 'formlar', form: 'form', efatura: 'efatura',
 };
 const TEKNISYEN_IZINLI = new Set(['islerim', 'saha']);
 let sonYukleme = 0;
@@ -479,7 +480,7 @@ async function yonlendir() {
   el.className = `sayfa-${ad}`;
   eski.replaceWith(el);
   window.scrollTo(0, 0);
-  const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', urun: 'urunler', teklif: 'teklifler' }[ad] || ad;
+  const menuAd = { is: 'isler', saha: 'isler', cari: 'cariler', fis: 'fisler', alis: 'alislar', efatura: 'efatura', urun: 'urunler', teklif: 'teklifler' }[ad] || ad;
   $$('[data-yol]').forEach((a) => a.classList.toggle('aktif', a.dataset.yol === menuAd));
   // Bulunulan sayfanın grubu vurgulanır; açık menüler kapanır
   $$('.um-grup').forEach((g) => g.classList.toggle('aktif-grup', !!g.querySelector(`[data-yol="${menuAd}"]`)));

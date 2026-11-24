@@ -18,7 +18,9 @@ module.exports = (r, { db, web, Y }) => {
   });
 
   async function getir(id) {
-    const a = (await db.query(`SELECT a.*, c.unvan FROM alis_faturalari a JOIN cariler c ON c.id = a.cari_id WHERE a.id = $1`, [id])).rows[0];
+    const a = (await db.query(`SELECT a.*, c.unvan, c.adres AS cari_adres, c.il, c.ilce, c.telefon AS cari_telefon, c.vergi_dairesi, c.vergi_no,
+      (SELECT bakiye FROM v_cari_bakiye b WHERE b.id = a.cari_id) AS cari_bakiye
+      FROM alis_faturalari a JOIN cariler c ON c.id = a.cari_id WHERE a.id = $1`, [id])).rows[0];
     if (!a) throw web.hata(404, 'Fatura bulunamadı.');
     a.satirlar = (await db.query(`
       SELECT s.*, u.ad, u.kod, u.birim, round(s.miktar * s.birim_fiyat, 2) AS tutar
