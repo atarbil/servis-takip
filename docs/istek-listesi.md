@@ -20,8 +20,10 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
   açık tuttuğu sürece birkaç dakikada bir konumu alınır; haritada her teknisyen için **son görülme** yeri ve zamanı
   ("Ali Usta · 14:32'de · 12 dk önce"). İş adımı / Telegram yok. Varsayım (cevaplanmadı): **yalnız son konum**, geçmiş/rota tutulmaz.
   Telefon konum izni vermezse "konum izni yok" görünür. Haritada son görülme 1 saatten eskiyse soluk.
-- Gizlilik / KVKK: yalnız çalışma saatlerinde ve iş sırasında; teknisyen ekranında "konum paylaşılıyor" göstergesi; çalışanlara
-  aydınlatma metni (Ayarlar'da metin + teknisyenin bir kez onayı); konum kayıtları 30 gün sonra silinir; yalnız yönetici görür.
+- **Karar (kullanıcı 22:16):** teknisyen ekranında **onay penceresi ya da "konum paylaşılıyor" işareti olmayacak.** (Telefonun /
+  tarayıcının kendi konum izni sorusu programdan bağımsızdır, bir kez çıkar.) Yasal not kullanıcıya iletildi: çalışan konumu
+  kişisel veri; KVKK aydınlatması program dışında (ör. yazılı bildirim / iş sözleşmesi eki) yapılmalı. Konumları yalnız yönetici
+  görür; yalnız son konum tutulur, eskisinin üzerine yazılır.
 
 
 ## İsteğe bağlı fikirler
