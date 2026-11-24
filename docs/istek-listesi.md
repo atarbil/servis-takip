@@ -4,7 +4,20 @@ Kullanım sırasında gelen istekler. "Derle" denince öncelik sırasına konup 
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. KDV durumu: iki sütunlu ekran — solda alış, sağda satış (24.11.2026)
+- Kullanıcı: "2 sütunlu bir ekran olsun, sol alış sağ satış gibi; fatura tutarı, KDV tutarı, toplam tutar şeklinde".
+- Tasarım:
+  - Üstte dönem (ay) seçimi ve ince sonuç şeridi: "Bu ay KDV ÇIKIYOR — ödenecek ≈ X ₺" / "ÇIKMIYOR — devreden ≈ Y ₺"
+    (+ önceki aydan devreden kutusu).
+  - **Sol sütun — ALIŞ (indirilecek KDV):** o ayın onaylı alış faturaları tek tek: tarih, fatura no, tedarikçi,
+    **Fatura tutarı** (KDV hariç), **KDV tutarı**, **Toplam tutar**; altta toplam satırı. Taslak bekleyenler soluk ve "sayılmadı" etiketli
+    (bağlantılı). Satıra tıklayınca alış faturası açılır.
+  - **Sağ sütun — SATIŞ (hesaplanan KDV):** yüklenen XML'lerdeki faturalar tek tek: tarih, fatura no, müşteri, **Fatura tutarı**,
+    **KDV tutarı**, **Toplam tutar**; altta toplam satırı. Sütunun üstünde yükleme alanı (dosyalar kaydedilmez, kural aynı).
+    Sayılmayanlar (başka ay / başka firma / tekrar) listede soluk ve nedeni yazılı; tevkifatlı faturada tevkifat ayrıca görünür.
+  - İki sütunun altında karşılaştırma: Satış KDV − Alış KDV − Devreden = Ödenecek / Devreden.
+  - Telefonda sütunlar alt alta (önce sonuç, sonra Alış, sonra Satış).
+
 
 ## İsteğe bağlı fikirler
 - **Mysoft entegrasyonu (beklemede — kullanıcı 24.11.2026: "şimdilik dursun"):** gelen e-Faturaları Mysoft API'den otomatik
