@@ -20,6 +20,11 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Tamamlananlar
 
+### 25.11.2026 — 26.2 düzeltme: Detaylı ekstre A4
+- Kullanıcı: "detaylı ekstre A5 formatında çıkıyor, A4'e göre ayarlayalım".
+- Detaylı ekstre çıktısı artık **A4 dikey** (12 mm kenar), sayfa altında "Sayfa x / y"; özet kutuları tek satırda 4'lü.
+- Kendi kâğıt ayarı olmayan diğer çıktılar da (liste / rapor yazdırma) varsayılan A4 dikey (yazıcının varsayılanı A5 olsa bile).
+
 ### 25.11.2026 — 26.1 düzeltme: Telefonda iç içe pencere
 - Hata (kullanıcı): telefondan iş eklerken malzeme stok listesinden seçilince iş havuza düşmüyor / kaydolmuyordu.
 - Neden: telefonda geri tuşu desteği için her pencere geçmişe bir kayıt ekliyor; üstteki pencere (Stok listesi) düğmeyle

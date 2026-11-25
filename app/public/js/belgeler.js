@@ -52,7 +52,10 @@ export function detayliEkstreHtml(ctx, e) {
     <div class="dek-not">(B) borç bakiyesi: cari firmamıza borçlu · (A) alacak bakiyesi: firmamız cariye borçlu. Bu ekstre ${tarih(new Date().toISOString())} tarihinde düzenlenmiştir; mutabık değilseniz 15 gün içinde bildirmenizi rica ederiz.</div>
   </div>`;
 }
-export function detayliEkstreYazdir(ctx, e) { yazdir(detayliEkstreHtml(ctx, e)); }
+export function detayliEkstreYazdir(ctx, e) {
+  // A4 dikey, sayfa numaralı
+  yazdir(`<style>@page { size: A4 portrait; margin: 12mm 11mm 14mm; @bottom-right { content: "Sayfa " counter(page) " / " counter(pages); font: 9px Arial, sans-serif; color: #555; } }</style>${detayliEkstreHtml(ctx, e)}`);
+}
 
 export function tabloYazdir(ctx, baslik, altBaslik, basliklar, satirlar, toplam) {
   yazdir(html`<div class="belge">${belgeUst(ctx, baslik, html`<div>${altBaslik || ''}</div><div>${tarih(new Date().toISOString())}</div>`)}

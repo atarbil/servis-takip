@@ -355,7 +355,9 @@ export function csvIndir(dosyaAdi, basliklar, satirlar) {
 export function yazdir(icerik) {
   let el = $('#yazdir-alani');
   if (!el) { el = document.createElement('div'); el.id = 'yazdir-alani'; document.body.append(el); }
-  el.innerHTML = String(icerik);
+  // Belge kendi kâğıt ayarını getirmiyorsa A4 dikey (tarayıcının / yazıcının varsayılanı A5 olabiliyor)
+  const metin = String(icerik);
+  el.innerHTML = /@page/.test(metin) ? metin : `<style>@page { size: A4 portrait; margin: 12mm; }</style>${metin}`;
   const resimler = $$('img', el);
   Promise.all(resimler.map((r) => (r.complete ? 0 : new Promise((c) => { r.onload = r.onerror = c; }))))
     .then(() => setTimeout(() => window.print(), 50));

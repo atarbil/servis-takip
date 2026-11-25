@@ -1573,7 +1573,7 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
   #yazdir-alani .dekstre tr { break-inside: avoid; }
   #yazdir-alani .dek-ozet { break-inside: avoid; }
 }
-@media (max-width: 860px) { .dek-kagit { padding: .8rem; } .dek-ozet { grid-template-columns: 1fr 1fr; } }
+@media screen and (max-width: 860px) { .dek-kagit { padding: .8rem; } .dek-ozet { grid-template-columns: 1fr 1fr; } }
 
 /* 26. derleme: muhasebe rolü kârlılık görmez (sunucu da göndermez) */
 .rol-muhasebe .kar-bilgi, .rol-muhasebe .fatura-tablo .maliyet { display: none !important; }
@@ -1592,3 +1592,7 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
 .teslim-ozet-satir { font-size: .85rem; color: var(--soluk); }
 .teslim-ozet-is { background: #fff; border: 1px solid var(--cizgi); border-radius: 8px; padding: .45rem .6rem; font-size: .9rem; white-space: pre-wrap; }
 .teslim-ozet-is small { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--soluk); font-weight: 700; }
+@media print {
+  /* Detaylı ekstre A4 genişliğinde tam yayılır */
+  #yazdir-alani .dekstre { width: 100%; max-width: none; font-size: 11px; }
+}
