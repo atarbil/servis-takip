@@ -5,7 +5,12 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Muhasebe rolüne sağ üstte "+ İş ekle" (25.11.2026)
+- Kullanıcı: "muhasebe yetki grubundakilere sağ üst köşede iş ekle butonu gelsin".
+- Muhasebe kullanıcısında üst çubukta "+ Satış fişi"nin yanında **"+ İş ekle"** (yöneticideki pencerenin aynısı): mesaj, cari,
+  öncelik, ekibe verilecek malzeme, "İşi ben yaptım" (fiş açar). Sunucu yalnız iş ekleme uçlarına izin verir (/isler/hizli,
+  /isler/ofis); planlama, havuz / takvim düzenleme, iş iptali yine kapalı. Malzeme stok listesinde maliyet sütunu yerine satış fiyatı
+  (kârlılık görmez kuralı). Telefonda + düğmesi.
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
