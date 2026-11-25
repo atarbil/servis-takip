@@ -5,7 +5,21 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Resmi fatura yüklemede daha sağlıklı stok eşleştirme (25.11.2026)
+- Kullanıcı: "resmi fatura işlerken stok kartların çoğu uyuşmuyor, daha sağlıklı bir eşleme yap".
+- Yapılacak:
+  - **Model kodu yakalama:** faturadaki ad / kodlardan model kodları (harf + rakam, ör. DS-2CD1123G0E-I, TN-2456, CAT6) çıkarılıp
+    tire / boşluk farkı gözetmeden stok kartının **kod, model, ad, barkod** alanlarıyla karşılaştırılır (en güçlü işaret).
+  - **Türkçe / yazım farkları:** ı-i, ş-s, ç-c, ğ-g, ö-o, ü-u eşitlenir; "4MP" = "4 MP", "CAT6" = "Cat 6", gereksiz sözcükler
+    (adet, ad., pcs, kdv dahil, ürün…) atılır; harf üçlüsü benzerliğiyle küçük yazım hatası toleransı.
+  - **Marka:** faturadaki marka (BrandName ya da adın ilk sözcüğü) kartın markasıyla tutarsa puan artar, tutmazsa düşer.
+  - **Birden çok öneri:** her satırda en iyi öneri + "diğer öneriler" (en iyi 3 aday, yüzdeleriyle) tek tıkla seçilir;
+    %85 üstü yeşil, %60–85 turuncu "kontrol edin", altı öneri olarak listelenir ama seçili gelmez.
+  - **Öğrenme:** onaylanan eşleşme tedarikçi koduyla saklanır (mevcut) + faturadaki **barkod** karta yoksa karta eklenir; böylece
+    başka tedarikçiden gelen aynı ürün de barkodla eşleşir. Aynı model kodu da hatırlanır (tedarikçiden bağımsız).
+- Ayrıca **sayfa her tıklamada yukarı kayıyor** (kart değiştir / yeni kart / öneri seçimi): ekran yeniden çizilirken kaydırma yeri
+  korunur, işlem yapılan satır yerinde kalır (gerekirse görünür alana getirilir).
+
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
