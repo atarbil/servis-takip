@@ -660,7 +660,13 @@ function seritCiz() {
       <span class="sekme-ad">${x.baslik || varsayilanBaslik(x.ad)}</span><i class="sekme-nokta" title="Kaydedilmemiş değişiklik"></i>
       <button type="button" class="sekme-kapat" data-sekme-kapat="${x.no}" title="Kapat" aria-label="Sekmeyi kapat" tabindex="-1">✕</button></a>`)}
     ${sekmeler.length > 1 ? html`<button type="button" class="sekme-tumu" data-sekme-tumu title="Bu sekme dışındakileri kapat">Diğerlerini kapat</button>` : ''}`);
-  serit.querySelector('.sekme.aktif')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  // Etkin sekme şeritte görünsün — yalnız şerit yatay kaydırılır, sayfa yerinden oynamaz
+  const ak = serit.querySelector('.sekme.aktif');
+  if (ak) {
+    const sr = serit.getBoundingClientRect(); const ar = ak.getBoundingClientRect();
+    if (ar.left < sr.left) serit.scrollLeft -= sr.left - ar.left + 8;
+    else if (ar.right > sr.right) serit.scrollLeft += ar.right - sr.right + 8;
+  }
 }
 function sekmeBul(no) { return sekmeler.find((x) => x.no === Number(no)); }
 function seritBagla() {

@@ -89,6 +89,18 @@ module.exports = (r, { db, web, Y }) => {
           await q(`INSERT INTO tedarikci_urun_eslesme (cari_id, anahtar, urun_id) VALUES ($1, $2, $3)
             ON CONFLICT (cari_id, anahtar) DO UPDATE SET urun_id = excluded.urun_id, guncelleme = now()`, [cariId, metin(s.anahtar), urunId]);
         }
+        // Öğrenme: model kodları (tedarikçiden bağımsız) ve faturadaki barkod karta yazılır
+        for (const k of (Array.isArray(s.modeller) ? s.modeller : []).slice(0, 5)) {
+          const mk = String(k || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+          if (mk.length >= 4) {
+            await q(`INSERT INTO tedarikci_urun_eslesme (cari_id, anahtar, urun_id) VALUES ($1, $2, $3)
+              ON CONFLICT (cari_id, anahtar) DO UPDATE SET urun_id = excluded.urun_id, guncelleme = now()`, [cariId, `model:${mk}`, urunId]);
+          }
+        }
+        const bk = String(s.barkod || '').trim();
+        if (/^\d{8,14}$/.test(bk) && !(await q.bir('SELECT 1 AS v FROM urun_barkodlari WHERE barkod = $1', [bk]))) {
+          await q('INSERT INTO urun_barkodlari (barkod, urun_id) VALUES ($1, $2)', [bk, urunId]);
+        }
       }
       // Tedarikçinin sonraki faturaları da stoklu alış olarak gelsin
       const vkn = String(metin(f.vkn) || '').replace(/\D/g, '');

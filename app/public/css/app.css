@@ -1596,3 +1596,8 @@ dialog.imza-dialog[open] { display: flex; flex-direction: column; }
   /* Detaylı ekstre A4 genişliğinde tam yayılır */
   #yazdir-alani .dekstre { width: 100%; max-width: none; font-size: 11px; }
 }
+.ef-adaylar { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; margin-top: .35rem; }
+.ef-adaylar small { color: var(--soluk); font-size: .72rem; }
+.ef-aday { border: 1px solid var(--cizgi); background: #fff; border-radius: 999px; padding: .15rem .55rem; font: inherit; font-size: .76rem; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ef-aday:hover { border-color: var(--ana); }
+.ef-aday.yesil b { color: var(--yesil); } .ef-aday.turuncu b { color: #c2410c; }

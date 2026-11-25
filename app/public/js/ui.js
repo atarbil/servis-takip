@@ -199,7 +199,7 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   };
   const acik = () => kutu.isConnected && !kutu.hidden;
   // Sayfa / tablo / pencere kayınca liste kutuyla birlikte gider (dinleyiciler yalnız liste açıkken)
-  const kaydir = (e) => { if (e?.target && kutu.contains(e.target)) return; if (acik()) requestAnimationFrame(yerlestir); };
+  const kaydir = (e) => { if (e?.target instanceof Node && kutu.contains(e.target)) return; if (acik()) requestAnimationFrame(yerlestir); };
   const dinle = (ac) => {
     const f = ac ? addEventListener : removeEventListener;
     f('scroll', kaydir, true); f('resize', kaydir);

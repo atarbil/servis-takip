@@ -143,10 +143,24 @@ const b64 = (s) => Buffer.from(s).toString('base64');
   kontrol('e-Fatura: daha önce girilmiş iki fatura listede yok, özette', (await p.$$('.efatura-sekme')).length === 0 && /2 alış faturası daha önce girilmiş/.test(await p.textContent('.rf-ozet')), await p.textContent('.rf-ozet'));
   kontrol('e-Fatura: ilk bekleyen fatura açık', /Yeni Güvenlik/.test(await p.textContent('.fatura-cari')) && /Kayıtlı değil/.test(await p.textContent('.fatura-cari')));
   const es = await p.$$eval('.ef-tablo tbody tr', (rs) => rs.map((r) => r.querySelector('.ef-eslesme').textContent.replace(/\s+/g, ' ').trim()));
-  kontrol('e-Fatura: ad benzerliğiyle eşleşti, adaptör yeni kart', /Hikvision 4MP/.test(es[0]) && /Ad benzerliği/.test(es[0]) && /Yeni stok kartı/.test(es[2]), es);
+  kontrol('e-Fatura: ad benzerliğiyle eşleşti, adaptör yeni kart', /Hikvision 4MP/.test(es[0]) && /Model kodu|Ad benzerliği/.test(es[0]) && /Yeni stok kartı/.test(es[2]), es);
   await p.screenshot({ path: `${EKRAN}/efatura.png`, fullPage: true });
-  // 2. kalem: mevcut karttan seç
+  // Diğer öneri tek tıkla seçilir, sayfa yukarı kaçmaz
+  const vp = p.viewportSize(); await p.setViewportSize({ width: vp.width, height: 420 });
+  await p.$eval('[data-satir="1"]', (r) => r.scrollIntoView({ block: 'center' })); await p.waitForTimeout(100);
+  const aday = await p.$('[data-satir="0"] [data-aday]');
+  const yOnce = await p.evaluate(() => window.scrollY);
+  if (aday) { const adAday = (await aday.textContent()).replace(/\s*%\d+\s*$/, '').trim(); await aday.click(); await p.waitForTimeout(150);
+    const yb = await p.evaluate(() => window.scrollY);
+    kontrol('e-Fatura: diğer öneri tek tıkla seçildi, sayfa yerinde', (await p.textContent('[data-satir="0"] .ef-kart b')).trim() === adAday && Math.abs(yb - yOnce) < 40, { adAday, yOnce, yb }); }
+  const y0 = await p.evaluate(() => window.scrollY);
   await p.click('[data-degistir="1"]'); await p.waitForSelector('[data-ara="1"]');
+  const y1 = await p.evaluate(() => window.scrollY);
+  const gorunur = await p.$eval('[data-satir="1"] [data-ara]', (i) => { const r = i.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; });
+  kontrol('e-Fatura: değiştir tıklanınca sayfa yerinde kalır, satır görünür', Math.abs(y1 - y0) < 5 && gorunur, { y0, y1, gorunur });
+  await p.setViewportSize(vp);
+  // 2. kalem: mevcut karttan seç
+  await p.focus('[data-ara="1"]');
   await p.keyboard.type('Cat6 Kablo Makara', { delay: 20 }); await p.waitForSelector('.secici-liste .secici-oge'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
   await p.fill('[data-yeni-ad="2"]', '12V 2A Kamera Adaptörü');
   await p.click('[data-olustur]'); await p.waitForTimeout(900);

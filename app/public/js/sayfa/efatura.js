@@ -7,7 +7,9 @@ import { api } from '../api.js';
 import { html, $, $$, para, paraSade, dovizPara, bildir, sayiCoz, sayiGiris } from '../ui.js';
 import { cariSecici, urunSecici, kurAl, kurDegeri } from '../bilesen.js';
 
-const NEDEN = { barkod: 'Barkod', hafiza: 'Daha önce eşleştirildi', kod: 'Ürün kodu', ad: 'Ad benzerliği' };
+const NEDEN = { barkod: 'Barkod', hafiza: 'Daha önce eşleştirildi', kod: 'Ürün kodu', model: 'Model kodu', ad: 'Ad benzerliği' };
+// %85 ve üstü yeşil; %60–85 turuncu "kontrol edin"
+const guvenRenk = (u) => (!['ad', 'model'].includes(u.neden) || u.guven >= 85 ? 'yesil' : 'turuncu');
 const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 const tarihYaz = (t) => (t ? t.split('-').reverse().join('.') : '—');
 
@@ -82,6 +84,8 @@ export default async function (el, _p, ctx) {
 
   const gorunur = () => faturalar.map((x, i) => ({ x, i })).filter(({ x }) => x._durum === 'bekliyor' || x._durum === 'atlandi');
   function ciz() {
+    // Yeniden çizimde kaydırma yeri korunur (işlem yapılan satır yerinde kalsın)
+    const kaydirma = window.scrollY;
     const f = faturalar[secili];
     el.innerHTML = String(html`
       <div class="detay-ust"><div style="flex:1;min-width:240px">
@@ -105,6 +109,7 @@ export default async function (el, _p, ctx) {
         : faturalar.length && !gorunur().length ? html`<div class="bilgi-kutu rf-bitti"><b>✓ Tüm alış faturaları işlendi.</b>
             <div class="btn-grup" style="margin-top:.5rem"><a class="btn ikincil kucuk" href="#/alislar">Alış faturaları</a><a class="btn ikincil kucuk" href="#/resmi-faturalar">Resmi faturalar</a><a class="btn ikincil kucuk" href="#/kdv">KDV durumu</a></div></div>` : ''}`}`);
     bagla();
+    window.scrollTo(0, kaydirma);
   }
 
   function satirHtml(s, i, kilitli, gider) {
@@ -112,9 +117,9 @@ export default async function (el, _p, ctx) {
     const kodlar = [s.satici_kodu && `Kod: ${s.satici_kodu}`, s.barkod && `Barkod: ${s.barkod}`, s.alici_kodu && s.alici_kodu !== s.satici_kodu && `Bizim kod: ${s.alici_kodu}`].filter(Boolean).join(' · ');
     let kart;
     if (sc.tip === 'kart') {
-      const u = sc.urun; const zayif = u.neden === 'ad' && u.guven < 80;
+      const u = sc.urun; const zayif = guvenRenk(u) === 'turuncu';
       kart = html`<div class="ef-kart ${zayif ? 'zayif' : ''}"><div><b>${u.ad}</b> <small class="soluk">${[u.kod, u.tur === 'hizmet' ? 'hizmet' : `stok ${sayiGiris(u.stok ?? 0)} ${u.birim || ''}`].filter(Boolean).join(' · ')}</small></div>
-        <div class="ef-kart-alt">${u.neden ? html`<span class="rozet ${zayif ? 'turuncu' : u.neden === 'ad' ? 'mavi' : 'yesil'}">${NEDEN[u.neden]}${u.neden === 'ad' ? ` %${u.guven}` : ''}</span>` : html`<span class="rozet yesil">Seçildi</span>`}
+        <div class="ef-kart-alt">${u.neden ? html`<span class="rozet ${guvenRenk(u)}">${NEDEN[u.neden]}${['ad', 'model'].includes(u.neden) ? ` %${u.guven}` : ''}${zayif ? ' · kontrol edin' : ''}</span>` : html`<span class="rozet yesil">Seçildi</span>`}
           ${kilitli ? '' : html`<button class="btn-metin" data-degistir="${i}">değiştir</button> · <button class="btn-metin" data-yeni="${i}">yeni kart aç</button>`}</div></div>`;
     } else if (sc.tip === 'yeni') {
       kart = html`<div class="ef-kart yeni"><div class="ef-yeni-ust"><span class="rozet turuncu">Yeni stok kartı</span>
@@ -125,7 +130,14 @@ export default async function (el, _p, ctx) {
       kart = html`<div class="ef-kart"><input class="ef-urun-ara" data-ara="${i}" placeholder="Stok kartı ara…">
         <button class="btn-metin" data-yeni="${i}">yeni kart aç</button></div>`;
     }
-    return html`<tr>
+    // Diğer öneriler: tek tıkla seç
+    const secili = sc.tip === 'kart' ? sc.urun.urun_id : null;
+    const digerleri = (s.adaylar || []).filter((a) => a.urun_id !== secili).slice(0, 3);
+    if (!kilitli && digerleri.length) {
+      kart = html`${kart}<div class="ef-adaylar"><small>${sc.tip === 'kart' ? 'Diğer öneriler' : 'Öneriler'}:</small>
+        ${digerleri.map((a, j) => html`<button type="button" class="ef-aday ${a.guven >= 85 ? 'yesil' : a.guven >= 60 ? 'turuncu' : ''}" data-aday="${i}:${j}" title="${a.kod || ''}">${a.ad} <b>%${a.guven}</b></button>`)}</div>`;
+    }
+    return html`<tr data-satir="${i}">
       <td class="no">${s.sira}</td>
       <td class="ef-fatura-urun"><b>${s.ad}</b>${kodlar ? html`<small>${kodlar}</small>` : ''}${s.not ? html`<small>${s.not}</small>` : ''}</td>
       <td class="sayi" data-et="Miktar">${sayiGiris(s.miktar)} ${s.birim}</td>
@@ -244,7 +256,7 @@ export default async function (el, _p, ctx) {
       satirlar: f.satirlar.map((s) => ({
         urun_id: s._secim.tip === 'kart' ? s._secim.urun.urun_id : null,
         yeni_urun: s._secim.tip === 'yeni' ? { ad: s._secim.ad, birim: s.birim, kdv_orani: s.kdv_orani, tur: s._secim.tur, barkod: s.barkod } : null,
-        miktar: s.miktar, birim_fiyat: s.birim_fiyat, kdv_orani: s.kdv_orani, anahtar: s.anahtar,
+        miktar: s.miktar, birim_fiyat: s.birim_fiyat, kdv_orani: s.kdv_orani, anahtar: s.anahtar, barkod: s.barkod, modeller: s.modeller,
       })),
     });
     f._durum = 'aktarildi'; f._alisId = g.id;
@@ -317,9 +329,17 @@ export default async function (el, _p, ctx) {
       return;
     }
     const d = e.target.closest('[data-degistir]');
-    if (d) { f.satirlar[Number(d.dataset.degistir)]._secim = { tip: 'ara' }; ciz(); $(`[data-ara="${d.dataset.degistir}"]`, el)?.focus(); return; }
+    if (d) { f.satirlar[Number(d.dataset.degistir)]._secim = { tip: 'ara' }; ciz(); $(`[data-ara="${d.dataset.degistir}"]`, el)?.focus({ preventScroll: true }); return; }
+    const ad = e.target.closest('[data-aday]');
+    if (ad) {
+      const [i, j] = ad.dataset.aday.split(':').map(Number); const s = f.satirlar[i];
+      const sc = s._secim; const secili = sc.tip === 'kart' ? sc.urun.urun_id : null;
+      const a = (s.adaylar || []).filter((q) => q.urun_id !== secili)[j];
+      if (a) { s._secim = { tip: 'kart', urun: { ...a, neden: null } }; ciz(); }
+      return;
+    }
     const y = e.target.closest('[data-yeni]');
-    if (y) { const s = f.satirlar[Number(y.dataset.yeni)]; s._secim = { tip: 'yeni', ad: s.ad, tur: 'urun' }; ciz(); $(`[data-yeni-ad="${y.dataset.yeni}"]`, el)?.select(); return; }
+    if (y) { const s = f.satirlar[Number(y.dataset.yeni)]; s._secim = { tip: 'yeni', ad: s.ad, tur: 'urun' }; ciz(); const yi = $(`[data-yeni-ad="${y.dataset.yeni}"]`, el); yi?.focus({ preventScroll: true }); yi?.select(); return; }
     if (e.target.closest('[data-cari-degistir]')) { f._cari = null; ciz(); $('#ef-cari', el)?.focus(); return; }
     if (e.target.closest('[data-cari-yeni]')) { f._cari = null; return ciz(); }
     if (e.target.closest('[data-atla]')) { f._durum = 'atlandi'; return sonraki(); }
