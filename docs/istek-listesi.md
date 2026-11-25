@@ -5,11 +5,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. Test verilerini temizleme (25.11.2026)
-Bu zamana kadarki veriler test amaçlıydı; **firma bilgileri hariç her şey silinsin.**
-- Silinecekler: stok kartları (barkodlar, stok hareketleri), cari kartlar ve cari hareketleri, alış / satış fişleri, resmi faturalar, teklifler, işler (geçmiş, malzeme, fotoğraf, teslim onayı), dış servis, envanter, kasa / banka hareketleri, takvim notları, konum kayıtları, denetim kaydı, silinenler, e-Fatura eşleştirme hafızası. Belge numaraları baştan başlar.
-- Kalacaklar (varsayım, kullanıcı cevaplamadı): firma bilgileri / ayarlar (kaşe-imza, logo dahil), kullanıcı hesapları ve ekipler (yoksa kimse giriş yapamaz), belge şablonları, kasa / banka hesap tanımları (bakiyeleri sıfırlanır).
-- Güvenlik: silmeden önce otomatik tam yedek alınır; sunucuda bir komutla çalışır ve "SİL" yazarak onay ister. Yedekten geri dönülebilir (scripts/geri_yukle.sh).
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
@@ -23,6 +19,12 @@ Bu zamana kadarki veriler test amaçlıydı; **firma bilgileri hariç her şey s
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 25.11.2026 — Test verilerini temizleme komutu
+- `bash scripts/verileri_temizle.sh` (sunucuda, /opt/servis-takip içinde): "SİL" onayı ister, önce tam yedek alır, sonra siler.
+- Silinenler: stok kartları, barkodlar, stok hareketleri, cariler ve hareketleri, alış / satış fişleri, resmi faturalar, teklifler, işler (geçmiş, malzeme, fotoğraf, teslim onayı), dış servis, envanter, kasa / banka hareketleri, takvim, konum, denetim, silinenler, e-Fatura eşleştirme hafızası; iş fotoğrafları, müşteri imzaları ve ürün resimleri. Belge numaraları baştan başlar.
+- Kalanlar: firma bilgileri / ayarlar (kaşe, imza, logo), kullanıcılar, ekipler, belge şablonları, kasa / banka hesap tanımları.
+- Geri alma: komutun sonunda yazan `bash scripts/geri_yukle.sh yedekler/veritabani_….dump`.
 
 ### 25.11.2026 — 28. derleme: Resmi fatura yüklemede daha sağlıklı stok eşleştirme
 - Faturadaki model / parça kodları (DS-2CD1123G0E-I, TN-2456, WD10PURZ…) tire ve boşluktan bağımsız olarak kartın kodu, modeli ve adıyla karşılaştırılır; en güçlü işaret budur.
