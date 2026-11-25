@@ -5,7 +5,11 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Test verilerini temizleme (25.11.2026)
+Bu zamana kadarki veriler test amaçlıydı; **firma bilgileri hariç her şey silinsin.**
+- Silinecekler: stok kartları (barkodlar, stok hareketleri), cari kartlar ve cari hareketleri, alış / satış fişleri, resmi faturalar, teklifler, işler (geçmiş, malzeme, fotoğraf, teslim onayı), dış servis, envanter, kasa / banka hareketleri, takvim notları, konum kayıtları, denetim kaydı, silinenler, e-Fatura eşleştirme hafızası. Belge numaraları baştan başlar.
+- Kalacaklar (varsayım, kullanıcı cevaplamadı): firma bilgileri / ayarlar (kaşe-imza, logo dahil), kullanıcı hesapları ve ekipler (yoksa kimse giriş yapamaz), belge şablonları, kasa / banka hesap tanımları (bakiyeleri sıfırlanır).
+- Güvenlik: silmeden önce otomatik tam yedek alınır; sunucuda bir komutla çalışır ve "SİL" yazarak onay ister. Yedekten geri dönülebilir (scripts/geri_yukle.sh).
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
