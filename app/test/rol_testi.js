@@ -30,7 +30,7 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   for (const [yol, ad] of [['/cariler', 'Cariler'], ['/fisler', 'Satış fişleri'], ['/alislar', 'Alış faturaları'], ['/teklifler', 'Teklifler'], ['/kdv/ozet?ay=2026-11', 'KDV'], ['/resmi', 'Resmi faturalar'], ['/rapor/aylik-satis?yil=2026', 'Rapor'], ['/urunler', 'Ürünler'], ['/isler', 'İşler (okuma)']]) {
     x = await m('GET', yol); kontrol(`Muhasebe görür: ${ad}`, x.durum === 200, x.veri);
   }
-  for (const [yon, yol, g] of [['GET', '/kullanicilar'], ['PUT', '/ayarlar', { firma_adi: 'X' }], ['GET', '/konumlar'], ['GET', '/guncelleme/durum'], ['GET', '/silinenler'], ['POST', '/isler/hizli', { mesaj: 'deneme' }], ['GET', '/fiyatlandirma']]) {
+  for (const [yon, yol, g] of [['GET', '/kullanicilar'], ['PUT', '/ayarlar', { firma_adi: 'X' }], ['GET', '/konumlar'], ['GET', '/guncelleme/durum'], ['GET', '/silinenler'], ['GET', '/fiyatlandirma'], ['PUT', '/ayarlar', { x: 1 }]]) {
     x = await m(yon, yol, g); kontrol(`Muhasebe yasak: ${yon} ${yol}`, x.durum === 403 || x.durum === 404, x.durum);
   }
   // Kârlılık bilgisi gönderilmez
@@ -42,6 +42,16 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   kontrol('Aylık raporda kâr / maliyet yok', !karAlaniVar((await m('GET', '/rapor/aylik-satis?yil=2026')).veri));
   kontrol('Panel özetinde kâr yok', !karAlaniVar((await m('GET', '/ozet')).veri));
   kontrol('Cari adresi gibi alanlar korunur (karsi_ / kart değil)', (await m('GET', '/resmi')).durum === 200);
+  // Muhasebe iş ekler, düzenler, planlar
+  x = await m('POST', '/isler/hizli', { mesaj: 'Muhasebeden iş', cari_id: (await y('GET', '/cariler?tip=musteri')).veri[0].id });
+  kontrol('Muhasebe iş ekler', x.durum === 200, x.veri);
+  const mIs = x.veri.id;
+  x = await m('PUT', `/isler/${mIs}`, { baslik: 'Muhasebe düzenledi', oncelik: 1 });
+  kontrol('Muhasebe işi düzenler', x.durum === 200 && (await y('GET', `/isler/${mIs}`)).veri.baslik === 'Muhasebe düzenledi', x.veri);
+  x = await m('POST', `/isler/${mIs}/planla`, { ekip_id: ekip.id, baslangic: new Date(Date.now() + 86400000).toISOString() });
+  kontrol('Muhasebe işi planlar', x.durum === 200 && (await y('GET', `/isler/${mIs}`)).veri.durum === 'planlandi', x.veri);
+  kontrol('Muhasebe havuz ve takvimi görür', (await m('GET', '/havuz')).durum === 200 && (await m('GET', `/takvim?bas=${new Date().toISOString().slice(0, 10)}&bit=${new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)}`)).durum === 200);
+  kontrol('Muhasebeye iş ekranında maliyet / kâr gitmez', !karAlaniVar((await m('GET', `/isler/${mIs}`)).veri));
   // Muhasebe tahsilat yapabilir
   const cari = (await y('GET', '/cariler?tip=musteri')).veri[0];
   const hesap = (await y('GET', '/hesaplar')).veri[0];
@@ -89,8 +99,13 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   await mp.goto(T); await mp.fill('[name=kullanici_adi]', 'muhasebe'); await mp.fill('[name=sifre]', 'muhasebe1'); await mp.click('button');
   await mp.waitForSelector('#sayfa'); await mp.waitForTimeout(800);
   const menu = await mp.$$eval('[data-yol]', (a) => [...new Set(a.map((q) => q.dataset.yol))]);
-  kontrol('Muhasebe menüsü: Ayarlar / Form / Güncelle / Konum / Takvim / Havuz yok', !['ayarlar', 'formlar', 'guncelleme', 'ekip-konum', 'takvim', 'havuz', 'fiyatlandirma', 'silinenler'].some((q) => menu.includes(q)) && ['cariler', 'fisler', 'kdv', 'kasa', 'alislar'].every((q) => menu.includes(q)), menu);
-  kontrol('Muhasebe: "+ İş ekle" yok, "+ Satış fişi" var', !(await mp.$('#btn-hizli')) && !!(await mp.$('#btn-fis')));
+  kontrol('Muhasebe menüsü: Ayarlar / Form / Güncelle / Konum / Fiyatlandırma yok; Havuz / Takvim var', !['ayarlar', 'formlar', 'guncelleme', 'ekip-konum', 'fiyatlandirma', 'silinenler'].some((q) => menu.includes(q)) && ['cariler', 'fisler', 'kdv', 'kasa', 'alislar', 'havuz', 'takvim'].every((q) => menu.includes(q)), menu);
+  kontrol('Muhasebe: sağ üstte "+ İş ekle" ve "+ Satış fişi"', await mp.isVisible('#btn-hizli') && !!(await mp.$('#btn-fis')));
+  await mp.click('#btn-hizli'); await mp.waitForSelector('dialog[open] #hi-malzeme');
+  await mp.fill('dialog[open] textarea[name=mesaj]', 'Muhasebe pencereden iş'); await mp.click('dialog[open] button[type=submit]'); await mp.waitForTimeout(700);
+  kontrol('Muhasebe pencereden iş ekledi', (await y('GET', '/havuz')).veri.some((q) => /Muhasebe pencereden/.test(q.ham_mesaj || q.baslik)));
+  await mp.evaluate(() => { location.hash = '#/takvim'; }); await mp.waitForTimeout(700);
+  kontrol('Muhasebe takvimi açar', (await mp.$eval('#sayfa', (e) => e.className)).includes('sayfa-takvim'));
   await mp.evaluate(() => { location.hash = '#/ayarlar'; }); await mp.waitForTimeout(500);
   kontrol('Muhasebe yasak sayfaya giremez (panele döner)', (await mp.$eval('#sayfa', (e) => e.className)).includes('sayfa-panel'));
   await mp.evaluate((id) => { location.hash = `#/fis/${id}`; }, fisId); await mp.waitForSelector('.fatura');
@@ -143,7 +158,7 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   await tmp.waitForSelector('#btn-hizli'); await tmp.evaluate(() => document.querySelector('#btn-hizli').click()); await tmp.waitForSelector('dialog[open] #hi-malzeme');
   await tmp.fill('dialog[open] textarea[name=mesaj]', 'Telefonda stok listesinden');
   await tmp.tap('dialog[open] [data-hm-stok]'); await tmp.waitForFunction(() => document.querySelectorAll('dialog[open]').length === 2);
-  await (await tmp.$$('dialog[open] tbody input[type=checkbox]'))[0].tap(); await tmp.waitForTimeout(150);
+  await tmp.waitForSelector('dialog[open] tbody input[type=checkbox]'); await (await tmp.$$('dialog[open] tbody input[type=checkbox]'))[0].tap(); await tmp.waitForTimeout(150);
   await tmp.tap('dialog[open] button[type=submit]:has-text("Seçilenleri")'); await tmp.waitForTimeout(500);
   kontrol('Telefon: stok listesi kapanınca İş ekle penceresi açık kalır', (await tmp.$$('dialog[open]')).length === 1 && (await tmp.$$('dialog[open] .hm-satir')).length === 1);
   await tmp.tap('dialog[open] button[type=submit]'); await tmp.waitForTimeout(900);

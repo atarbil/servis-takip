@@ -41,9 +41,9 @@ export const KULLANICI_MENU = [
   { yol: 'guncelleme', ad: 'Programı güncelle', ikon: 'yenile' },
 ];
 const MOBIL_ALT_YONETICI = ['panel', 'havuz', 'takvim', 'cariler'];
-const MOBIL_ALT_MUHASEBE = ['panel', 'cariler', 'fisler', 'kdv'];
+const MOBIL_ALT_MUHASEBE = ['panel', 'havuz', 'takvim', 'cariler'];
 // Muhasebe rolünün açabildiği sayfalar
-const MUHASEBE_SAYFA = new Set(['panel', 'isler', 'is', 'cariler', 'cari', 'envanter', 'fisler', 'fis', 'teklifler', 'teklif', 'urunler', 'urun',
+const MUHASEBE_SAYFA = new Set(['panel', 'isler', 'is', 'havuz', 'takvim', 'dis-servis', 'cariler', 'cari', 'envanter', 'fisler', 'fis', 'teklifler', 'teklif', 'urunler', 'urun',
   'alislar', 'alis', 'kasa', 'raporlar', 'resmi-yukle', 'efatura', 'resmi-faturalar', 'kdv']);
 const menuIzinli = (m) => !ctx.muhasebe || (m.yol ? MUHASEBE_SAYFA.has(m.yol) : m.alt.some(menuIzinli));
 const DUZ_MENU = [...YONETICI_MENU.flatMap((m) => m.alt || [m]), ...KULLANICI_MENU];
@@ -414,7 +414,7 @@ function kabukCiz() {
         <div class="kur-kutu" id="kur" hidden></div>
         <button class="btn-ikon sekme-dugme" id="btn-sekmeler" title="Açık sayfalar" aria-label="Açık sayfalar"><span>${ikon('sekme')}</span><b id="sekme-sayi">1</b></button>
         <button class="btn birincil" id="btn-fis" title="Yeni satış fişi"><span class="uzun">+ Satış fişi</span><span class="kisa" aria-hidden="true">🧾</span></button>
-        ${ctx.muhasebe ? '' : html`<button class="btn birincil" id="btn-hizli">+ İş ekle</button>`}
+        <button class="btn birincil" id="btn-hizli">+ İş ekle</button>
         ${kullaniciGrup('yalniz-masa')}
       </header>
       <div class="sekme-serit" id="sekme-serit" role="tablist" aria-label="Açık sayfalar"></div>

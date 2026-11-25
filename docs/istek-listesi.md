@@ -5,15 +5,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. Muhasebe rolü: "+ İş ekle", iş düzenleme ve planlama (25.11.2026)
-- Kullanıcı: "muhasebe yetki grubundakilere sağ üst köşede iş ekle butonu gelsin".
-- Muhasebe kullanıcısında üst çubukta "+ Satış fişi"nin yanında **"+ İş ekle"** (yöneticideki pencerenin aynısı): mesaj, cari,
-  öncelik, ekibe verilecek malzeme, "İşi ben yaptım" (fiş açar). Sunucu yalnız iş ekleme uçlarına izin verir (/isler/hizli,
-  /isler/ofis). Malzeme stok listesinde maliyet sütunu yerine satış fiyatı (kârlılık görmez kuralı). Telefonda + düğmesi.
-- Kullanıcı ek (09:57): **"işi ekleyip düzenleyebilsin, planlayabilsin"** → muhasebe iş tarafında yöneticiyle aynı:
-  iş ekle / düzenle (başlık, cari, adres, öncelik, açıklama), **planla** (ekibe ata, tarih / saat, sürükle-bırak takvim), havuza al,
-  iptal, malzeme ekle / çıkar, dış servis; menüde **Havuz** ve **Takvim** açılır. Yine kapalı: Ayarlar, kullanıcılar, form tasarımı,
-  güncelleme, silinenler, ekip konumları, fiyatlandırma; iş ekranında "Maliyet ve kâr" kartı ve kârlılık bilgisi görünmez.
+(Şu an bekleyen istek yok.)
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
@@ -27,6 +19,14 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 25.11.2026 — 27. derleme: Muhasebe iş ekler, düzenler, planlar
+- Muhasebe kullanıcısında sağ üstte **"+ İş ekle"** (telefonda + düğmesi); pencere yöneticidekiyle aynı (malzeme, "İşi ben yaptım").
+- Muhasebe iş tarafında yöneticiyle aynı: iş düzenle, **planla** (ekip, tarih / saat), havuza al, iptal, sil, malzeme ekle / çıkar,
+  dış servis; menüde **Havuz**, **Takvim**, **Dış servis**.
+- Yine kapalı: Ayarlar, kullanıcılar, form tasarımı, güncelleme, silinenler, ekip konumları, fiyatlandırma; kârlılık bilgisi
+  (iş ekranında "Maliyet ve kâr" kartı, malzeme maliyetleri) görünmez ve sunucudan gönderilmez. Malzeme stok listesinde maliyet yerine
+  satış fiyatı.
 
 ### 25.11.2026 — 26.2 düzeltme: Detaylı ekstre A4
 - Kullanıcı: "detaylı ekstre A5 formatında çıkıyor, A4'e göre ayarlayalım".

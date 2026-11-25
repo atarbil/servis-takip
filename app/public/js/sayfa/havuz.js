@@ -79,7 +79,7 @@ export function hizliIs(ctx) {
         const sl = e.target.closest('[data-hm-sil]'); if (sl) { malzemeler.splice(Number(sl.dataset.hmSil), 1); hmCiz(); return; }
         if (e.target.closest('[data-hm-stok]')) {
           const { stokListesi } = await import('../bilesen.js');
-          const sec = await stokListesi({ fiyat: 'yok', baslik: 'Ekibe verilecek malzeme' });
+          const sec = await stokListesi({ fiyat: ctx.muhasebe ? 'satis' : 'yok', baslik: 'Ekibe verilecek malzeme' });
           for (const { urun: u, miktar: mk } of sec || []) { const v = malzemeler.find((x) => x.urun?.id === u.id); if (v) v.miktar += mk; else malzemeler.push({ urun: u, miktar: mk }); }
           hmCiz();
         }

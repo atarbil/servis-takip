@@ -25,7 +25,8 @@ const r = new web.Yonlendirici();
 
 // Muhasebe rolü yönetici ekranlarını kullanır; şu bölümler hariç (her yöntem ya da yalnız değiştirme)
 const MUHASEBE_YASAK = /^\/(kullanicilar|guncelleme|telegram|konumlar|silinenler|denetim|fiyatlandirma)(\/|$)/;
-const MUHASEBE_SALT_OKUMA = /^\/(ayarlar|ekipler|sablonlar|isler|notlar|havuz|takvim|dis-servis|hesaplar)(\/|$)/;
+// İş tarafı (ekle / düzenle / planla / havuz / takvim / dış servis) muhasebeye açık
+const MUHASEBE_SALT_OKUMA = /^\/(ayarlar|ekipler|sablonlar|hesaplar)(\/|$)/;
 const girisGerekli = (req) => {
   if (!req.kullanici) throw web.hata(401, 'Oturum açmanız gerekiyor.');
   if (req.kullanici.rol === 'muhasebe' && (MUHASEBE_YASAK.test(req.yol || '') || (req.method !== 'GET' && MUHASEBE_SALT_OKUMA.test(req.yol || '')))) {
