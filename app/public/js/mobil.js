@@ -163,6 +163,8 @@ function cekYenile() {
 function geriTusu() {
   const asil = HTMLDialogElement.prototype.showModal;
   let sayac = 0;
+  // Pencere düğmeyle kapanınca yapılan history.back() kendi popstate'ini doğurur; o olay başka (alttaki) pencereyi kapatmasın
+  let yoksay = 0;
   HTMLDialogElement.prototype.showModal = function (...a) {
     asil.apply(this, a);
     if (!telefon.matches) return;
@@ -170,10 +172,11 @@ function geriTusu() {
     history.pushState({ ...(history.state || {}), mbPencere: no }, '', location.href);
     this.addEventListener('close', () => {
       // Pencere düğmeyle kapandıysa eklediğimiz geçmiş kaydını geri al (sayfa değişmişse dokunma)
-      if (history.state?.mbPencere === no) history.back();
+      if (history.state?.mbPencere === no) { yoksay++; history.back(); }
     }, { once: true });
   };
   addEventListener('popstate', () => {
+    if (yoksay > 0) { yoksay--; return; }
     const acik = [...document.querySelectorAll('dialog[open]')].pop();
     if (!acik) return;
     const e = new Event('cancel', { cancelable: true });

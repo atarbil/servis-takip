@@ -20,6 +20,14 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Tamamlananlar
 
+### 25.11.2026 — 26.1 düzeltme: Telefonda iç içe pencere
+- Hata (kullanıcı): telefondan iş eklerken malzeme stok listesinden seçilince iş havuza düşmüyor / kaydolmuyordu.
+- Neden: telefonda geri tuşu desteği için her pencere geçmişe bir kayıt ekliyor; üstteki pencere (Stok listesi) düğmeyle
+  kapanınca yapılan geri adımı, alttaki **İş ekle** penceresini de kapatıyordu (yazılanlar kayboluyordu). Aynı hata telefonda
+  başka iç içe pencerelerde de (ör. fişte yeni stok kartı) olabiliyordu.
+- Düzeltme: düğmeyle kapanan pencerenin geri adımı artık yalnız kendisini kapatır; telefonun geri tuşu yine en üstteki pencereyi kapatır.
+- Test: rol_testi.js'e telefon senaryosu eklendi.
+
 ### 25.11.2026 — 26. derleme: Muhasebe rolü, teknisyen iş ekleme, iş tanımlarken malzeme, teslim / onay ekranı
 - **Muhasebe** rolü (Ayarlar → Kullanıcılar → Rol: "Muhasebe (kârlılık görmez)"): yönetici ekranlarını kullanır — Cariler, ekstre /
   detaylı ekstre, tahsilat / ödeme, Satış fişleri, Teklif / proforma, Ürünler, Alış faturaları, Kasa / banka, Resmi fatura yükleme,

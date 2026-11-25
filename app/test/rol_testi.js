@@ -137,6 +137,22 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   await yp.check('dialog[open] #hi-ben'); await yp.waitForTimeout(150);
   kontrol('"İşi ben yaptım" seçilince malzeme bölümü gizlenir', !(await yp.isVisible('dialog[open] #hi-malzeme')));
 
+  // Telefonda iç içe pencere: stok listesinden seçince İş ekle penceresi kapanmamalı; geri tuşu üstteki pencereyi kapatır
+  const tm = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }); const tmp = await tm.newPage(); tmp.on('pageerror', (e) => hatalar.push(e.message));
+  await tmp.goto(T); await tmp.fill('[name=kullanici_adi]', 'Patron'); await tmp.fill('[name=sifre]', '12345678'); await tmp.click('button');
+  await tmp.waitForSelector('#btn-hizli'); await tmp.evaluate(() => document.querySelector('#btn-hizli').click()); await tmp.waitForSelector('dialog[open] #hi-malzeme');
+  await tmp.fill('dialog[open] textarea[name=mesaj]', 'Telefonda stok listesinden');
+  await tmp.tap('dialog[open] [data-hm-stok]'); await tmp.waitForFunction(() => document.querySelectorAll('dialog[open]').length === 2);
+  await (await tmp.$$('dialog[open] tbody input[type=checkbox]'))[0].tap(); await tmp.waitForTimeout(150);
+  await tmp.tap('dialog[open] button[type=submit]:has-text("Seçilenleri")'); await tmp.waitForTimeout(500);
+  kontrol('Telefon: stok listesi kapanınca İş ekle penceresi açık kalır', (await tmp.$$('dialog[open]')).length === 1 && (await tmp.$$('dialog[open] .hm-satir')).length === 1);
+  await tmp.tap('dialog[open] button[type=submit]'); await tmp.waitForTimeout(900);
+  kontrol('Telefon: malzemeli iş kaydedildi', (await y('GET', '/havuz')).veri.some((q) => /Telefonda stok listesinden/.test(q.ham_mesaj || q.baslik)));
+  await tmp.evaluate(() => document.querySelector('#btn-hizli').click()); await tmp.waitForSelector('dialog[open] #hi-malzeme');
+  await tmp.tap('dialog[open] [data-hm-stok]'); await tmp.waitForFunction(() => document.querySelectorAll('dialog[open]').length === 2);
+  await tmp.goBack(); await tmp.waitForTimeout(400);
+  kontrol('Telefon: geri tuşu yalnız üstteki pencereyi kapatır', (await tmp.$$('dialog[open]')).length === 1);
+
   kontrol('Sayfa hatası yok', !hatalar.length, hatalar);
   await b.close();
   console.log(basarisiz ? `\n${basarisiz} KONTROL BAŞARISIZ` : '\nROL / İŞ TESTİ BAŞARILI');
