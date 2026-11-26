@@ -253,6 +253,7 @@ export default async function (el, _p, ctx) {
       fatura: { no: f.no, ettn: f.ettn, tarih: f.tarih, vade: f.vade, doviz: f.doviz, kur: f.kur },
       cari_id: f._cari?.id || null,
       yeni_cari: f._cari ? null : { unvan: t.unvan, vergi_no: t.vkn || t.tckn, vergi_dairesi: t.vergi_dairesi, adres: t.adres, il: t.il, ilce: t.ilce, telefon: t.telefon, eposta: t.eposta },
+      cari_bilgi: { vergi_no: t.vkn || t.tckn, vergi_dairesi: t.vergi_dairesi, adres: t.adres, il: t.il, ilce: t.ilce, telefon: t.telefon, eposta: t.eposta },
       satirlar: f.satirlar.map((s) => ({
         urun_id: s._secim.tip === 'kart' ? s._secim.urun.urun_id : null,
         yeni_urun: s._secim.tip === 'yeni' ? { ad: s._secim.ad, birim: s.birim, kdv_orani: s.kdv_orani, tur: s._secim.tur, barkod: s.barkod } : null,

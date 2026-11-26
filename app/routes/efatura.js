@@ -4,7 +4,7 @@ const { efaturaOku } = require('../lib/efatura');
 const { zipAc } = require('../lib/zip');
 const { metin, sayi, tarih } = require('../lib/yardim');
 
-const { eslestirici, dosyaMetni, r4, DOVIZ } = require('../lib/efaturaEslestir');
+const { eslestirici, dosyaMetni, r4, DOVIZ, cariBilgiTamamla } = require('../lib/efaturaEslestir');
 
 module.exports = (r, { db, web, Y }) => {
   const { urunleriYukle, onizle } = eslestirici(db);
@@ -52,6 +52,7 @@ module.exports = (r, { db, web, Y }) => {
         const c = await q.bir('SELECT id, tip FROM cariler WHERE id = $1', [cariId]);
         if (!c) throw web.hata(400, 'Tedarikçi bulunamadı.');
         if (c.tip === 'musteri') await q("UPDATE cariler SET tip = 'her_ikisi' WHERE id = $1", [cariId]);
+        await cariBilgiTamamla(q, cariId, b.cari_bilgi || b.yeni_cari);
       } else {
         const y = b.yeni_cari || {};
         if (!metin(y.unvan)) throw web.hata(400, 'Tedarikçi ünvanı yok.');

@@ -155,4 +155,16 @@ function eslestirici(db) {
   return { urunleriYukle, eslestir, onizle };
 }
 
-module.exports = { eslestirici, sade, kodSade, barkodMu, anahtar, dosyaMetni, r2, r4, DOVIZ };
+
+// Faturadan gelen vergi / iletişim bilgileri carinin BOŞ alanlarına yazılır (dolu alanlara dokunulmaz)
+async function cariBilgiTamamla(q, cariId, b) {
+  if (!cariId || !b) return;
+  const v = (x) => (x == null ? '' : String(x).trim()) || null;
+  await q(`UPDATE cariler SET
+      vergi_no = coalesce(nullif(vergi_no, ''), $2), vergi_dairesi = coalesce(nullif(vergi_dairesi, ''), $3),
+      adres = coalesce(nullif(adres, ''), $4), il = coalesce(nullif(il, ''), $5), ilce = coalesce(nullif(ilce, ''), $6),
+      telefon = coalesce(nullif(telefon, ''), $7), eposta = coalesce(nullif(eposta, ''), $8)
+    WHERE id = $1`, [cariId, v(b.vergi_no), v(b.vergi_dairesi), v(b.adres), v(b.il), v(b.ilce), v(b.telefon), v(b.eposta)]);
+}
+
+module.exports = { cariBilgiTamamla, eslestirici, sade, kodSade, barkodMu, anahtar, dosyaMetni, r2, r4, DOVIZ };

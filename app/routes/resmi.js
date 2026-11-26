@@ -4,7 +4,7 @@
 const { efaturaOku } = require('../lib/efatura');
 const { zipAc } = require('../lib/zip');
 const { metin, sayi, tarih } = require('../lib/yardim');
-const { eslestirici, dosyaMetni, r2 } = require('../lib/efaturaEslestir');
+const { eslestirici, dosyaMetni, r2, cariBilgiTamamla } = require('../lib/efaturaEslestir');
 
 const GIDER_TURLERI = ['Akaryakıt', 'Telefon / internet', 'Kira', 'Kargo', 'Yemek', 'Elektrik / su / doğalgaz', 'Kırtasiye', 'Diğer'];
 const vknSade = (v) => String(v || '').replace(/\D/g, '');
@@ -46,6 +46,7 @@ module.exports = (r, { db, web, Y }) => {
       karsi.adres || null, karsi.il || null, karsi.ilce || null, karsi.telefon || null, karsi.eposta || null, cari?.id || null,
       f.doviz || 'TRY', f.doviz === 'TRY' ? null : t.kur, t.matrah, t.kdv, t.tevkifat, t.toplam, JSON.stringify(t.dokum), JSON.stringify(kalemOzet(f)),
       gider_turu, aciklama, kullanici]);
+    if (cari?.id) await cariBilgiTamamla(q, cari.id, { ...karsi, vergi_no: vkn });
     return { id: x.id, cari };
   }
 
@@ -179,6 +180,7 @@ module.exports = (r, { db, web, Y }) => {
       [x.yon === 'satis' ? 'musteri' : 'tedarikci', x.karsi_unvan, x.karsi_vkn, x.karsi_vergi_dairesi, x.karsi_adres, x.karsi_il, x.karsi_ilce, x.karsi_telefon, x.karsi_eposta, req.kullanici.id])).id;
     }
     await q('UPDATE resmi_faturalar SET cari_id = $2 WHERE id = $1', [x.id, cariId]);
+    if (cariId) await cariBilgiTamamla(q, cariId, { vergi_no: x.karsi_vkn, vergi_dairesi: x.karsi_vergi_dairesi, adres: x.karsi_adres, il: x.karsi_il, ilce: x.karsi_ilce, telefon: x.karsi_telefon, eposta: x.karsi_eposta });
     // Aynı vergi numaralı diğer eşleşmeyen faturalar da bu cariye bağlanır
     let digerleri = 0;
     if (cariId && x.karsi_vkn) {

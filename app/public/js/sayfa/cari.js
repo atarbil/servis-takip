@@ -18,7 +18,15 @@ export default async function (el, [id], ctx) {
     <div class="detay-ust">
       <div style="flex:1;min-width:240px"><a href="#/cariler" class="btn-metin">← Cariler</a>
         <h2>${c.unvan}</h2>
-        <div class="soluk">${[c.kod, c.yetkili, c.telefon && telLink(c.telefon), [c.ilce, c.il].filter(Boolean).join(' / ')].filter(Boolean).map((x, i) => html`${i ? ' · ' : ''}${x}`)}</div></div>
+        ${c.kod ? html`<div class="soluk">${c.kod}</div>` : ''}
+        <dl class="cari-kunye">
+          <dt>Vergi dairesi</dt><dd>${c.vergi_dairesi || '-'}</dd>
+          <dt>Vergi / TC no</dt><dd>${c.vergi_no || '-'}</dd>
+          <dt>Yetkili</dt><dd>${c.yetkili || '-'}</dd>
+          <dt>Telefon</dt><dd>${c.telefon ? telLink(c.telefon) : '-'}${c.telefon2 ? html` · ${telLink(c.telefon2)}` : ''}</dd>
+          <dt>E-posta</dt><dd>${c.eposta ? html`<a href="mailto:${c.eposta}">${c.eposta}</a>` : '-'}</dd>
+          <dt>Adres</dt><dd>${[c.adres, [c.ilce, c.il].filter(Boolean).join(' / ')].filter(Boolean).join(' ') || '-'}</dd>
+        </dl></div>
       <div class="kart" style="margin:0;min-width:220px"><div class="kart-govde" style="padding:.7rem 1rem">
         <small>${bakiyeAciklama(c.bakiye)}</small><div style="font-size:1.5rem;font-weight:800">${bakiyeHucre(c.bakiye)}</div>
         ${c.vadesi_gecen ? html`<small style="color:var(--kirmizi)">Vadesi geçen: ${para(c.vadesi_gecen.gecikmis_tutar)} (${c.vadesi_gecen.gecikme_gun} gün)</small>` : ''}

@@ -20,6 +20,10 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Tamamlananlar
 
+### 26.11.2026 — 28.1: Cari kartında vergi ve iletişim bilgileri
+- Cari kartının üstünde (ünvanın altında) vergi dairesi, vergi / TC no, yetkili, telefon, e-posta ve adres her zaman görünür; yalnız "Bilgiler" sekmesinde kalmaz.
+- e-Fatura / resmi fatura yüklenirken eşleşen carinin boş vergi no, vergi dairesi, adres, il / ilçe, telefon ve e-posta alanları faturadaki bilgilerle doldurulur (dolu alanlar değişmez).
+
 ### 25.11.2026 — Test verilerini temizleme komutu
 - `bash scripts/verileri_temizle.sh` (sunucuda, /opt/servis-takip içinde): "SİL" onayı ister, önce tam yedek alır, sonra siler.
 - Silinenler: stok kartları, barkodlar, stok hareketleri, cariler ve hareketleri, alış / satış fişleri, resmi faturalar, teklifler, işler (geçmiş, malzeme, fotoğraf, teslim onayı), dış servis, envanter, kasa / banka hareketleri, takvim, konum, denetim, silinenler, e-Fatura eşleştirme hafızası; iş fotoğrafları, müşteri imzaları ve ürün resimleri. Belge numaraları baştan başlar.
