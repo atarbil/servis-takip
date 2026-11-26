@@ -102,10 +102,10 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   kontrol('İş havuzda', x.veri.length === 1 && x.veri[0].id === isId);
 
   // Teknisyen yetkisizlikleri
-  kontrol('Teknisyen havuzu göremez', (await t('GET', '/havuz')).durum === 403);
+  kontrol('Teknisyen havuzu görür (30. derleme)', (await t('GET', '/havuz')).durum === 200);
   kontrol('Teknisyen cari göremez', (await t('GET', '/cariler')).durum === 403);
   kontrol('Teknisyen raporu göremez', (await t('GET', '/ozet')).durum === 403);
-  kontrol('Teknisyen havuzdaki işi göremez', (await t('GET', `/isler/${isId}`)).durum === 403);
+  kontrol('Teknisyen havuzdaki işi görür ama düzenleyemez', (await t('GET', `/isler/${isId}`)).durum === 200 && (await t('PUT', `/isler/${isId}`, { baslik: 'x' })).durum === 403);
 
   // Planla -> havuza al -> planla
   const yarin = new Date(Date.now() + 86400000); yarin.setHours(10, 0, 0, 0);

@@ -44,7 +44,7 @@ export async function mobilKabuk(ctx, a) {
     <main id="sayfa" class="mk-sayfa"></main>
     <nav class="mk-alt" id="mk-alt">
       ${SEKMELER.map((s) => html`<a href="#/${s.yol}" data-sekme="${s.yol}">${ikon(s.ikon, 22)}<span>${menuAdi(s)}</span>${s.yol === 'isler' ? html`<b class="mk-sayac" data-sayac="havuz" hidden></b>` : ''}</a>`)}
-      ${teknisyen ? '' : html`<button type="button" data-hizli>${ikon('arti', 22)}<span>İş ekle</span></button>`}
+      <button type="button" data-hizli>${ikon('arti', 22)}<span>İş ekle</span></button>
       <button type="button" data-menu>${ikon('menu', 22)}<span>Menü</span></button>
     </nav>`);
 
@@ -83,7 +83,15 @@ export async function mobilKabuk(ctx, a) {
   }
   $('[data-menu]').onclick = menuAc;
   const hz = $('[data-hizli]');
-  if (hz) hz.onclick = async () => { const { hizliIs } = await import('../sayfa/havuz.js'); hizliIs(ctx); };
+  if (hz) hz.onclick = async () => {
+    if (teknisyen) {
+      // Teknisyen: havuza ekler ya da "bu işi ben yapıyorum" ile kendine planlar
+      const { teknisyenIsEkle } = await import('../sayfa/islerim.js');
+      if (await teknisyenIsEkle(ctx) && simdiki?.ad === 'islerim') yukle({ yeni: false });
+      return;
+    }
+    const { hizliIs } = await import('../sayfa/havuz.js'); hizliIs(ctx);
+  };
 
   // ---------- Geri ----------
   // Uygulama içinde açılan sayfa sayısı: geri tuşu önce önceki sayfaya, yoksa sekmenin köküne döner

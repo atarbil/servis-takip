@@ -31,6 +31,8 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     const is = (await db.query('SELECT id, ekip_id, durum FROM isler WHERE id = $1', [id])).rows[0];
     if (!is) throw web.hata(404, 'İş bulunamadı.');
     if (yon(req)) return is;
+    // Havuzdaki işi her teknisyen görebilir (işlem yapamaz; "ben alıyorum" ayrı)
+    if (!islemIcin && is.durum === 'havuz') return is;
     if (!req.kullanici.ekip_id || is.ekip_id !== req.kullanici.ekip_id) throw web.hata(403, 'Bu iş sizin ekibinize ait değil.');
     if (islemIcin && !['planlandi', 'sahada'].includes(is.durum)) throw web.hata(400, 'Bu iş üzerinde artık işlem yapılamaz.');
     return is;
@@ -60,7 +62,8 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     return (await db.query(sql, p)).rows;
   });
 
-  r.get('/havuz', Y, async () => (await db.query(`
+  // Havuz: yönetici, muhasebe ve teknisyen görür
+  r.get('/havuz', G, async () => (await db.query(`
     SELECT h.*, extract(epoch FROM h.bekleme)::int AS bekleme_sn FROM v_is_havuzu h`)).rows);
 
   // Teknisyen ana ekranı: ekibin planlı/sahadaki işleri + bugün tamamlananlar
@@ -204,6 +207,22 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   r.post('/isler/:id/planla', Y, async (req, res) => {
     zorunlu(req.body, { ekip_id: 'Ekip', baslangic: 'Başlangıç' });
     return fonk('is_planla', (b) => b.ekip_id, (b) => b.baslangic, (b) => b.bitis || null)(req, res);
+  });
+  // Teknisyen havuzdaki işi kendi ekibine alır: hemen (şimdi) planlanır, İşlerim'e düşer
+  r.post('/isler/:id/ben-aliyorum', G, async (req) => {
+    if (req.kullanici.rol !== 'teknisyen') throw web.hata(403, 'Bu işlem teknisyenler içindir.');
+    if (!req.kullanici.ekip_id) throw web.hata(400, 'Hesabınız bir ekibe bağlı değil.');
+    const is = await db.islem(req.kullanici.id, async (q) => {
+      const x = await q.bir('SELECT id, baslik, durum FROM isler WHERE id = $1 FOR UPDATE', [req.params.id]);
+      if (!x) throw web.hata(404, 'İş bulunamadı.');
+      if (x.durum !== 'havuz') throw web.hata(409, 'Bu iş artık havuzda değil (başka biri almış ya da planlanmış olabilir).');
+      await q("SELECT set_config('app.gecmis_notu', $1, true)", [`${req.kullanici.ad_soyad} havuzdan aldı`]);
+      await q('SELECT is_planla($1, $2, now(), NULL)', [x.id, req.kullanici.ekip_id]);
+      await q("SELECT set_config('app.gecmis_notu', '', true)");
+      return x;
+    });
+    telegram?.bildirArkada('yeni_is', async () => `🙋 <b>${req.kullanici.ad_soyad}</b> havuzdaki işi aldı:\n#${is.id} ${is.baslik}`);
+    return { tamam: true, id: is.id };
   });
   r.post('/isler/:id/havuza-al', Y, fonk('is_havuza_al', (b) => metin(b.neden)));
   r.post('/isler/:id/iptal', Y, async (req, res) => {

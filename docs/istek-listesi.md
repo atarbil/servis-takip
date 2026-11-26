@@ -11,17 +11,6 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
-### 2. Teknisyen havuzu görsün ve iş ekleyebilsin (26.11.2026)
-Teknisyen ve muhasebe yalnız kendine atanmış işleri değil, **iş havuzunu da görsün ve iş ekleyebilsin**.
-- Muhasebe: havuzu görme, iş ekleme, düzenleme ve planlama 27. derlemede açıldı; telefon arayüzünde de İşler → Havuz ve alt menüde "İş ekle" var. Kontrol edilecek, eksik varsa tamamlanacak.
-- Teknisyen (telefon ve bilgisayar):
-  - İşlerim'in yanında **Havuz** bölümü: havuzdaki tüm işler (başlık, müşteri, adres, bekleme süresi, öncelik).
-  - Havuzdaki işin detayını görebilir (kâr / maliyet görmez).
-  - **"Bu işi ben alıyorum"** düğmesi: iş bugün, uygun ilk saate kendi ekibine planlanır ve İşlerim'e düşer; yöneticiye bildirim gider. (Varsayım)
-  - Alt menüde **İş ekle** (mevcut teknisyen iş ekleme: havuza düşer ya da "bu işi ben yapıyorum").
-  - Teknisyen havuzdaki işi düzenleyemez, iptal edemez, başka ekibe planlayamaz.
-- Sunucu tarafında da yetki: teknisyen yalnız havuz listesini ve havuzdaki iş detayını okuyabilir, yalnız kendi ekibine alabilir.
-
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
@@ -34,6 +23,13 @@ Teknisyen ve muhasebe yalnız kendine atanmış işleri değil, **iş havuzunu d
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 26.11.2026 — 30. derleme: Teknisyen havuzu görür, işi alır, iş ekler
+- Teknisyen (telefon ve bilgisayar): İşlerim sayfasında **İşlerim / Havuz** bölümleri; havuzdaki tüm işler (müşteri, adres, bekleme süresi, öncelik) ve sayısı.
+- Havuzdaki işin detayı açılır (kâr / maliyet yok); **"🙋 Bu işi ben alıyorum"** → iş şimdi kendi ekibine planlanır, İşlerim'e düşer, Telegram'a "… havuzdaki işi aldı" bildirimi gider. Aynı anda iki kişi alamaz (ikincisi "artık havuzda değil" uyarısı alır).
+- Telefonda teknisyen alt menüsü: İşlerim · **İş ekle** · Menü (havuza ekler ya da "bu işi ben yapıyorum" ile kendine planlar).
+- Sunucu yetkisi: teknisyen havuzu ve havuzdaki iş detayını okuyabilir; düzenleyemez, iptal edemez, başka ekibe planlayamaz, havuzdaki işe malzeme ekleyemez.
+- Muhasebe: havuzu görme, iş ekleme / düzenleme / planlama (27. derleme) telefonda da açık (İşler → Havuz, alt menü İş ekle).
 
 ### 26.11.2026 — 29. derleme: Telefon için ayrı arayüz (1. aşama: kabuk + İşler)
 - Telefonda (ekran ≤ 860 px) bilgisayar görünümünden tamamen ayrı arayüz açılır: sabit üst çubuk (geri · başlık · ⋯), sabit alt sekmeler (Panel · İşler · Satış · Cariler · **İş ekle** · Menü), tam ekran menü. Bilgisayar görünümü değişmedi.

@@ -147,7 +147,7 @@ export default async function (el, [id], ctx) {
   const tel = is.iletisim_tel || is.cari_telefon;
 
   el.innerHTML = String(html`
-    <a href="#/${ctx.yonetici ? 'is/' + is.id : 'islerim'}" class="btn-metin">← ${ctx.yonetici ? 'İş detayına dön' : 'İşlerim'}</a>
+    ${ctx.mobil ? '' : html`<a href="#/${ctx.yonetici ? 'is/' + is.id : is.durum === 'havuz' ? 'islerim?b=havuz' : 'islerim'}" class="btn-metin">← ${ctx.yonetici ? 'İş detayına dön' : is.durum === 'havuz' ? 'Havuz' : 'İşlerim'}</a>`}
     <div class="saha-baslik">
       <div class="btn-grup">${durumRozet(is.durum)}<span class="soluk">#${is.id} · ${is.plan_baslangic ? `${tarih(is.plan_baslangic)} ${saat(is.plan_baslangic)}` : ''}</span></div>
       <h2>${is.baslik}</h2>
@@ -162,6 +162,8 @@ export default async function (el, [id], ctx) {
     ${is.cihaz ? html`<div class="bilgi-kutu">🔧 İlgili cihaz: <b>${[is.cihaz.tur, is.cihaz.marka, is.cihaz.model].filter(Boolean).join(' ')}</b>
       ${is.cihaz.konum ? html` · ${is.cihaz.konum}` : ''}${is.cihaz.seri_no ? html` · SN ${is.cihaz.seri_no}` : ''}${is.cihaz.ip_adresi ? html` · IP ${is.cihaz.ip_adresi}` : ''}</div>` : ''}
     ${is.durum === 'planlandi' ? html`<button class="btn birincil buyuk tam" id="basla" style="margin-bottom:1rem">▶ İşe başla</button>` : ''}
+    ${is.durum === 'havuz' && !ctx.yonetici ? html`<div class="bilgi-kutu">Bu iş havuzda, henüz kimseye planlanmadı.</div>
+      <button class="btn birincil buyuk tam" id="ben-aliyorum" style="margin-bottom:1rem">🙋 Bu işi ben alıyorum</button>` : ''}
 
     ${sahada || is.malzemeler.length ? html`<div class="kart">
       <div class="kart-ust"><div class="adim ${is.malzemeler.length ? 'tamam' : ''}"><span class="adim-no">1</span><h3>Kullanılan malzemeler</h3></div></div>
@@ -190,7 +192,7 @@ export default async function (el, [id], ctx) {
         <button class="btn basari buyuk tam" id="tamamla" ${is.teslim ? '' : 'disabled'}>✓ İşi tamamla</button>
         ${!is.teslim ? html`<small style="display:block;text-align:center;margin-top:.4rem">Önce müşteri imzası alınmalı</small>` : ''}</div></div>` : ''}
 
-    ${is.cari_id ? html`<details class="kart envanter-kart" id="envanter-kart"><summary class="kart-ust"><h3>Müşterideki cihazlar</h3><span class="soluk" id="env-sayi"></span></summary>
+    ${is.cari_id && is.durum !== 'havuz' ? html`<details class="kart envanter-kart" id="envanter-kart"><summary class="kart-ust"><h3>Müşterideki cihazlar</h3><span class="soluk" id="env-sayi"></span></summary>
       <div class="tablo-kap" id="env-liste"><div class="yukleniyor"><span></span></div></div>
       ${islemde ? html`<div class="kart-govde" style="border-top:1px solid var(--cizgi2)"><button class="btn ikincil tam" data-akis="envanter">+ Kurulan cihazı envantere ekle</button></div>` : ''}
     </details>` : ''}
@@ -231,6 +233,13 @@ export default async function (el, [id], ctx) {
   if (basla) basla.onclick = async () => {
     basla.disabled = true;
     try { await api.post(`/isler/${is.id}/baslat`); bildir('İş başlatıldı. Kolay gelsin!', 'basari'); yenile(); } catch (err) { bildir(err.message, 'hata'); basla.disabled = false; }
+  };
+  const al = $('#ben-aliyorum', el);
+  if (al) al.onclick = async () => {
+    if (!await onayla(`"${is.baslik}" şimdi ekibinize planlansın mı?`, { baslik: 'Bu işi alıyorsunuz', evet: 'Evet, ben alıyorum' })) return;
+    al.disabled = true;
+    try { await api.post(`/isler/${is.id}/ben-aliyorum`); bildir('İş size planlandı; İşlerim\'de.', 'basari'); yenile(); }
+    catch (err) { bildir(err.message, 'hata'); al.disabled = false; }
   };
   const tamamla = $('#tamamla', el);
   if (tamamla) tamamla.onclick = async () => {

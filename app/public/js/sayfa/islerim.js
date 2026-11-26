@@ -1,8 +1,8 @@
 import { api } from '../api.js';
-import { html, $, saat, tarih, bugunStr, durumRozet, pencere, bildir } from '../ui.js';
+import { html, $, saat, tarih, bugunStr, durumRozet, pencere, bildir, sureMetni } from '../ui.js';
 
 // Teknisyen iş ekler: havuza düşer ya da "bu işi ben yapıyorum" ile bugün kendi ekibine planlanır
-async function teknisyenIsEkle(ctx) {
+export async function teknisyenIsEkle(ctx) {
   const r = await pencere({
     baslik: 'İş ekle',
     icerik: html`<label class="alan"><span>Ne istendi? *</span><textarea name="mesaj" rows="4" autofocus placeholder="Örn: Ahmet Market toner istedi 0532 111 22 33"></textarea></label>
@@ -25,9 +25,39 @@ export default async function (el, _p, ctx) {
   ctx.baslik('İşlerim');
   let ekipId = ctx.yonetici ? (ctx.sorgu.ekip || '') : '';
   const ekipler = ctx.yonetici ? await ctx.ekipler() : [];
+  // Teknisyen: İşlerim / Havuz bölümleri
+  let bolum = !ctx.yonetici && ctx.sorgu.b === 'havuz' ? 'havuz' : 'islerim';
+  const bolumHtml = (havuzSayi) => (ctx.yonetici ? '' : html`<div class="mk-bolumler tek-bolum" role="tablist">
+      <button type="button" role="tab" data-bolum="islerim" class="${bolum === 'islerim' ? 'secili' : ''}">İşlerim</button>
+      <button type="button" role="tab" data-bolum="havuz" class="${bolum === 'havuz' ? 'secili' : ''}">Havuz${havuzSayi ? html` <b class="bolum-sayi">${havuzSayi}</b>` : ''}</button></div>`);
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-bolum]');
+    if (!b || b.dataset.bolum === bolum) return;
+    bolum = b.dataset.bolum;
+    history.replaceState(history.state, '', bolum === 'havuz' ? '#/islerim?b=havuz' : '#/islerim');
+    ciz();
+  });
+
+  async function havuzCiz() {
+    const liste = await api.get('/havuz');
+    el.innerHTML = String(html`
+      <div class="sayfa-ust"><h2>İş havuzu</h2><span class="alt">${liste.length} iş bekliyor</span><span class="bosluk"></span>
+        ${ctx.mobil ? '' : html`<button class="btn birincil kucuk" id="tek-is-ekle">+ İş ekle</button>`}<button class="btn ikincil kucuk" id="yenile">↻ Yenile</button></div>
+      ${bolumHtml(liste.length)}
+      <p class="soluk" style="margin:.2rem 0 .8rem">Henüz kimseye planlanmamış işler. Bir işi yapacaksanız açıp <b>"Bu işi ben alıyorum"</b>a dokunun.</p>
+      ${liste.length ? liste.map((i) => html`<a class="is-kart oncelik-${i.oncelik}" href="#/saha/${i.id}">
+          <div class="is-ust"><div class="is-baslik">${i.baslik}</div>${i.oncelik === 1 ? html`<span class="rozet kirmizi">Acil</span>` : ''}</div>
+          <div class="is-bilgi">${i.unvan || i.iletisim_ad ? html`<span>👤 ${i.unvan || i.iletisim_ad}</span>` : ''}<span>⏳ ${sureMetni(i.bekleme_sn)} bekliyor</span></div>
+          ${i.adres ? html`<div class="is-bilgi">📍 ${i.adres}</div>` : ''}</a>`)
+        : html`<div class="bos-durum"><b>Havuz boş</b>Bekleyen iş yok.</div>`}`);
+    $('#yenile', el).onclick = ciz;
+    const te = $('#tek-is-ekle', el); if (te) te.onclick = async () => { if (await teknisyenIsEkle(ctx)) ciz(); };
+  }
 
   async function ciz() {
-    const liste = await api.get('/islerim', { ekip_id: ekipId || undefined });
+    if (bolum === 'havuz') return havuzCiz();
+    const [liste, havuzSayi] = await Promise.all([api.get('/islerim', { ekip_id: ekipId || undefined }),
+      ctx.yonetici ? 0 : api.get('/havuz').then((h) => h.length).catch(() => 0)]);
     const bugun = bugunStr(); const yarin = bugunStr(new Date(Date.now() + 86400000));
     const gruplar = [
       ['Şu an sahada', liste.filter((i) => i.durum === 'sahada')],
@@ -41,8 +71,9 @@ export default async function (el, _p, ctx) {
       <div class="sayfa-ust"><h2>İşlerim</h2><span class="alt">${new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
         <span class="bosluk"></span>
         ${ctx.yonetici ? html`<select id="ekip" style="width:auto"><option value="">Tüm ekipler</option>${ekipler.map((e) => html`<option value="${e.id}" ${String(e.id) === String(ekipId) ? 'selected' : ''}>${e.ad}</option>`)}</select>` : ''}
-        ${ctx.yonetici ? '' : html`<button class="btn birincil kucuk" id="tek-is-ekle">+ İş ekle</button>`}
+        ${ctx.yonetici || ctx.mobil ? '' : html`<button class="btn birincil kucuk" id="tek-is-ekle">+ İş ekle</button>`}
         <button class="btn ikincil kucuk" id="yenile">↻ Yenile</button></div>
+      ${bolumHtml(havuzSayi)}
       ${!ctx.yonetici && !ctx.kullanici.ekip_id ? html`<div class="uyari-kutu">Hesabınız bir ekibe bağlı değil. Yöneticinizden ekip atamasını isteyin.</div>` : ''}
       ${gruplar.length ? gruplar.map(([ad, l]) => html`<div class="grup-baslik">${ad} (${l.length})</div>
         ${l.map((i) => html`<a class="is-kart ${i.durum === 'sahada' ? 'sahada' : ''} ${['tamamlandi', 'fis_kesildi'].includes(i.durum) ? 'bitti' : ''} oncelik-${i.oncelik}" href="#/saha/${i.id}"
