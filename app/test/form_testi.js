@@ -7,7 +7,7 @@ let hata = 0;
 const kontrol = (ad, ok, ek) => { console.log(ok ? 'OK  ' : 'HATA', ad, ok ? '' : (ek ?? '')); if (!ok) hata++; };
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(); require('./eski_gorunum')(b);
   const c = await b.newContext({ viewport: { width: 1440, height: 900 } });
   const s = await c.newPage();
   s.on('pageerror', (e) => { hata++; console.log('SAYFA HATASI', e.message); });

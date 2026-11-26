@@ -59,6 +59,7 @@ const kullaniciGrup = (ek) => html`<div class="um-grup um-kullanici ${ek}" data-
       <span class="um-ad">${ctx.kullanici.ad_soyad}</span><span class="um-ok">${ikon('asagi', 16)}</span></button>
     <div class="um-acilir sag" role="menu">${KULLANICI_MENU.filter(menuIzinli).map(menuLink)}
       <hr>${uygulamaKurulu() ? '' : html`<button type="button" role="menuitem" data-uygulama>📱<span>Telefona uygulama olarak ekle</span></button>`}
+      ${matchMedia('(max-width: 860px)').matches ? html`<button type="button" role="menuitem" data-mobil-gorunum>📱<span>Mobil görünüme dön</span></button>` : ''}
       <button type="button" role="menuitem" data-sifre>${ikon('anahtar')}<span>Şifre değiştir</span></button>
       <button type="button" role="menuitem" data-cikis>${ikon('cikis')}<span>Çıkış</span></button></div></div>`;
 const menuHtml = () => html`${YONETICI_MENU.filter(menuIzinli).map((m) => (m.alt ? grupHtml(m) : menuLink(m)))}${kullaniciGrup('yalniz-mobil')}`;
@@ -86,6 +87,8 @@ const IKON = {
   belge: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h6',
   sekme: 'M4 7h6l2 2h8v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 7V5a1 1 0 0 1 1-1h5l2 2',
   cikis: 'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3',
+  geri: 'M15 18l-6-6 6-6',
+  arti: 'M12 5v14M5 12h14',
 };
 export const ikon = (ad, boyut = 20) => html`<svg class="ikon" width="${boyut}" height="${boyut}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IKON[ad] || ''}"/></svg>`;
 
@@ -125,6 +128,13 @@ async function basla() {
   ctx.kullanici = durum.kullanici;
   try { ctx.ayarlar = await api.get('/ayarlar'); } catch { /* */ }
   menuAdlariYukle();
+  // Telefonda ayrı arayüz (Menü → "Bilgisayar görünümüne geç" ile eski görünüm)
+  const mk = await import('./m/kabuk.js');
+  if (mk.mobilGorunumMu()) {
+    konumBaslat();
+    return mk.mobilKabuk(ctx, { SAYFALAR, MUHASEBE_SAYFA, YONETICI_MENU, KULLANICI_MENU, menuAdi, ikon, cikis, sifreDegistir,
+      uygulamaEkle: () => uygulamaEkle(pencere, html), uygulamaKurulu, mobilBaslat });
+  }
   kabukCiz();
   mobilBaslat();
   seritBagla();
@@ -395,6 +405,7 @@ function kabukCiz() {
       <header class="ust"><div class="ust-firma"><div class="logo">ST</div><div><b>${firma}</b><small>${k.ad_soyad}${k.ekip_ad ? ' · ' + k.ekip_ad : ''}</small></div></div>
         <span class="bosluk"></span>
         ${uygulamaKurulu() ? '' : html`<button class="btn-ikon" data-uygulama title="Telefona uygulama olarak ekle">📱</button>`}
+        ${matchMedia('(max-width: 860px)').matches ? html`<button class="btn-ikon" data-mobil-gorunum title="Mobil görünüm">📱</button>` : ''}
         <button class="btn-ikon" id="btn-sifre" title="Şifre">🔑</button>
         <button class="btn-ikon" id="btn-cikis" title="Çıkış">${ikon('cikis')}</button></header>
       <main id="sayfa"></main></div>`);
@@ -440,6 +451,7 @@ function kabukCiz() {
   $$('#btn-cikis, [data-cikis]').forEach((b) => { b.onclick = cikis; });
   $$('#btn-sifre, [data-sifre]').forEach((b) => { b.onclick = () => { menuKapat(); sifreDegistir(); }; });
   $$('[data-uygulama]').forEach((b) => { b.onclick = () => { menuKapat(); uygulamaEkle(pencere, html); }; });
+  $$('[data-mobil-gorunum]').forEach((b) => { b.onclick = async () => (await import('./m/kabuk.js')).gorunumSec('mobil'); });
   if (ctx.yonetici) { kurYukle(); setInterval(kurYukle, 30 * 60 * 1000); }
 }
 

@@ -92,7 +92,7 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
 
   // ---------- Tarayıcı ----------
   const { chromium } = require(process.env.PLAYWRIGHT || '/opt/npm-tools/node_modules/playwright');
-  const b = await chromium.launch();
+  const b = await chromium.launch(); require('./eski_gorunum')(b);
   const hatalar = [];
   // Muhasebe ekranı
   const mc = await b.newContext({ viewport: { width: 1440, height: 900 } }); const mp = await mc.newPage(); mp.on('pageerror', (e) => hatalar.push(e.message));

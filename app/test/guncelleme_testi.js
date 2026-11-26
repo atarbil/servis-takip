@@ -42,7 +42,7 @@ function sahteDepo() {
   if (!KOK) throw new Error('Kök klasör verin');
   sahteDepo();
   for (const f of fs.readdirSync(K)) fs.rmSync(path.join(K, f));
-  const tarayici = await chromium.launch();
+  const tarayici = await chromium.launch(); require('./eski_gorunum')(tarayici);
   const s = await (await tarayici.newContext({ viewport: { width: 390, height: 844 } })).newPage();
   s.on('pageerror', (e) => { hata++; console.log('SAYFA HATASI', e.message); });
   await s.goto(T);

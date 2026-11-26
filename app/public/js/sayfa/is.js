@@ -88,6 +88,11 @@ export default async function (el, [id], ctx) {
       </div>
     </div>`);
 
+  isOlaylari(el, is, ctx);
+}
+
+// İş detayındaki düğmelerin işleri (bilgisayar ve telefon görünümü ortak)
+export function isOlaylari(el, is, ctx) {
   const yenile = () => ctx.yenile();
   el.addEventListener('click', async (e) => {
     const g = e.target.closest('[data-git]');

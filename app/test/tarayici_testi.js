@@ -29,7 +29,7 @@ async function sec(p, inputSec, metin, secim) {
 }
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(); require('./eski_gorunum')(b);
   const masa = await b.newContext({ viewport: { width: 1400, height: 900 }, locale: 'tr-TR', timezoneId: 'Europe/Istanbul' });
   const y = await masa.newPage(); izle(y, 'yönetici');
 

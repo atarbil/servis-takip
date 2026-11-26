@@ -11,7 +11,7 @@ async function giris(s) {
 }
 
 (async () => {
-  const tarayici = await chromium.launch();
+  const tarayici = await chromium.launch(); require('./eski_gorunum')(tarayici);
   const s = await (await tarayici.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
   s.on('pageerror', (e) => { hata++; console.log('SAYFA HATASI', e.message); });
   await giris(s);

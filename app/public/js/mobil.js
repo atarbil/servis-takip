@@ -67,7 +67,7 @@ function ustDuzenle(sayfa) {
   }
   // ⋯: sayfadaki tüm taşınan ikincil düğmeler, üst çubukta
   const liste = $$('.sayfa-ust, .detay-ust', sayfa).flatMap((u) => u.mbIkincil || []).filter((b) => b.isConnected);
-  const ustCubuk = $('.ust-cubuk, header.ust');
+  const ustCubuk = $('#mk-eylem, .ust-cubuk, header.ust');
   if (ustCubuk && !daha.isConnected) { const h = $('#btn-hizli', ustCubuk); if (h) h.before(daha); else ustCubuk.append(daha); }
   daha.hidden = !liste.length;
   daha.onclick = (e) => {
@@ -162,21 +162,39 @@ function cekYenile() {
 // ---------- Geri tuşu pencereyi kapatsın ----------
 function geriTusu() {
   const asil = HTMLDialogElement.prototype.showModal;
+  const asilKapat = HTMLDialogElement.prototype.close;
   let sayac = 0;
   // Pencere düğmeyle kapanınca yapılan history.back() kendi popstate'ini doğurur; o olay başka (alttaki) pencereyi kapatmasın
   let yoksay = 0;
+  // Kapanan pencerenin kaydı bir sonraki adımda silinir (kapatan tıklama bir bağlantıysa sayfa değişmiş olur, dokunulmaz).
+  // O arada açılan pencerenin kaydı, silme bitince eklenir (yoksa yanlış kayıt silinir).
+  let bekleyen = 0;
+  let kuyruk = [];
+  const kuyrukCalis = () => { if (yoksay || bekleyen || !kuyruk.length) return; const k = kuyruk; kuyruk = []; k.forEach((f) => f()); };
+  const kayitEkle = (d, no) => { if (d.open) history.pushState({ ...(history.state || {}), mbPencere: no }, '', location.href); };
+  const kayitSil = (d) => {
+    if (!d._mbNo || d._mbSilindi) return;
+    d._mbSilindi = true; bekleyen++;
+    setTimeout(() => {
+      bekleyen--;
+      if (history.state?.mbPencere === d._mbNo) { yoksay++; history.back(); } else kuyrukCalis();
+    }, 0);
+  };
   HTMLDialogElement.prototype.showModal = function (...a) {
     asil.apply(this, a);
     if (!telefon.matches) return;
     const no = ++sayac;
-    history.pushState({ ...(history.state || {}), mbPencere: no }, '', location.href);
-    this.addEventListener('close', () => {
-      // Pencere düğmeyle kapandıysa eklediğimiz geçmiş kaydını geri al (sayfa değişmişse dokunma)
-      if (history.state?.mbPencere === no) { yoksay++; history.back(); }
-    }, { once: true });
+    this._mbNo = no; this._mbSilindi = false;
+    if (yoksay || bekleyen) kuyruk.push(() => kayitEkle(this, no)); else kayitEkle(this, no);
+    this.addEventListener('close', () => kayitSil(this), { once: true });
+  };
+  HTMLDialogElement.prototype.close = function (...a) {
+    const acikti = this.open;
+    asilKapat.apply(this, a);
+    if (acikti) kayitSil(this);
   };
   addEventListener('popstate', () => {
-    if (yoksay > 0) { yoksay--; return; }
+    if (yoksay > 0) { yoksay--; kuyrukCalis(); return; }
     const acik = [...document.querySelectorAll('dialog[open]')].pop();
     if (!acik) return;
     const e = new Event('cancel', { cancelable: true });
@@ -210,13 +228,15 @@ export async function uygulamaEkle(pencere, html) {
 
 // ---------- Başlat ----------
 let bekleyen = false;
-export function mobilBaslat() {
+export function mobilBaslat({ cekYenile: cek = true } = {}) {
   kur();
-  cekYenile();
+  if (cek) cekYenile();
   geriTusu();
   const calis = () => {
     bekleyen = false;
     const sayfa = $('#sayfa'); if (!sayfa) return;
+    // Telefon için yazılmış sayfalar (js/m) kendi düzenine sahip
+    if (sayfa.dataset.mobil) { fab.hidden = true; altCubuk.hidden = true; daha.hidden = true; document.body.classList.remove('mb-alt-var'); return; }
     ustDuzenle(sayfa); filtreDuzenle(sayfa);
   };
   // Yönlendirici #sayfa'yı değiştirebilir, kabuk yeniden çizilebilir: tüm gövde izlenir (işlemler tekrarsız)

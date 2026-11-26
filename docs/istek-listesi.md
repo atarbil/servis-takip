@@ -5,18 +5,11 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-### 1. Telefon için ayrı mobil arayüz (26.11.2026)
-Uygulama telefonda stabil değil; bilgisayar ve telefon görünümü ayrı tasarlansın.
-- **Yaklaşım:** telefonda tamamen ayrı, sade bir mobil arayüz açılır (kendi alt menüsü, kart listeleri, büyük butonlar, tam ekran formlar). Bilgisayar görünümüne dokunulmaz; sunucu ve veriler aynı.
-- Telefonda otomatik açılır; menüde "Bilgisayar görünümüne geç / Mobil görünüme dön" seçeneği.
-- **Mobil ekranlar:**
-  - İşler: işlerim, havuz, takvim, iş ekle, iş detayı (malzeme, fotoğraf, not), teslim / imza.
-  - Cariler: arama, cari kartı (vergi / iletişim), ekstre (kart görünümü), tahsilat / ödeme girme.
-  - Satış fişi ve stok: hızlı satış, stok arama, barkod okutma (kamera).
-  - Panel ve raporlar: özet rakamlar, kasa / banka, KDV durumu.
-- **Giderilecek sorunlar:** tablolar yerine kart listeleri (taşma / yatay kayma yok); pencereler yerine tam ekran sayfalar, seçim listeleri tam ekran arama; klavye açılınca bozulma yok; büyük dokunma alanları; sayfa zıplamaması ve hızlı açılış.
-- Yetkiler aynen geçerli (teknisyen, muhasebe kâr bilgisi görmez vb.).
-- Büyük iş: birkaç derlemede, önce İşler, sonra Cariler, Satış / stok, Panel.
+### 1. Telefon arayüzü — kalan aşamalar (26.11.2026 isteğinin devamı)
+1. aşama (kabuk + İşler) 29. derlemede tamamlandı. Kalanlar telefona özel yazılacak (şimdilik bilgisayar sayfası telefon kabuğunda açılıyor):
+- **Cariler:** arama, cari kartı (vergi / iletişim), ekstre kart görünümü, tahsilat / ödeme girme.
+- **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
+- **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
@@ -30,6 +23,17 @@ Uygulama telefonda stabil değil; bilgisayar ve telefon görünümü ayrı tasar
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 26.11.2026 — 29. derleme: Telefon için ayrı arayüz (1. aşama: kabuk + İşler)
+- Telefonda (ekran ≤ 860 px) bilgisayar görünümünden tamamen ayrı arayüz açılır: sabit üst çubuk (geri · başlık · ⋯), sabit alt sekmeler (Panel · İşler · Satış · Cariler · **İş ekle** · Menü), tam ekran menü. Bilgisayar görünümü değişmedi.
+- Menü → "Bilgisayar görünümüne geç"; bilgisayar görünümünde kullanıcı menüsü → "Mobil görünüme dön".
+- **İşler** telefona özel: Bugün / Havuz / Takvim (haftalık gün gün liste, ekip çipleri) / Tümü (arama + durum çipleri); tablo yerine kartlar, yatay taşma yok.
+- **İş detayı** telefona özel: büyük işlem düğmeleri, Ara / WhatsApp / Yol tarifi / Cari kısayolları, malzeme ve fotoğraf ekleme, diğer işlemler ⋯ ile alttan açılan listede.
+- Geri tuşu: önce açık pencereyi kapatır, sonra önceki sayfaya döner; listeye dönünce bölüm, filtre ve kaydırma yeri korunur (sayfa zıplamaz).
+- Pencereler tam ekran; yazı kutuları 16 px (iOS yakınlaştırıp sayfayı kaydırmasın); odaklanan alan sabit çubukların altında kalmaz.
+- Peş peşe açılan pencerelerde geri tuşunun yanlış sayfaya gitmesi düzeltildi.
+- Teknisyen telefonda İşlerim + Menü; muhasebe kâr bilgisi görmez (aynı yetkiler).
+- Henüz telefona yazılmamış sayfalar (Cariler, Satış, Stok, Finans…) bilgisayar sayfasıyla telefon kabuğunda açılır; sonraki aşamalarda yenilenecek.
 
 ### 26.11.2026 — 28.1: Cari kartında vergi ve iletişim bilgileri
 - Cari kartının üstünde (ünvanın altında) vergi dairesi, vergi / TC no, yetkili, telefon, e-posta ve adres her zaman görünür; yalnız "Bilgiler" sekmesinde kalmaz.

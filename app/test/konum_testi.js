@@ -7,7 +7,7 @@ let basarisiz = 0;
 const kontrol = (ad, kosul, ek) => { if (kosul) console.log('OK  ', ad); else { basarisiz++; console.log('HATA', ad, ek !== undefined ? JSON.stringify(ek).slice(0, 500) : ''); } };
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(); require('./eski_gorunum')(b);
   const hatalar = [];
   const yc = await b.newContext({ viewport: { width: 1280, height: 860 } });
   const yp = await yc.newPage(); yp.on('pageerror', (e) => hatalar.push(e.message));
