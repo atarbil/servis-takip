@@ -5,7 +5,7 @@ import { api } from '../api.js';
 import { html, $, $$, bildir } from '../ui.js';
 
 // Telefona özel sayfalar (ad → modül)
-const MOBIL = { isler: 'isler', havuz: 'isler', takvim: 'isler', is: 'is' };
+const MOBIL = { isler: 'isler', havuz: 'isler', takvim: 'isler', is: 'is', fis: 'fis' };
 // Varsayılan sorgu: havuz / takvim aynı İşler sayfasının bölümleri
 const BOLUM = { havuz: 'havuz', takvim: 'takvim' };
 
@@ -132,6 +132,10 @@ export async function mobilKabuk(ctx, a) {
     $('#mk-geri').hidden = kok;
     document.body.classList.toggle('mk-kok', kok);
 
+    // Önceki sayfa çıkarken iş yapabilir (ör. fiş taslağını kaydetmek)
+    const eski = $('#sayfa');
+    if (eski?.ayrilirken) { try { await eski.ayrilirken(); } catch { /* */ } }
+    if (no !== sayfaNo) return;
     const el = document.createElement('main');
     el.id = 'sayfa';
     const mobilSayfa = !!MOBIL[y.ad];

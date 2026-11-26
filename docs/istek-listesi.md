@@ -11,16 +11,8 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
-### 2. Satış fişi ekranı telefonda sade olsun (26.11.2026)
-Kullanıcı: "Bu ekran çok karışık, burayı düzenleyelim" (telefonda satış fişi; ekran görüntüsünde eski telefon görünümü).
-Telefon arayüzüne özel satış fişi ekranı (aynı düzen teklif / proforma ve alış faturasında da):
-- **Üst:** cari kartı tek satır (ünvan + bakiye, dokununca cari); fiş no / tarih / vade / iş / açıklama "Fiş bilgileri ▾" altında kapalı.
-- Kullanıcı ek (23:39): "Ürünün altındaki miktar, birim vs. çok karışık görünüyor" → kalem altında 6 kutu (miktar, birim, fiyat, isk., KDV, tutar) kalkacak.
-- **Kalemler kompakt kart:** ad + tek satır "3 adet × 100,00 = 300,00 ₺"; fiyatı girilmemiş (0) kalem turuncu "Fiyat girin". Dokununca tam ekran kalem düzenleme: miktar − / +, birim fiyat (büyük), iskonto, KDV, not; ileri alanlar "Daha fazla" altında.
-- **Kalem ekleme:** üstte malzeme arama kutusu (liste kutunun altında, yazım farkına toleranslı), İşçilik / Eğitim / Hizmet çipleri, barkod düğmesi.
-- **Seçenekler** (Enter ile yeni satır, maliyet / kâr, fiyatlar KDV dahil) ⋯ menüsüne; maliyet / kâr açıksa kalemde küçük tek satır (muhasebe görmez).
-- **Alt sabit çubuk:** genel toplam (dokununca ara toplam / KDV / iskonto dökümü) + Kaydet / ✓ Onayla.
-- Onaylanmış fiş salt okunur özet görünümü (yazdır / paylaş ⋯ menüsünde).
+### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
+Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
 ### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
@@ -37,6 +29,16 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 26.11.2026 — 32. derleme: Telefonda sade satış fişi
+- Telefon arayüzünde satış fişi ayrı ekran: üstte cari tek satır (taslakta dokununca cari seçimi) ve bakiye; tarih / vade / açıklama "Fiş bilgileri ▾" altında.
+- **Kalemler kısa kart:** ad + "3 adet × 100,00 … 300,00 ₺"; ürünün altındaki 6 kutu (miktar, birim, fiyat, isk., KDV, tutar) kalktı. Fiyatı 0 olan kalem turuncu "Fiyat girin".
+- Karta dokununca **tam ekran kalem düzenleme:** miktar − / +, büyük fiyat kutusu, canlı tutar; iskonto / KDV / birim / not "Daha fazla" altında; Sil.
+- **Ekleme:** ürün arama kutusu (liste kutunun altında; aynı ürün miktarı artırır; fiyatı yoksa kalem penceresi açılır), + İşçilik / Eğitim / Hizmet, 📦 Stok listesi, 📷 arka arkaya barkod.
+- **Alt sabit çubuk:** genel toplam (dokununca iskonto / ara toplam / KDV oranları / maliyet-kâr dökümü) + Kaydet / ✓ Onayla; onaylı fişte 💰 Tahsilat.
+- **⋯ menüsü:** fiyatları KDV dahil gir, maliyet / kâr göster, dövizli kalemleri bugünkü kurla hesapla, yazdır, iş, cari, iptal, sil. ("Enter ile yeni satır" telefonda yok.)
+- Kaydetmeden başka sayfaya geçilirse taslak kendiliğinden kaydedilir. Onaylanmış fiş salt okunur özet.
+- Bilgisayar görünümündeki fiş ekranı değişmedi.
 
 ### 26.11.2026 — 31.3: Havuzdan alma / bırakma, malzemede "Geri al" sadeleşti
 - "🙋 Bu işi ben alıyorum" artık onay sormaz; iş dokununca hemen teknisyenin ekibine planlanır.
