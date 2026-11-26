@@ -1737,7 +1737,7 @@ a.mk-kart:active { background: #f6f8fb; }
 .mk-gecmis:not([open]) summary h3 { margin-bottom: 0; }
 body.mobil-kabuk.rol-muhasebe .kar-bilgi { display: none !important; }
 /* Odaklanan / kaydırılan öğe sabit üst çubuğun ve yapışkan bölüm başlığının altında kalmasın */
-html:has(body.mobil-kabuk) { scroll-padding-top: calc(var(--mk-ust, 54px) + 150px); scroll-padding-bottom: 90px; }
+html:has(body.mobil-kabuk) { scroll-padding-top: calc(54px + env(safe-area-inset-top) + 10px); scroll-padding-bottom: 90px; }
 .mk-dl .btn-metin { color: var(--ana); font-weight: 600; padding: 0 .2rem; }
 .mk-bolumler.tek-bolum { margin: 0 0 .9rem; max-width: 420px; }
 .bolum-sayi { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--turuncu); color: #fff; font-size: .72rem; line-height: 18px; margin-left: .2rem; }

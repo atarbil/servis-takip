@@ -218,7 +218,8 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
   let boslukKap = null;
   const boslukAc = () => { if (!telefon() || boslukKap) return; boslukKap = input.closest('.pencere-govde') || document.body; boslukKap.classList.add('secici-bosluk'); };
   const boslukKapat = () => { boslukKap?.classList.remove('secici-bosluk'); boslukKap = null; };
-  const kapat = () => { if (kutu.isConnected) dinle(false); kutu.hidden = true; kutu.remove(); input.setAttribute('aria-expanded', 'false'); boslukKapat(); };
+  let otoKaydirildi = false;
+  const kapat = () => { if (kutu.isConnected) dinle(false); kutu.hidden = true; kutu.remove(); input.setAttribute('aria-expanded', 'false'); boslukKapat(); otoKaydirildi = false; };
 
   // Konum: kutunun yanına sabitlenir; dialog içindeyse dialog'a eklenir (üst katmanda kalsın)
   function yerlestir() {
@@ -233,10 +234,12 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
       // Altta yer azsa kutu yukarı kaydırılır (pencerede pencere gövdesi, sayfada sayfa; sabit üst çubuğun altına).
       kutu.classList.remove('alt-panel'); kutu.classList.add('tel-alt');
       const ekranAlt = ekranUst + ekranY;
-      if (ekranAlt - r.bottom < 230) {
+      // Kutu en fazla bir kez (liste açılırken / klavye açılınca) yukarı alınır; her harfte sayfa kaymaz
+      if (!otoKaydirildi && ekranAlt - r.bottom < 230) {
+        otoKaydirildi = true;
         const kap = input.closest('.pencere-govde');
         const ustSinir = kap ? kap.getBoundingClientRect().top + 8
-          : Math.max(ekranUst, ...[...document.querySelectorAll('.mk-ust, .ust-cubuk, header.ust')].map((h) => (getComputedStyle(h).position === 'fixed' || getComputedStyle(h).position === 'sticky' ? h.getBoundingClientRect().bottom : 0))) + 8;
+          : Math.max(ekranUst, ...[...document.querySelectorAll('.mk-ust, .ust-cubuk, header.ust')].map((h) => (getComputedStyle(h).position === 'fixed' || getComputedStyle(h).position === 'sticky' ? h.getBoundingClientRect().bottom : 0))) + 10;
         const fark = r.top - ustSinir;
         if (fark > 4) {
           const once = r.top;

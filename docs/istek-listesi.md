@@ -27,6 +27,10 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 26.11.2026 — 31.2: Stok adı yazarken ekranın her harfte zıplaması düzeltildi
+- Neden: telefon arayüzünde odaklanan kutu için ayrılan üst boşluk (scroll-padding) ile listeyi açarken kutuyu yukarı alma hedefi farklıydı; tarayıcı her harfte imleci "görünür yere" kaydırıp sayfayı oynatıyordu.
+- İkisi eşitlendi (üst çubuğun hemen altı); kutu liste açılırken en fazla bir kez yukarı alınır. Malzeme arama, satış fişi ürün satırı, stok / cari aramasında denendi: yazarken sayfa yerinde kalıyor.
+
 ### 26.11.2026 — 31.1: Güncellemede şifre onayı geçici olarak kapalı
 - Kullanıcı isteği: "Programı güncelle" artık şifre sormaz (yalnız patron başlatabilir, yetki aynı). Kullanıcının sonraki komutuyla tekrar açılacak:
   `app/routes/guncelleme.js` ve `app/public/js/sayfa/guncelleme.js` içindeki `SIFRE_ONAYI = true`.
