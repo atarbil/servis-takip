@@ -11,6 +11,17 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
+### 2. Teknisyen havuzu görsün ve iş ekleyebilsin (26.11.2026)
+Teknisyen ve muhasebe yalnız kendine atanmış işleri değil, **iş havuzunu da görsün ve iş ekleyebilsin**.
+- Muhasebe: havuzu görme, iş ekleme, düzenleme ve planlama 27. derlemede açıldı; telefon arayüzünde de İşler → Havuz ve alt menüde "İş ekle" var. Kontrol edilecek, eksik varsa tamamlanacak.
+- Teknisyen (telefon ve bilgisayar):
+  - İşlerim'in yanında **Havuz** bölümü: havuzdaki tüm işler (başlık, müşteri, adres, bekleme süresi, öncelik).
+  - Havuzdaki işin detayını görebilir (kâr / maliyet görmez).
+  - **"Bu işi ben alıyorum"** düğmesi: iş bugün, uygun ilk saate kendi ekibine planlanır ve İşlerim'e düşer; yöneticiye bildirim gider. (Varsayım)
+  - Alt menüde **İş ekle** (mevcut teknisyen iş ekleme: havuza düşer ya da "bu işi ben yapıyorum").
+  - Teknisyen havuzdaki işi düzenleyemez, iptal edemez, başka ekibe planlayamaz.
+- Sunucu tarafında da yetki: teknisyen yalnız havuz listesini ve havuzdaki iş detayını okuyabilir, yalnız kendi ekibine alabilir.
+
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
