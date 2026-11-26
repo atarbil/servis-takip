@@ -219,10 +219,28 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
       await q("SELECT set_config('app.gecmis_notu', $1, true)", [`${req.kullanici.ad_soyad} havuzdan aldı`]);
       await q('SELECT is_planla($1, $2, now(), NULL)', [x.id, req.kullanici.ekip_id]);
       await q("SELECT set_config('app.gecmis_notu', '', true)");
+      await q('UPDATE isler SET havuzdan_alan_id = $2 WHERE id = $1', [x.id, req.kullanici.id]);
       return x;
     });
     telegram?.bildirArkada('yeni_is', async () => `🙋 <b>${req.kullanici.ad_soyad}</b> havuzdaki işi aldı:\n#${is.id} ${is.baslik}`);
     return { tamam: true, id: is.id };
+  });
+  // Teknisyen havuzdan aldığı işi (yanlışlıkla aldıysa) geri bırakır: malzeme / imza yoksa havuza döner
+  r.post('/isler/:id/birak', G, async (req) => {
+    if (req.kullanici.rol !== 'teknisyen') throw web.hata(403, 'Bu işlem teknisyenler içindir.');
+    const is = await db.islem(req.kullanici.id, async (q) => {
+      const x = await q.bir('SELECT id, baslik, durum, havuzdan_alan_id FROM isler WHERE id = $1 FOR UPDATE', [req.params.id]);
+      if (!x) throw web.hata(404, 'İş bulunamadı.');
+      if (String(x.havuzdan_alan_id) !== String(req.kullanici.id)) throw web.hata(403, 'Yalnız havuzdan kendi aldığınız işi bırakabilirsiniz.');
+      if (!['planlandi', 'sahada'].includes(x.durum)) throw web.hata(409, 'Bu iş artık bırakılamaz.');
+      if (await q.bir('SELECT 1 AS v FROM is_malzemeleri WHERE is_id = $1 LIMIT 1', [x.id])) throw web.hata(409, 'İşe malzeme eklenmiş; bırakmadan önce malzemeleri çıkarın.');
+      if (await q.bir('SELECT 1 AS v FROM teslim_onaylari WHERE is_id = $1', [x.id])) throw web.hata(409, 'Müşteri imzası alınmış iş bırakılamaz.');
+      await q('SELECT is_havuza_al($1, $2)', [x.id, `${req.kullanici.ad_soyad} bıraktı (yanlışlıkla almış)`]);
+      await q('UPDATE isler SET havuzdan_alan_id = NULL WHERE id = $1', [x.id]);
+      return x;
+    });
+    telegram?.bildirArkada('yeni_is', async () => `↩ <b>${req.kullanici.ad_soyad}</b> aldığı işi havuza geri bıraktı:\n#${is.id} ${is.baslik}`);
+    return { tamam: true };
   });
   r.post('/isler/:id/havuza-al', Y, fonk('is_havuza_al', (b) => metin(b.neden)));
   r.post('/isler/:id/iptal', Y, async (req, res) => {

@@ -27,6 +27,12 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 26.11.2026 — 31.3: Havuzdan alma / bırakma, malzemede "Geri al" sadeleşti
+- "🙋 Bu işi ben alıyorum" artık onay sormaz; iş dokununca hemen teknisyenin ekibine planlanır.
+- Teknisyen havuzdan kendi aldığı işi **"↩ Yanlışlıkla aldım — havuza geri bırak"** ile geri koyabilir (onay sorulur). Malzeme eklenmiş ya da müşteri imzası alınmış iş bırakılamaz; başkasının işi bırakılamaz. Yöneticiye Telegram bildirimi gider; iş geçmişine yazılır.
+- Malzeme eklendikten / miktar değiştikten sonra "Geri al" düğmesi çıkmaz (kısa bilgi bildirimi). Yalnız malzeme çıkarıldığında (yanlışlıkla silmeye karşı) "Geri al" kalır.
+- Veritabanı: 022 (isler.havuzdan_alan_id).
+
 ### 26.11.2026 — 31.2: Stok adı yazarken ekranın her harfte zıplaması düzeltildi
 - Neden: telefon arayüzünde odaklanan kutu için ayrılan üst boşluk (scroll-padding) ile listeyi açarken kutuyu yukarı alma hedefi farklıydı; tarayıcı her harfte imleci "görünür yere" kaydırıp sayfayı oynatıyordu.
 - İkisi eşitlendi (üst çubuğun hemen altı); kutu liste açılırken en fazla bir kez yukarı alınır. Malzeme arama, satış fişi ürün satırı, stok / cari aramasında denendi: yazarken sayfa yerinde kalıyor.

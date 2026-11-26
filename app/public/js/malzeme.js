@@ -56,16 +56,7 @@ export function malzemeBagla(kok, is, ctx, { maliyet = false, tanimsiz } = {}) {
   async function ekle(govde, ad) {
     const r = await api.post(`/isler/${is.id}/malzeme`, { ...govde, birlestir: true });
     await yenile();
-    const metin = r.birlesti ? `${r.ad || ad} → ${miktar(r.miktar)} ${r.birim || ''}` : `${r.ad || ad} eklendi`;
-    bildir(metin, 'basari', 5000, {
-      eylem: { metin: 'Geri al', fn: async () => {
-        try {
-          if (r.birlesti) await api.put(`/malzeme/${r.id}`, { miktar: r.onceki });
-          else await api.del(`/malzeme/${r.id}`);
-          await yenile(); bildir('Geri alındı.');
-        } catch (e) { bildir(e.message, 'hata'); }
-      } },
-    });
+    bildir(r.birlesti ? `${r.ad || ad} → ${miktar(r.miktar)} ${r.birim || ''}` : `${r.ad || ad} eklendi`, 'basari', 2500);
     return r;
   }
 
@@ -127,15 +118,14 @@ export function malzemeBagla(kok, is, ctx, { maliyet = false, tanimsiz } = {}) {
       if (yeni == null || yeni === mevcut) return;
       await api.put(`/malzeme/${m.id}`, { miktar: Math.max(0, yeni) });
       await yenile();
-      bildir(yeni <= 0 ? `${m.ad} çıkarıldı` : `${m.ad} → ${miktar(yeni)} ${m.birim}`, 'bilgi', 5000, {
-        eylem: { metin: 'Geri al', fn: async () => {
-          try {
-            if (yeni <= 0) await api.post(`/isler/${is.id}/malzeme`, { urun_id: m.urun_id, miktar: mevcut });
-            else await api.put(`/malzeme/${m.id}`, { miktar: mevcut });
-            await yenile(); bildir('Geri alındı.');
-          } catch (err) { bildir(err.message, 'hata'); }
-        } },
-      });
+      // Yalnız çıkarılan malzeme geri alınabilir (yanlışlıkla silmeye karşı)
+      if (yeni <= 0) {
+        bildir(`${m.ad} çıkarıldı`, 'bilgi', 5000, {
+          eylem: { metin: 'Geri al', fn: async () => {
+            try { await api.post(`/isler/${is.id}/malzeme`, { urun_id: m.urun_id, miktar: mevcut }); await yenile(); bildir('Geri alındı.'); } catch (err) { bildir(err.message, 'hata'); }
+          } },
+        });
+      }
     } catch (err) { bildir(err.message, 'hata'); } finally { mesgul = false; }
   });
 

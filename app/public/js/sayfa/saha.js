@@ -163,6 +163,8 @@ export default async function (el, [id], ctx) {
     ${is.cihaz ? html`<div class="bilgi-kutu">🔧 İlgili cihaz: <b>${[is.cihaz.tur, is.cihaz.marka, is.cihaz.model].filter(Boolean).join(' ')}</b>
       ${is.cihaz.konum ? html` · ${is.cihaz.konum}` : ''}${is.cihaz.seri_no ? html` · SN ${is.cihaz.seri_no}` : ''}${is.cihaz.ip_adresi ? html` · IP ${is.cihaz.ip_adresi}` : ''}</div>` : ''}
     ${is.durum === 'planlandi' ? html`<button class="btn birincil buyuk tam" id="basla" style="margin-bottom:1rem">▶ İşe başla</button>` : ''}
+    ${!ctx.yonetici && islemde && String(is.havuzdan_alan_id) === String(ctx.kullanici.id) && !is.malzemeler.length && !is.teslim
+      ? html`<button class="btn ikincil tam" id="birak" style="margin-bottom:1rem">↩ Yanlışlıkla aldım — havuza geri bırak</button>` : ''}
     ${is.durum === 'havuz' && !ctx.yonetici ? html`<div class="bilgi-kutu">Bu iş havuzda, henüz kimseye planlanmadı.</div>
       <button class="btn birincil buyuk tam" id="ben-aliyorum" style="margin-bottom:1rem">🙋 Bu işi ben alıyorum</button>` : ''}
 
@@ -234,10 +236,16 @@ export default async function (el, [id], ctx) {
   };
   const al = $('#ben-aliyorum', el);
   if (al) al.onclick = async () => {
-    if (!await onayla(`"${is.baslik}" şimdi ekibinize planlansın mı?`, { baslik: 'Bu işi alıyorsunuz', evet: 'Evet, ben alıyorum' })) return;
     al.disabled = true;
     try { await api.post(`/isler/${is.id}/ben-aliyorum`); bildir('İş size planlandı; İşlerim\'de.', 'basari'); yenile(); }
     catch (err) { bildir(err.message, 'hata'); al.disabled = false; }
+  };
+  const bk = $('#birak', el);
+  if (bk) bk.onclick = async () => {
+    if (!await onayla('Bu iş havuza geri bırakılsın mı? Başka biri alabilir.', { baslik: 'İşi bırak', evet: 'Havuza bırak' })) return;
+    bk.disabled = true;
+    try { await api.post(`/isler/${is.id}/birak`); bildir('İş havuza geri bırakıldı.', 'basari'); ctx.git('islerim?b=havuz'); }
+    catch (err) { bildir(err.message, 'hata'); bk.disabled = false; }
   };
   const tamamla = $('#tamamla', el);
   if (tamamla) tamamla.onclick = async () => {
