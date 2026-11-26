@@ -94,6 +94,9 @@ module.exports = (r, { db, web, Y }) => {
     const alisK = idler('alis_faturasi').length ? grupla((await db.query(`SELECT s.fatura_id, u.ad, s.miktar, u.birim, s.birim_fiyat, 0 AS iskonto_orani, s.kdv_orani,
         round(s.miktar * s.birim_fiyat, 2) AS tutar
       FROM alis_faturasi_satirlari s JOIN urunler u ON u.id = s.urun_id WHERE s.fatura_id = ANY(string_to_array($1, ',')::bigint[]) ORDER BY s.fatura_id, s.id`, [idler('alis_faturasi').join(',')])).rows, 'fatura_id') : {};
+    // İşten kesilen fişte açıklama işin başlığıdır; detaylı ekstrede gösterilmez (kalemler zaten yazılı)
+    const isBasliklari = idler('satis_fisi').length ? Object.fromEntries((await db.query(`SELECT f.id, i.baslik FROM satis_fisleri f JOIN isler i ON i.id = f.is_id
+      WHERE f.id = ANY(string_to_array($1, ',')::bigint[])`, [idler('satis_fisi').join(',')])).rows.map((x) => [x.id, x.baslik])) : {};
     const finIdler = [...idler('tahsilat'), ...idler('odeme')];
     const fin = finIdler.length ? Object.fromEntries((await db.query(`SELECT f.id, h.ad AS hesap, h.tip::text AS hesap_tip FROM finans_hareketleri f JOIN hesaplar h ON h.id = f.hesap_id
       WHERE f.id = ANY(string_to_array($1, ',')::bigint[])`, [finIdler.join(',')])).rows.map((x) => [x.id, x])) : {};
@@ -103,7 +106,10 @@ module.exports = (r, { db, web, Y }) => {
       bakiye += b - a; borc += b; alacak += a;
       const kalemler = (h.belge_tip === 'satis_fisi' ? fisK[h.belge_id] : h.belge_tip === 'alis_faturasi' ? alisK[h.belge_id] : null) || [];
       return {
-        tarih: h.tarih, belge_tip: h.belge_tip, belge_id: h.belge_id, belge_no: h.belge_no, aciklama: h.aciklama, borc: b, alacak: a,
+        tarih: h.tarih, belge_tip: h.belge_tip, belge_id: h.belge_id, belge_no: h.belge_no,
+        aciklama: h.belge_tip === 'satis_fisi' && isBasliklari[h.belge_id] != null
+          && (String(h.aciklama || '').includes(String(isBasliklari[h.belge_id]).trim()) || /^İş #\d+/.test(String(h.aciklama || ''))) ? 'Satış fişi' : h.aciklama,
+        borc: b, alacak: a,
         bakiye: Math.round(bakiye * 100) / 100,
         odeme: fin[h.belge_id] && ['tahsilat', 'odeme'].includes(h.belge_tip) ? fin[h.belge_id] : null,
         kalemler: kalemler.map((k) => {

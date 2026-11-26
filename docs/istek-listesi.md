@@ -30,6 +30,10 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 27.11.2026 — 32.2: Cari kartında Detaylı ekstre önce; iş başlığı gösterilmez
+- Cari kartı alt başlıklarında **Detaylı ekstre** ile **Ekstre** yer değiştirdi; cari kartı Detaylı ekstre ile açılır.
+- Detaylı ekstrede (ekranda ve yazdırmada) işten kesilen satış fişinin açıklamasında işin başlığı ("İş #7 - …") yerine yalnız "Satış fişi" yazar; kalemler altında listelenmeye devam eder. Fişe elle yazılan farklı açıklamalar korunur.
+
 ### 27.11.2026 — 32.1: Stok kartı hareketlerinde cari
 - Stok kartındaki hareketler tablosunda "Açıklama (İş #12)" yerine **Cari** sütunu: kullanılan malzemede işin carisi, satışta fişin carisi, alışta tedarikçi (iptal / iade düzeltmeleri dahil). Satıra dokununca cari kartı açılır; fiş / belge no küçük yazıyla altında.
 - "İşte kullanıldı" etiketi "Kullanıldı" oldu; carisi bağlanmamış işte "Cari bağlı değil".

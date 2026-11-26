@@ -51,7 +51,8 @@ const kontrol = (ad, kosul, ek) => { if (kosul) console.log('OK  ', ad); else { 
   if (tedVar) kontrol('Listede yalnız tedarikçi olan cari yok', !/Tedarikçi<\/span>/.test(await p.innerHTML('#liste')));
   await p.evaluate((id) => { location.hash = `#/cari/${id}`; }, secilen.id); await p.waitForSelector('[data-sekme="detayli"]');
   const sek = await p.$$eval('.sekmeler button', (x) => x.map((q) => q.textContent.trim()));
-  kontrol('Ekstre yanında Detaylı ekstre sekmesi', sek[0] === 'Ekstre' && sek[1] === 'Detaylı ekstre', sek);
+  kontrol('İlk sekme Detaylı ekstre, ikinci Ekstre (32.2)', sek[0] === 'Detaylı ekstre' && sek[1] === 'Ekstre', sek);
+  kontrol('Cari kartı Detaylı ekstre ile açılır', await p.$eval('[data-sekme="detayli"]', (b) => b.classList.contains('aktif')));
   await p.click('[data-sekme="detayli"]'); await p.waitForSelector('.dekstre');
   await p.click('[data-dar^="2000-01-01"]'); await p.waitForTimeout(500);
   const t = (await p.textContent('.dekstre')).replace(/\s+/g, ' ');

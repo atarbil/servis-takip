@@ -8,7 +8,7 @@ export default async function (el, [id], ctx) {
   const c = await api.get(`/cariler/${id}`);
   ctx.baslik(c.unvan);
   const yil = new Date().getFullYear();
-  let sekme = ctx.sorgu.sekme || 'ekstre';
+  let sekme = ctx.sorgu.sekme || 'detayli';
   let resmiYil = '';
   let resmiTip = 'tum';
   const aralik = { bas: `${yil}-01-01`, bit: bugunStr() };
@@ -42,7 +42,7 @@ export default async function (el, [id], ctx) {
       <button class="btn ikincil" data-a="duzenle">Düzenle</button>
       <button class="btn tehlike-cizgi" data-a="sil" title="Cari ve tüm hareketleri silinir (30 gün geri alınabilir)">🗑 Sil</button>
     </div>
-    <div class="sekmeler">${[['ekstre', 'Ekstre'], ['detayli', 'Detaylı ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['resmi', 'Resmi faturalar'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
+    <div class="sekmeler">${[['detayli', 'Detaylı ekstre'], ['ekstre', 'Ekstre'], ['isler', `İşler (${c.isler.length})`], ['envanter', 'Envanter'], ['disservis', 'Dış servis'], ['fisler', 'Satış fişleri'], ['resmi', 'Resmi faturalar'], ['yillik', 'Yıllık özet'], ['bilgi', 'Bilgiler']]
       .map(([k, a]) => html`<button data-sekme="${k}">${a}</button>`)}</div>
     <div id="icerik"></div>`);
 
