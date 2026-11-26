@@ -30,6 +30,10 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 27.11.2026 — 32.1: Stok kartı hareketlerinde cari
+- Stok kartındaki hareketler tablosunda "Açıklama (İş #12)" yerine **Cari** sütunu: kullanılan malzemede işin carisi, satışta fişin carisi, alışta tedarikçi (iptal / iade düzeltmeleri dahil). Satıra dokununca cari kartı açılır; fiş / belge no küçük yazıyla altında.
+- "İşte kullanıldı" etiketi "Kullanıldı" oldu; carisi bağlanmamış işte "Cari bağlı değil".
+
 ### 26.11.2026 — 32. derleme: Telefonda sade satış fişi
 - Telefon arayüzünde satış fişi ayrı ekran: üstte cari tek satır (taslakta dokununca cari seçimi) ve bakiye; tarih / vade / açıklama "Fiş bilgileri ▾" altında.
 - **Kalemler kısa kart:** ad + "3 adet × 100,00 … 300,00 ₺"; ürünün altındaki 6 kutu (miktar, birim, fiyat, isk., KDV, tutar) kalktı. Fiyatı 0 olan kalem turuncu "Fiyat girin".

@@ -2,7 +2,7 @@ import { api } from '../api.js';
 import { html, $, para, dovizPara, paraSade, miktar, zaman, pencere, bildir, sayiCoz, sayiGiris, gorselKucult } from '../ui.js';
 import { urunFormu, urunSecici, silOnay } from '../bilesen.js';
 
-const KAYNAK = { alis: 'Alış', is_malzeme: 'İşte kullanıldı', satis: 'Satış', sayim: 'Sayım', duzeltme: 'Düzeltme' };
+const KAYNAK = { alis: 'Alış', is_malzeme: 'Kullanıldı', satis: 'Satış', sayim: 'Sayım', duzeltme: 'Düzeltme' };
 
 export default async function (el, [id], ctx) {
   const u = await api.get(`/urunler/${id}`);
@@ -31,9 +31,11 @@ export default async function (el, [id], ctx) {
         </div></div></div>
     <div class="kart"><div class="kart-ust"><h3>Barkodlar</h3></div><div class="kart-govde">${u.barkodlar.length ? u.barkodlar.map((b) => html`<span class="cip" style="padding-right:.65rem">${b}</span>`) : html`<span class="soluk">Barkod tanımlı değil</span>`}</div></div>
     <div class="kart"><div class="kart-ust"><h3>Stok hareketleri</h3><span class="soluk">son 200</span></div><div class="tablo-kap">
-      <table class="tablo mobil-kart"><thead><tr><th>Zaman</th><th>İşlem</th><th>Açıklama</th><th class="sayi">Miktar</th><th class="sayi">Birim maliyet</th><th>Kullanıcı</th></tr></thead><tbody>
-      ${u.hareketler.length ? u.hareketler.map((h) => html`<tr class="${h.kaynak === 'is_malzeme' && h.kaynak_id ? 'tikla' : ''}" ${h.kaynak === 'is_malzeme' && h.kaynak_id ? html`data-git="is/${h.kaynak_id}"` : ''}>
-        <td data-et="Zaman" class="nowrap">${zaman(h.zaman)}</td><td class="ana-hucre" data-et="">${KAYNAK[h.kaynak] || h.kaynak}</td><td data-et="Açıklama">${h.aciklama || ''}</td>
+      <table class="tablo mobil-kart"><thead><tr><th>Zaman</th><th>İşlem</th><th>Cari</th><th class="sayi">Miktar</th><th class="sayi">Birim maliyet</th><th>Kullanıcı</th></tr></thead><tbody>
+      ${u.hareketler.length ? u.hareketler.map((h) => html`<tr class="${h.cari_id ? 'tikla' : ''}" ${h.cari_id ? html`data-git="cari/${h.cari_id}"` : ''}>
+        <td data-et="Zaman" class="nowrap">${zaman(h.zaman)}</td><td data-et="İşlem">${KAYNAK[h.kaynak] || h.kaynak}</td>
+        <td class="ana-hucre" data-et="">${h.cari_id ? html`<b>${h.cari_unvan}</b>` : h.belge === 'is' ? html`<span class="soluk">Cari bağlı değil</span>` : ''}
+          ${h.belge !== 'is' && h.aciklama ? html`<small class="soluk" style="display:block">${h.aciklama}</small>` : ''}</td>
         <td class="sayi ${h.miktar < 0 ? 'negatif' : 'pozitif'}" data-et="Miktar">${h.miktar > 0 ? '+' : ''}${miktar(h.miktar)}</td>
         <td class="sayi kar-bilgi" data-et="Maliyet">${paraSade(h.birim_maliyet)}</td><td data-et="Kullanıcı">${h.ad_soyad || ''}</td></tr>`)
         : html`<tr><td colspan="6" class="bos-durum">Hareket yok</td></tr>`}</tbody></table></div></div>`);

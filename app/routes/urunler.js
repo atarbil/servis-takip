@@ -61,8 +61,22 @@ module.exports = (r, { db, web, G, Y, AYAR }) => {
     if (!u) throw web.hata(404, 'Ürün bulunamadı.');
     const [barkodlar, hareketler] = await Promise.all([
       db.query('SELECT barkod FROM urun_barkodlari WHERE urun_id = $1 ORDER BY barkod', [u.id]),
-      db.query(`SELECT s.zaman, s.miktar, s.birim_maliyet, s.kaynak, s.kaynak_id, s.aciklama, k.ad_soyad
+      // Her hareketin carisi: iş malzemesi → işin carisi, satış → fişin carisi, alış → tedarikçi (iptal / iade düzeltmeleri dahil)
+      db.query(`SELECT s.zaman, s.miktar, s.birim_maliyet, s.kaynak, s.kaynak_id, s.aciklama, k.ad_soyad,
+                       b.cari_id, c.unvan AS cari_unvan, b.belge
                 FROM stok_hareketleri s LEFT JOIN kullanicilar k ON k.id = s.kullanici_id
+                LEFT JOIN LATERAL (
+                  SELECT CASE
+                    WHEN s.kaynak = 'is_malzeme' OR (s.kaynak = 'duzeltme' AND s.aciklama LIKE 'İş #%') THEN (SELECT i.cari_id FROM isler i WHERE i.id = s.kaynak_id)
+                    WHEN s.kaynak = 'satis' OR (s.kaynak = 'duzeltme' AND f.id IS NOT NULL) THEN f.cari_id
+                    WHEN s.kaynak = 'alis' OR (s.kaynak = 'duzeltme' AND a.id IS NOT NULL) THEN a.cari_id END AS cari_id,
+                  CASE WHEN s.kaynak = 'is_malzeme' OR (s.kaynak = 'duzeltme' AND s.aciklama LIKE 'İş #%') THEN 'is'
+                    WHEN s.kaynak = 'satis' OR f.id IS NOT NULL THEN 'fis' WHEN s.kaynak = 'alis' OR a.id IS NOT NULL THEN 'alis' END AS belge
+                  FROM (SELECT 1) x
+                  LEFT JOIN satis_fisleri f ON s.kaynak IN ('satis', 'duzeltme') AND f.id = s.kaynak_id AND (s.kaynak = 'satis' OR s.aciklama LIKE f.fis_no || '%')
+                  LEFT JOIN alis_faturalari a ON s.kaynak IN ('alis', 'duzeltme') AND a.id = s.kaynak_id AND (s.kaynak = 'alis' OR s.aciklama LIKE a.belge_no || '%')
+                ) b ON true
+                LEFT JOIN cariler c ON c.id = b.cari_id
                 WHERE s.urun_id = $1 ORDER BY s.zaman DESC LIMIT 200`, [u.id]),
     ]);
     return { ...u, barkodlar: barkodlar.rows.map((b) => b.barkod), hareketler: hareketler.rows };
