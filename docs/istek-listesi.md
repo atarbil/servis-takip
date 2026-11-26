@@ -11,6 +11,16 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
+### 2. Malzeme ekleme: liste yazılan kutunun altında + daha kolay kullanım (26.11.2026)
+Malzeme yazarken arama sonuçları telefonda ekranın en altında çıkıyor; **yazılan kutunun hemen altında listelensin**. Sayfa kullanan (teknisyen) için daha kolay olsun.
+- **Liste kutunun altında (telefon):** sonuçlar yazılan kutunun hemen altında açılır, klavyenin üstüne kadar uzanır; kutu ekranın üstüne kaydırılır ki liste sığsın. Tüm seçim kutularında (malzeme, stok, cari) aynı davranış.
+- **Pencere açmadan ekleme:** iş sayfasındaki Malzemeler bölümünün üstünde doğrudan "Malzeme ara…" kutusu; sonuca dokununca 1 adet eklenir, satırda − / + ile miktar değişir (metre gibi birimlerde 5 · 10 · 20 · 50 hızlı düğmeleri).
+- **Sık / son kullanılanlar:** arama kutusunun altında çipler — bu teknisyenin son kullandığı ve bu müşteride daha önce kullanılan malzemeler; tek dokunuşla eklenir.
+- **Hataya toleranslı arama:** "cat6" = "Cat 6", "4mp" = "4 MP", Türkçe harf farkı (adaptor / adaptör), kod ve barkodla da bulur.
+- **Arka arkaya barkod okutma:** kamera açık kalır, okutulan her ürün listeye eklenir (aynısı tekrar okutulunca miktar artar), sonunda "Bitti".
+- **Geri al:** eklenen malzeme için onay sorusu yok; altta "Eklendi · Geri al" bildirimi.
+- Stok yoksa / eksiye düşecekse ürünün yanında uyarı (ekleme engellenmez).
+
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
