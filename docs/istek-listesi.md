@@ -11,7 +11,17 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
-### 2. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+### 2. Satış fişi ekranı telefonda sade olsun (26.11.2026)
+Kullanıcı: "Bu ekran çok karışık, burayı düzenleyelim" (telefonda satış fişi; ekran görüntüsünde eski telefon görünümü).
+Telefon arayüzüne özel satış fişi ekranı (aynı düzen teklif / proforma ve alış faturasında da):
+- **Üst:** cari kartı tek satır (ünvan + bakiye, dokununca cari); fiş no / tarih / vade / iş / açıklama "Fiş bilgileri ▾" altında kapalı.
+- **Kalemler kompakt kart:** ad + tek satır "3 adet × 100,00 = 300,00 ₺"; fiyatı girilmemiş (0) kalem turuncu "Fiyat girin". Dokununca tam ekran kalem düzenleme: miktar − / +, birim fiyat (büyük), iskonto, KDV, not; ileri alanlar "Daha fazla" altında.
+- **Kalem ekleme:** üstte malzeme arama kutusu (liste kutunun altında, yazım farkına toleranslı), İşçilik / Eğitim / Hizmet çipleri, barkod düğmesi.
+- **Seçenekler** (Enter ile yeni satır, maliyet / kâr, fiyatlar KDV dahil) ⋯ menüsüne; maliyet / kâr açıksa kalemde küçük tek satır (muhasebe görmez).
+- **Alt sabit çubuk:** genel toplam (dokununca ara toplam / KDV / iskonto dökümü) + Kaydet / ✓ Onayla.
+- Onaylanmış fiş salt okunur özet görünümü (yazdır / paylaş ⋯ menüsünde).
+
+### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
 
 ## İsteğe bağlı fikirler
