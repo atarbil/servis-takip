@@ -5,7 +5,18 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 
 ## Bekleyen istekler
 
-(Şu an bekleyen istek yok.)
+### 1. Telefon için ayrı mobil arayüz (26.11.2026)
+Uygulama telefonda stabil değil; bilgisayar ve telefon görünümü ayrı tasarlansın.
+- **Yaklaşım:** telefonda tamamen ayrı, sade bir mobil arayüz açılır (kendi alt menüsü, kart listeleri, büyük butonlar, tam ekran formlar). Bilgisayar görünümüne dokunulmaz; sunucu ve veriler aynı.
+- Telefonda otomatik açılır; menüde "Bilgisayar görünümüne geç / Mobil görünüme dön" seçeneği.
+- **Mobil ekranlar:**
+  - İşler: işlerim, havuz, takvim, iş ekle, iş detayı (malzeme, fotoğraf, not), teslim / imza.
+  - Cariler: arama, cari kartı (vergi / iletişim), ekstre (kart görünümü), tahsilat / ödeme girme.
+  - Satış fişi ve stok: hızlı satış, stok arama, barkod okutma (kamera).
+  - Panel ve raporlar: özet rakamlar, kasa / banka, KDV durumu.
+- **Giderilecek sorunlar:** tablolar yerine kart listeleri (taşma / yatay kayma yok); pencereler yerine tam ekran sayfalar, seçim listeleri tam ekran arama; klavye açılınca bozulma yok; büyük dokunma alanları; sayfa zıplamaması ve hızlı açılış.
+- Yetkiler aynen geçerli (teknisyen, muhasebe kâr bilgisi görmez vb.).
+- Büyük iş: birkaç derlemede, önce İşler, sonra Cariler, Satış / stok, Panel.
 
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
