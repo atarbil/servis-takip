@@ -14,9 +14,11 @@ module.exports = (r, { db, web, G, Y, AYAR }) => {
     const q = String(req.query.q || '').trim();
     if (q) {
       const kelimeler = q.split(/\s+/).filter(Boolean).slice(0, 6);
-      const kosul = kelimeler.map((w) => { p.push(w); return `urun_arama_metni(u) LIKE '%' || arama_metni($${p.length}) || '%'`; });
+      // Her sözcük adda / kodda / markada geçmeli; boşluk, tire, nokta farkı yok sayılır ("cat6" = "Cat 6", "4mp" = "4 MP")
+      const kosul = kelimeler.map((w) => { p.push(w); const n = p.length; return `(urun_arama_metni(u) LIKE '%' || arama_metni($${n}) || '%' OR arama_sikisik(concat_ws(' ', u.ad, u.kod, u.marka, u.model)) LIKE '%' || arama_sikisik($${n}) || '%')`; });
       p.push(q);
-      k.push(`((${kosul.join(' AND ')}) OR EXISTS (SELECT 1 FROM urun_barkodlari b WHERE b.urun_id = u.id AND b.barkod = $${p.length}))`);
+      const tumu = `arama_sikisik(concat_ws(' ', u.ad, u.kod, u.marka, u.model)) LIKE '%' || arama_sikisik($${p.length}) || '%'`;
+      k.push(`((${kosul.join(' AND ')}) OR ${tumu} OR EXISTS (SELECT 1 FROM urun_barkodlari b WHERE b.urun_id = u.id AND b.barkod = $${p.length}))`);
     }
     if (req.query.onay_bekliyor === '1') k.push('u.onay_bekliyor');
     for (const alan of ['marka', 'ana_grup', 'alt_grup']) {
@@ -26,7 +28,7 @@ module.exports = (r, { db, web, G, Y, AYAR }) => {
     if (req.query.stokta === '1') k.push('u.stok_miktari > 0');
     const alan = yon(req)
       ? 'u.*, (SELECT string_agg(barkod, \', \') FROM urun_barkodlari b WHERE b.urun_id = u.id) AS barkodlar'
-      : 'u.id, u.kod, u.ad, u.marka, u.model, u.ana_grup, u.alt_grup, u.birim, u.onay_bekliyor';
+      : 'u.id, u.kod, u.ad, u.marka, u.model, u.ana_grup, u.alt_grup, u.birim, u.tur, u.stok_miktari, u.onay_bekliyor';
     // Aramada adı yazılanla başlayanlar üstte; aramasız listede teknisyen için sık kullanılanlar üstte
     let sira = 'u.ad';
     if (q) { p.push(q); sira = `(arama_metni(u.ad) LIKE arama_metni($${p.length}) || '%') DESC, u.ad`; }

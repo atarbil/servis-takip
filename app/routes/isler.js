@@ -241,14 +241,57 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   r.post('/isler/:id/malzeme', G, async (req) => {
     const is = await isErisim(req, req.params.id, true);
     const miktar = pozitif(req.body.miktar ?? 1, 'Miktar');
+    const sahada = !yon(req); // ofisin eklediği "verildi", teknisyenin eklediği "ilave"
     return db.islem(req.kullanici.id, async (q) => {
-      if (metin(req.body.barkod)) {
-        return q.bir('SELECT is_malzeme_ekle_barkod($1, $2, $3) AS id', [is.id, metin(req.body.barkod), miktar]);
+      const barkod = metin(req.body.barkod);
+      let urunId = req.body.urun_id ? Number(req.body.urun_id) : null;
+      if (barkod) {
+        const b = await q.bir('SELECT barkod_bul($1) AS urun_id', [barkod]);
+        if (!b?.urun_id) return q.bir('SELECT is_malzeme_ekle_barkod($1, $2, $3) AS id', [is.id, barkod, miktar]); // tanımsız barkod hatası
+        urunId = Number(b.urun_id);
       }
-      zorunlu(req.body, { urun_id: 'Ürün' });
-      // Ofisin eklediği "verildi", teknisyenin eklediği "ilave"
-      return q.bir('SELECT is_malzeme_ekle($1, $2, $3, false, $4) AS id', [is.id, req.body.urun_id, miktar, !yon(req)]);
+      if (!urunId) zorunlu(req.body, { urun_id: 'Ürün' });
+      const urun = await q.bir('SELECT ad, birim FROM urunler WHERE id = $1', [urunId]);
+      // birlestir: aynı ürün bu işte zaten varsa yeni satır açılmaz, miktarı artar
+      if (req.body.birlestir) {
+        const v = await q.bir(`SELECT id, miktar FROM is_malzemeleri WHERE is_id = $1 AND urun_id = $2 AND sahada_eklendi = $3
+          ORDER BY id DESC LIMIT 1 FOR UPDATE`, [is.id, urunId, sahada]);
+        if (v) {
+          await q('SELECT is_malzeme_miktar($1, $2)', [v.id, Number(v.miktar) + miktar]);
+          return { id: v.id, birlesti: true, onceki: Number(v.miktar), miktar: Number(v.miktar) + miktar, ad: urun?.ad, birim: urun?.birim };
+        }
+      }
+      const x = barkod
+        ? await q.bir('SELECT is_malzeme_ekle($1, $2, $3, true, $4) AS id', [is.id, urunId, miktar, sahada])
+        : await q.bir('SELECT is_malzeme_ekle($1, $2, $3, false, $4) AS id', [is.id, urunId, miktar, sahada]);
+      return { id: x.id, birlesti: false, miktar, ad: urun?.ad, birim: urun?.birim };
     });
+  });
+
+  // Malzeme miktarı (− / + düğmeleri, geri al)
+  r.put('/malzeme/:id', G, async (req) => {
+    const m = (await db.query('SELECT is_id FROM is_malzemeleri WHERE id = $1', [req.params.id])).rows[0];
+    if (!m) throw web.hata(404, 'Malzeme bulunamadı.');
+    await isErisim(req, m.is_id, !yon(req));
+    const miktar = Number(req.body.miktar);
+    if (!Number.isFinite(miktar) || miktar < 0) throw web.hata(400, 'Geçerli bir miktar girin.');
+    await db.islem(req.kullanici.id, (q) => q('SELECT is_malzeme_miktar($1, $2)', [req.params.id, miktar]));
+    return { tamam: true };
+  });
+
+  // Hızlı ekleme önerileri: bu kullanıcının son kullandıkları + bu müşteride daha önce kullanılanlar
+  r.get('/isler/:id/malzeme-onerileri', G, async (req) => {
+    const is = await isErisim(req, req.params.id);
+    const alan = 'u.id, u.kod, u.ad, u.birim, u.tur, u.stok_miktari, u.onay_bekliyor';
+    const son = (await db.query(`SELECT ${alan} FROM urunler u JOIN (
+        SELECT urun_id, max(zaman) AS z FROM is_malzemeleri WHERE ekleyen_id = $1 AND zaman > now() - interval '60 days' GROUP BY urun_id
+      ) x ON x.urun_id = u.id WHERE u.aktif ORDER BY x.z DESC LIMIT 8`, [req.kullanici.id])).rows;
+    const cari = (await db.query('SELECT cari_id FROM isler WHERE id = $1', [is.id])).rows[0]?.cari_id;
+    const musteri = cari ? (await db.query(`SELECT ${alan} FROM urunler u JOIN (
+        SELECT m.urun_id, count(*) AS n, max(m.zaman) AS z FROM is_malzemeleri m JOIN isler i ON i.id = m.is_id
+        WHERE i.cari_id = $1 AND i.id <> $2 GROUP BY m.urun_id
+      ) x ON x.urun_id = u.id WHERE u.aktif ORDER BY x.n DESC, x.z DESC LIMIT 8`, [cari, is.id])).rows : [];
+    return { son, musteri };
   });
 
   r.post('/isler/:id/tanimsiz-urun', G, async (req) => {

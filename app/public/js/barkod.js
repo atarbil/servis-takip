@@ -57,12 +57,14 @@ function gecerliMi(metin, bicim) {
   return true;
 }
 
-export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
+// surekli(barkod) verilirse kamera açık kalır: her okumada çağrılır, dönen metin ekranda listelenir; "Bitti" ile kapanır.
+export function barkodOku({ baslik = 'Barkod okutun', surekli = null } = {}) {
   return new Promise((coz) => {
     const el = document.createElement('dialog');
     el.className = 'tam-ekran imza-dialog barkod-ekran';
     el.innerHTML = String(html`
-      <div class="ust-cubuk"><b style="flex:1">${baslik}</b><button class="btn ikincil kucuk" data-kapat>Kapat</button></div>
+      <div class="ust-cubuk"><b style="flex:1">${baslik}</b><button class="btn ${surekli ? 'basari' : 'ikincil'} kucuk" data-kapat>${surekli ? 'Bitti' : 'Kapat'}</button></div>
+      ${surekli ? html`<div class="barkod-okunanlar" hidden></div>` : ''}
       <div class="barkod-alan">
         <video playsinline muted autoplay></video>
         <div class="tarama-cerceve"><div class="tarama-cizgi"></div></div>
@@ -98,8 +100,28 @@ export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
       el.remove();
       coz(sonuc ? String(sonuc).trim() : null);
     };
+    let mesgul = false; let sonEklenen = { deger: '', zaman: 0 }; let adet = 0;
+    const okunanlar = $('.barkod-okunanlar', el);
+    const listeyeYaz = (metin, hata = false) => {
+      if (!okunanlar) return;
+      okunanlar.hidden = false;
+      const d = document.createElement('div'); d.className = hata ? 'hata' : ''; d.textContent = metin;
+      okunanlar.prepend(d);
+      while (okunanlar.children.length > 4) okunanlar.lastElementChild.remove();
+    };
+    const surekliIsle = (deger) => {
+      const t = Date.now();
+      if (mesgul || (deger === sonEklenen.deger && t - sonEklenen.zaman < 2000)) return;
+      mesgul = true; sonEklenen = { deger, zaman: t };
+      cerceve.classList.add('okundu'); bip(ses); if (navigator.vibrate) navigator.vibrate(90);
+      Promise.resolve().then(() => surekli(deger))
+        .then((m) => { if (m !== false) { adet++; $('[data-kapat]', el).textContent = `Bitti (${adet})`; } listeyeYaz(typeof m === 'string' ? m : `✓ ${deger}`, m === false); })
+        .catch((e) => listeyeYaz(e.message || 'Eklenemedi', true))
+        .finally(() => setTimeout(() => { mesgul = false; cerceve.classList.remove('okundu'); sonEklenen.zaman = Date.now(); }, 900));
+    };
     const bulundu = (deger) => {
       if (!deger || bitti) return;
+      if (surekli) { surekliIsle(deger); return; }
       cerceve.classList.add('okundu');
       bip(ses);
       if (navigator.vibrate) navigator.vibrate(90);
@@ -115,7 +137,10 @@ export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
     };
     $('[data-kapat]', el).onclick = () => kapat(null);
     el.addEventListener('cancel', (e) => { e.preventDefault(); kapat(null); });
-    $('form', el).onsubmit = (e) => { e.preventDefault(); const v = e.target.b.value.trim(); if (v) kapat(v); };
+    $('form', el).onsubmit = (e) => {
+      e.preventDefault(); const v = e.target.b.value.trim(); if (!v) return;
+      if (surekli) { e.target.b.value = ''; sonEklenen = { deger: '', zaman: 0 }; surekliIsle(v); } else kapat(v);
+    };
 
     const taniYaz = () => {
       const a = [];
@@ -149,6 +174,7 @@ export function barkodOku({ baslik = 'Barkod okutun' } = {}) {
 
     const tara = async () => {
       if (bitti) return;
+      if (mesgul) { dongu = setTimeout(tara, 150); return; }
       if (video.readyState >= 2 && video.videoWidth) {
         sayac++;
         try {

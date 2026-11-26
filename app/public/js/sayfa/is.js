@@ -9,7 +9,7 @@ export default async function (el, [id], ctx) {
   const is = await api.get(`/isler/${id}`);
   ctx.baslik(`İş #${is.id}`);
   const k = is.karlilik || {};
-  const malzemeAcik = ['planlandi', 'sahada', 'tamamlandi'].includes(is.durum);
+  const malzemeAcik = ['havuz', 'planlandi', 'sahada', 'tamamlandi'].includes(is.durum);
   const aktifFis = (is.fisler || []).find((f) => f.durum !== 'iptal');
 
   const aksiyon = {

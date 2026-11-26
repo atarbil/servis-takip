@@ -2,7 +2,8 @@
 import { api } from '../api.js';
 import { html, para, saat, tarih, zaman, durumRozet, haritaLink, ONCELIK, DURUM } from '../ui.js';
 import { isOlaylari } from '../sayfa/is.js';
-import { malzemeListesi } from '../sayfa/saha.js';
+import { tanimsizAkisi } from '../sayfa/saha.js';
+import { malzemeBolumu, malzemeBagla } from '../malzeme.js';
 import { islemListesi, ustDugme, tetikle } from './ortak.js';
 
 const telNo = (t) => String(t || '').replace(/[^\d+]/g, '');
@@ -11,7 +12,7 @@ export default async function (el, [id], ctx) {
   const is = await api.get(`/isler/${id}`);
   ctx.baslik(`İş #${is.id}`);
   const k = is.karlilik || {};
-  const malzemeAcik = ['planlandi', 'sahada', 'tamamlandi'].includes(is.durum);
+  const malzemeAcik = ['havuz', 'planlandi', 'sahada', 'tamamlandi'].includes(is.durum);
   const aktifFis = (is.fisler || []).find((f) => f.durum !== 'iptal');
   const tel = is.iletisim_tel || is.cari_telefon;
   const adres = is.adres || is.cari_adres;
@@ -78,10 +79,8 @@ export default async function (el, [id], ctx) {
     </section>
 
     <section class="mk-blok">
-      <h3>Malzemeler <small>${is.malzemeler.length || ''}</small></h3>
-      ${malzemeAcik ? html`<div class="mk-dugmeler uc"><button type="button" class="btn ikincil" data-akis="liste">+ Listeden</button>
-        <button type="button" class="btn ikincil" data-akis="barkod">📷 Barkod</button><button type="button" class="btn ikincil" data-akis="tanimsiz">Tanımsız</button></div>` : ''}
-      <div class="mk-malzeme">${malzemeListesi(is, { silinebilir: malzemeAcik, maliyet: !ctx.muhasebe })}</div>
+      <h3>Malzemeler <small data-mz-sayi>${is.malzemeler.length || ''}</small></h3>
+      ${malzemeBolumu(is, { duzenlenebilir: malzemeAcik, maliyet: !ctx.muhasebe })}
     </section>
 
     <section class="mk-blok">
@@ -112,4 +111,5 @@ export default async function (el, [id], ctx) {
         <div class="soluk">${zaman(g.zaman)} · ${g.ad_soyad || 'sistem'}</div></li>`)}</ul></details>`);
 
   isOlaylari(el, is, ctx);
+  malzemeBagla(el, is, ctx, { maliyet: !ctx.muhasebe, tanimsiz: (o) => tanimsizAkisi(is.id, o) });
 }

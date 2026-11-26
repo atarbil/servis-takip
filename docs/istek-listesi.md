@@ -11,16 +11,6 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
-### 2. Malzeme ekleme: liste yazılan kutunun altında + daha kolay kullanım (26.11.2026)
-Malzeme yazarken arama sonuçları telefonda ekranın en altında çıkıyor; **yazılan kutunun hemen altında listelensin**. Sayfa kullanan (teknisyen) için daha kolay olsun.
-- **Liste kutunun altında (telefon):** sonuçlar yazılan kutunun hemen altında açılır, klavyenin üstüne kadar uzanır; kutu ekranın üstüne kaydırılır ki liste sığsın. Tüm seçim kutularında (malzeme, stok, cari) aynı davranış.
-- **Pencere açmadan ekleme:** iş sayfasındaki Malzemeler bölümünün üstünde doğrudan "Malzeme ara…" kutusu; sonuca dokununca 1 adet eklenir, satırda − / + ile miktar değişir (metre gibi birimlerde 5 · 10 · 20 · 50 hızlı düğmeleri).
-- **Sık / son kullanılanlar:** arama kutusunun altında çipler — bu teknisyenin son kullandığı ve bu müşteride daha önce kullanılan malzemeler; tek dokunuşla eklenir.
-- **Hataya toleranslı arama:** "cat6" = "Cat 6", "4mp" = "4 MP", Türkçe harf farkı (adaptor / adaptör), kod ve barkodla da bulur.
-- **Arka arkaya barkod okutma:** kamera açık kalır, okutulan her ürün listeye eklenir (aynısı tekrar okutulunca miktar artar), sonunda "Bitti".
-- **Geri al:** eklenen malzeme için onay sorusu yok; altta "Eklendi · Geri al" bildirimi.
-- Stok yoksa / eksiye düşecekse ürünün yanında uyarı (ekleme engellenmez).
-
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
@@ -33,6 +23,17 @@ Malzeme yazarken arama sonuçları telefonda ekranın en altında çıkıyor; **
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 26.11.2026 — 31. derleme: Malzeme ekleme kolaylaştı, liste kutunun altında
+- **Telefonda arama listesi yazılan kutunun hemen altında** açılır, klavyenin üstüne kadar uzanır; altta yer yoksa kutu yukarı kaydırılır. Tüm seçim kutularında (malzeme, stok, cari) aynı.
+- **Pencere açmadan ekleme:** iş sayfası (telefon) ve saha ekranında Malzemeler bölümünün üstünde "Malzeme ara…" kutusu; sonuca dokununca 1 eklenir, kutu boşalır, sıradaki yazılabilir. Aynı ürün tekrar eklenirse yeni satır açılmaz, miktar artar.
+- Her satırda **− / +**, miktara dokununca elle yazma; metre birimlerinde **5 · 10 · 20 · 50** hızlı düğmeleri. 1'de − çöp kutusu olur (çıkarır). Fark stoktan düşer / stoğa iade edilir.
+- **Öneri çipleri:** "Bu müşteride kullanılanlar" ve "Son kullandıklarınız" — tek dokunuşla eklenir.
+- **Hataya toleranslı arama:** "cat6" = "Cat 6", "4mp" = "4 MP", adaptor = adaptör; kod ve barkodla da bulur. Listede stok durumu ("stokta yok" / miktar).
+- **Arka arkaya barkod:** 📷 düğmesi kamerayı açık tutar; her okutma eklenir (aynısı miktarı artırır), ekranda son okunanlar; "Bitti (n)". Sistemde olmayan barkodlar için Bitti'den sonra tanımlama formu (barkod dolu) açılır.
+- **Geri al:** eklemede / miktar değişikliğinde onay sorusu yok; altta "… · Geri al" bildirimi (yalnız son işlem).
+- Ofis, havuzdaki işe de (iş tanımlanırken) telefondan malzeme ekleyebilir.
+- Veritabanı: 021 (boşluksuz arama, malzeme miktarı değiştirme).
 
 ### 26.11.2026 — 30. derleme: Teknisyen havuzu görür, işi alır, iş ekler
 - Teknisyen (telefon ve bilgisayar): İşlerim sayfasında **İşlerim / Havuz** bölümleri; havuzdaki tüm işler (müşteri, adres, bekleme süresi, öncelik) ve sayısı.

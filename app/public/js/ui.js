@@ -74,7 +74,8 @@ export const telLink = (t) => (t ? html`<a href="tel:${String(t).replace(/[^\d+]
 export const haritaLink = (adres) => (adres ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adres)}` : '');
 
 // ---------- Bildirim ----------
-export function bildir(mesaj, tur = 'bilgi', sure = 3500) {
+// eylem: { metin, fn } → bildirimde düğme (ör. "Geri al")
+export function bildir(mesaj, tur = 'bilgi', sure = 3500, { eylem } = {}) {
   let kap = $('#bildirimler');
   if (!kap) { kap = document.createElement('div'); kap.id = 'bildirimler'; document.body.append(kap); }
   // En fazla 3 bildirim; eskiler kalkar
@@ -82,6 +83,14 @@ export function bildir(mesaj, tur = 'bilgi', sure = 3500) {
   const el = document.createElement('div');
   el.className = `bildirim ${tur}`;
   el.textContent = mesaj;
+  if (eylem) {
+    // Yalnız son işlem geri alınabilir: önceki "Geri al" bildirimleri kalkar
+    kap.querySelectorAll('.bildirim.eylemli').forEach((x) => x.remove());
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'bildirim-eylem'; b.textContent = eylem.metin;
+    b.onclick = () => { b.disabled = true; el.remove(); eylem.fn(); };
+    el.append(b); el.classList.add('eylemli');
+  }
   kap.append(el);
   setTimeout(() => { el.classList.add('cik'); setTimeout(() => el.remove(), 300); }, sure);
 }
@@ -205,25 +214,41 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
     f('scroll', kaydir, true); f('resize', kaydir);
     if (window.visualViewport) (ac ? visualViewport.addEventListener : visualViewport.removeEventListener).call(visualViewport, 'resize', kaydir);
   };
-  const kapat = () => { if (kutu.isConnected) dinle(false); kutu.hidden = true; kutu.remove(); input.setAttribute('aria-expanded', 'false'); };
+  // Telefonda kutu yukarı kaydırılabilsin diye liste açıkken altta geçici boşluk
+  let boslukKap = null;
+  const boslukAc = () => { if (!telefon() || boslukKap) return; boslukKap = input.closest('.pencere-govde') || document.body; boslukKap.classList.add('secici-bosluk'); };
+  const boslukKapat = () => { boslukKap?.classList.remove('secici-bosluk'); boslukKap = null; };
+  const kapat = () => { if (kutu.isConnected) dinle(false); kutu.hidden = true; kutu.remove(); input.setAttribute('aria-expanded', 'false'); boslukKapat(); };
 
   // Konum: kutunun yanına sabitlenir; dialog içindeyse dialog'a eklenir (üst katmanda kalsın)
   function yerlestir() {
     if (!acik()) return;
     if (!input.isConnected) { kapat(); return; }
-    const r = input.getBoundingClientRect();
+    let r = input.getBoundingClientRect();
     const vv = window.visualViewport;
     const ekranY = vv ? vv.height : innerHeight; const ekranUst = vv ? vv.offsetTop : 0;
     const st = kutu.style;
     if (telefon()) {
-      kutu.classList.add('alt-panel');
-      Object.assign(st, { left: '0px', width: '100%', top: '', bottom: '', maxHeight: `${Math.round(ekranY * 0.5)}px` });
-      const h = kutu.offsetHeight;
-      const panelUst = ekranUst + ekranY - h;
-      st.top = `${Math.round(panelUst)}px`;
-      // Yazılan kutu panelin altında kalmasın: sayfayı kaydırıp kutuyu panelin üstüne getir
-      if (r.bottom > panelUst - 8 || r.top < 0) window.scrollBy(0, r.bottom - (panelUst - 16));
+      // Telefonda liste yazılan kutunun hemen altında açılır, klavyenin üstüne kadar uzanır.
+      // Altta yer azsa kutu yukarı kaydırılır (pencerede pencere gövdesi, sayfada sayfa; sabit üst çubuğun altına).
+      kutu.classList.remove('alt-panel'); kutu.classList.add('tel-alt');
+      const ekranAlt = ekranUst + ekranY;
+      if (ekranAlt - r.bottom < 230) {
+        const kap = input.closest('.pencere-govde');
+        const ustSinir = kap ? kap.getBoundingClientRect().top + 8
+          : Math.max(ekranUst, ...[...document.querySelectorAll('.mk-ust, .ust-cubuk, header.ust')].map((h) => (getComputedStyle(h).position === 'fixed' || getComputedStyle(h).position === 'sticky' ? h.getBoundingClientRect().bottom : 0))) + 8;
+        const fark = r.top - ustSinir;
+        if (fark > 4) {
+          const once = r.top;
+          if (kap) kap.scrollBy(0, fark); else window.scrollBy(0, fark);
+          r = input.getBoundingClientRect();
+          if (Math.abs(r.top - once) < 2) { /* kaydırılamadı (içerik kısa) */ }
+        }
+      }
+      const alt = Math.max(140, ekranAlt - r.bottom - 8);
+      Object.assign(st, { left: '8px', width: `${innerWidth - 16}px`, bottom: '', top: `${Math.round(r.bottom + 4)}px`, maxHeight: `${Math.round(alt)}px` });
     } else {
+      kutu.classList.remove('tel-alt');
       kutu.classList.remove('alt-panel');
       const gen = Math.min(innerWidth - 16, Math.max(r.width, genislik));
       const sol = Math.max(8, Math.min(r.left, innerWidth - gen - 8));
@@ -245,6 +270,7 @@ export function secici(input, { getir, goster, sec, bosMetin = 'Sonuç yok', eks
     if (!kutu.isConnected) dinle(true);
     if (kutu.parentElement !== kap) kap.append(kutu);
     kutu.hidden = false; input.setAttribute('aria-expanded', 'true');
+    boslukAc();
     yerlestir();
   }
 

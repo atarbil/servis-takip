@@ -1741,3 +1741,44 @@ html:has(body.mobil-kabuk) { scroll-padding-top: calc(var(--mk-ust, 54px) + 150p
 .mk-dl .btn-metin { color: var(--ana); font-weight: 600; padding: 0 .2rem; }
 .mk-bolumler.tek-bolum { margin: 0 0 .9rem; max-width: 420px; }
 .bolum-sayi { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--turuncu); color: #fff; font-size: .72rem; line-height: 18px; margin-left: .2rem; }
+.secici-liste.tel-alt { border-radius: 12px; box-shadow: 0 12px 32px rgb(15 23 42 / .22); }
+.secici-liste.tel-alt .secici-oge { padding: .8rem .9rem; }
+.secici-liste.tel-alt .secici-ipucu { display: none; }
+.pencere-govde.secici-bosluk { padding-bottom: 70vh !important; }
+body.secici-bosluk { padding-bottom: 70vh; }
+.barkod-okunanlar { position: absolute; z-index: 5; left: .6rem; right: .6rem; top: calc(56px + env(safe-area-inset-top)); display: grid; gap: .3rem; pointer-events: none; }
+.barkod-okunanlar > div { background: rgb(22 101 52 / .92); color: #fff; border-radius: 10px; padding: .5rem .75rem; font-weight: 600; font-size: .9rem; }
+.barkod-okunanlar > div.hata { background: rgb(153 27 27 / .92); }
+.barkod-okunanlar > div + div { opacity: .75; }
+.bildirim.eylemli { display: flex; align-items: center; gap: .75rem; pointer-events: auto; }
+.bildirim-eylem { margin-left: auto; flex: none; border: 0; background: rgb(255 255 255 / .18); color: #fff; font: inherit; font-weight: 800; border-radius: 8px; padding: .4rem .8rem; cursor: pointer; }
+body.mobil-kabuk #bildirimler { bottom: calc(var(--mk-alt) + env(safe-area-inset-bottom) + 10px); }
+
+/* ---------- Malzeme bölümü (iş / saha) ---------- */
+.mz-ust { display: flex; gap: .5rem; }
+.mz-ara { flex: 1; min-width: 0; min-height: 48px; border: 1.5px solid var(--ana); border-radius: 12px; padding: 0 .9rem; background: #fff; font-size: 16px; }
+.mz-barkod { min-width: 52px; min-height: 48px; font-size: 1.3rem; border-radius: 12px; }
+.mz-oneriler:empty { display: none; }
+.mz-oneri-grup { margin-top: .6rem; }
+.mz-oneri-grup small { display: block; color: var(--soluk); font-weight: 600; margin-bottom: .3rem; }
+.mz-cipler { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.mz-cipler::-webkit-scrollbar { display: none; }
+.mz-cip { flex: none; max-width: 70vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 38px; border: 1px solid var(--cizgi); background: var(--ana-acik); color: var(--ana-koyu); border-radius: 99px; padding: 0 .85rem; font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; }
+.mz-cip.stoksuz { background: #fff; color: var(--soluk); border-style: dashed; }
+.mz-liste { margin-top: .7rem; }
+.mz-bos { color: var(--soluk); text-align: center; padding: .9rem; }
+.mz-satir { display: flex; align-items: center; gap: .6rem; padding: .65rem 0; border-top: 1px solid var(--cizgi2); }
+.mz-satir:first-child { border-top: 0; }
+.mz-ad { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.mz-ad small { display: block; color: var(--soluk); font-size: .78rem; margin-top: .1rem; }
+.mz-hizli { display: flex; gap: .3rem; margin-top: .35rem; }
+.mz-hizli button { min-width: 40px; min-height: 32px; border: 1px solid var(--cizgi); background: #fff; border-radius: 8px; font: inherit; font-size: .82rem; font-weight: 700; color: var(--soluk); cursor: pointer; }
+.mz-hizli button.secili { background: var(--ana); border-color: var(--ana); color: #fff; }
+.mz-miktar { display: flex; align-items: center; flex: none; border: 1px solid var(--cizgi); border-radius: 12px; overflow: hidden; background: #fff; }
+.mz-miktar > button { width: 42px; height: 44px; border: 0; background: none; font-size: 1.3rem; font-weight: 700; color: var(--ana); cursor: pointer; }
+.mz-miktar > button:active { background: var(--ana-acik); }
+.mz-sayi { min-width: 52px; text-align: center; font-weight: 800; font-size: 1rem; line-height: 1.1; border-left: 1px solid var(--cizgi2) !important; border-right: 1px solid var(--cizgi2) !important; color: var(--yazi) !important; }
+.mz-sayi small { display: block; font-size: .66rem; font-weight: 600; color: var(--soluk); }
+.mz-sayi.salt { border: 0 !important; white-space: nowrap; }
+.mz-alt { margin-top: .4rem; }
+.mz-alt .btn-metin { color: var(--ana); font-weight: 600; }

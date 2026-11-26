@@ -2,6 +2,7 @@
 import { api } from '../api.js';
 import { html, $, bildir, pencere, onayla, saat, tarih, zaman, miktar, durumRozet, telLink, haritaLink, sayiCoz, gorselKucult, sayiGiris } from '../ui.js';
 import { urunSecici } from '../bilesen.js';
+import { malzemeBolumu, malzemeBagla } from '../malzeme.js';
 import { teslimFormuYazdir } from '../belgeler.js';
 
 // ---------- Malzeme ekleme akışları ----------
@@ -166,12 +167,8 @@ export default async function (el, [id], ctx) {
       <button class="btn birincil buyuk tam" id="ben-aliyorum" style="margin-bottom:1rem">🙋 Bu işi ben alıyorum</button>` : ''}
 
     ${sahada || is.malzemeler.length ? html`<div class="kart">
-      <div class="kart-ust"><div class="adim ${is.malzemeler.length ? 'tamam' : ''}"><span class="adim-no">1</span><h3>Kullanılan malzemeler</h3></div></div>
-      <div id="malzemeler">${malzemeListesi(is, { silinebilir: sahada })}</div>
-      ${sahada ? html`<div class="kart-govde" style="border-top:1px solid var(--cizgi2)">
-        <button class="btn birincil buyuk tam" data-akis="barkod" style="margin-bottom:.5rem">📷 Barkod okut</button>
-        <div class="saha-aksiyon" style="margin:0"><button class="btn ikincil" data-akis="liste">Listeden seç</button><button class="btn ikincil" data-akis="tanimsiz">Tanımsız ürün</button></div>
-      </div>` : ''}</div>` : ''}
+      <div class="kart-ust"><div class="adim ${is.malzemeler.length ? 'tamam' : ''}"><span class="adim-no">1</span><h3>Kullanılan malzemeler <small class="soluk" data-mz-sayi>${is.malzemeler.length || ''}</small></h3></div></div>
+      <div class="kart-govde">${malzemeBolumu(is, { duzenlenebilir: sahada, maliyet: false })}</div></div>` : ''}
 
     ${sahada || is.fotograflar.length ? html`<div class="kart">
       <div class="kart-ust"><div class="adim ${is.fotograflar.length ? 'tamam' : ''}"><span class="adim-no">2</span><h3>Fotoğraflar</h3></div><span class="bosluk"></span>
@@ -201,6 +198,7 @@ export default async function (el, [id], ctx) {
       <button class="btn ikincil tam" id="form-yazdir">🖨 Teslim formunu göster / yazdır</button>` : ''}`);
 
   const yenile = () => ctx.yenile();
+  if (sahada) malzemeBagla(el, is, ctx, { tanimsiz: (o) => tanimsizAkisi(is.id, o) });
   // Müşterideki cihazlar (açılınca yüklenir)
   const envKart = $('#envanter-kart', el);
   if (envKart) {

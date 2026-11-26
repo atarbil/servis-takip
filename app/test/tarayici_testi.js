@@ -172,32 +172,38 @@ async function sec(p, inputSec, metin, secim) {
   await foto(t, '20_teknisyen_islerim');
   await t.goto(T + `/#/saha/${isId}`);
   await t.click('#basla');
-  await t.waitForSelector('[data-akis=barkod]');
-  // Barkod: headless tarayıcıda kamera yok -> elle yazma kutusu
-  await t.click('[data-akis=barkod]');
+  await t.waitForSelector('[data-mz-barkod]');
+  // Barkod (arka arkaya): headless tarayıcıda kamera yok -> elle yazma kutusu; aynı ürün 4 kez = 4 adet
+  await t.click('[data-mz-barkod]');
   await t.waitForSelector('.tam-ekran');
   await t.waitForTimeout(500);
   await foto(t, '21_barkod_ekrani');
-  await t.fill('.tam-ekran [name=b]', '8690000000011');
-  await t.click('.tam-ekran button.birincil');
-  await t.waitForSelector(pen);
-  await t.click(`${pen} [data-d="1"]`); await t.click(`${pen} [data-d="1"]`); await t.click(`${pen} [data-d="1"]`);
-  await penKaydet(t);
-  await t.waitForSelector('.malzeme-satir >> text=IP Kamera 4MP');
-  await t.click('[data-akis=liste]');
-  await sec(t, `${pen} #u-ara`, 'CAT6');
-  await t.fill(`${pen} [name=miktar]`, '30');
-  await penKaydet(t);
-  await t.waitForSelector('.malzeme-satir >> text=CAT6 Kablo');
-  // Tanımsız barkod -> tanımsız ürün formu
-  await t.click('[data-akis=barkod]');
+  for (let n = 0; n < 4; n++) {
+    await t.fill('.tam-ekran [name=b]', '8690000000011');
+    await t.click('.tam-ekran button.birincil');
+    await t.waitForFunction((k) => document.querySelector('.tam-ekran [data-kapat]')?.textContent.includes(`(${k})`), n + 1);
+    await t.waitForTimeout(950);
+  }
+  // Tanımsız barkod: Bitti deyince tanımsız ürün formu (barkod dolu)
   await t.fill('.tam-ekran [name=b]', '4006381333931');
   await t.click('.tam-ekran button.birincil');
+  await t.waitForSelector('.barkod-okunanlar .hata');
+  await t.click('.tam-ekran [data-kapat]');
   await t.waitForSelector(`${pen} [name=ad]`);
   await t.fill(`${pen} [name=ad]`, 'RJ45 Konnektör (mavi poşet)');
   await t.fill(`${pen} [name=miktar]`, '8');
   await penKaydet(t);
-  await t.waitForSelector('.malzeme-satir >> text=onay bekliyor');
+  await t.waitForSelector('.mz-satir >> text=onay bekliyor');
+  await t.waitForSelector('.mz-satir >> text=IP Kamera 4MP');
+  if (!(await t.textContent('.mz-satir:has-text("IP Kamera 4MP") .mz-sayi')).startsWith('4')) throw new Error('Barkod 4 kez okutuldu, miktar 4 olmalı');
+  // Listeden: arama kutusu → ürün → miktarı yaz (30)
+  await t.click('[data-mz-ara]'); await t.keyboard.type('CAT6');
+  await t.waitForSelector('.secici-liste .secici-oge:has-text("CAT6 Kablo")');
+  await t.click('.secici-liste .secici-oge:has-text("CAT6 Kablo")');
+  await t.waitForSelector('.mz-satir >> text=CAT6 Kablo');
+  await t.click('.mz-satir:has-text("CAT6 Kablo") [data-mz-yaz]');
+  await t.waitForSelector(pen); await t.fill(`${pen} input`, '30'); await penKaydet(t);
+  await t.waitForFunction(() => [...document.querySelectorAll('.mz-satir')].some((r) => r.textContent.includes('CAT6 Kablo') && r.querySelector('.mz-sayi').textContent.startsWith('30')));
   const maliyetGorunur = await t.locator('text=/maliyet/i').count();
   ok(`Teknisyen: barkod (elle), listeden ve tanımsız ürün eklendi; maliyet görünmüyor (${maliyetGorunur === 0})`);
   // Fotoğraf
