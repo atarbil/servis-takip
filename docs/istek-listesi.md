@@ -15,6 +15,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 Kullanıcı: "Bu ekran çok karışık, burayı düzenleyelim" (telefonda satış fişi; ekran görüntüsünde eski telefon görünümü).
 Telefon arayüzüne özel satış fişi ekranı (aynı düzen teklif / proforma ve alış faturasında da):
 - **Üst:** cari kartı tek satır (ünvan + bakiye, dokununca cari); fiş no / tarih / vade / iş / açıklama "Fiş bilgileri ▾" altında kapalı.
+- Kullanıcı ek (23:39): "Ürünün altındaki miktar, birim vs. çok karışık görünüyor" → kalem altında 6 kutu (miktar, birim, fiyat, isk., KDV, tutar) kalkacak.
 - **Kalemler kompakt kart:** ad + tek satır "3 adet × 100,00 = 300,00 ₺"; fiyatı girilmemiş (0) kalem turuncu "Fiyat girin". Dokununca tam ekran kalem düzenleme: miktar − / +, birim fiyat (büyük), iskonto, KDV, not; ileri alanlar "Daha fazla" altında.
 - **Kalem ekleme:** üstte malzeme arama kutusu (liste kutunun altında, yazım farkına toleranslı), İşçilik / Eğitim / Hizmet çipleri, barkod düğmesi.
 - **Seçenekler** (Enter ile yeni satır, maliyet / kâr, fiyatlar KDV dahil) ⋯ menüsüne; maliyet / kâr açıksa kalemde küçük tek satır (muhasebe görmez).
