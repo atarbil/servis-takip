@@ -1,6 +1,8 @@
 // Programı güncelle: GitHub'daki yeni sürümü sunucudaki güncelleme servisi aracılığıyla kurar.
 import { api } from '../api.js';
 import { html, $, zaman, bildir, pencere } from '../ui.js';
+// Güncellemede şifre onayı (geçici olarak kapalı; sunucudaki routes/guncelleme.js SIFRE_ONAYI ile birlikte açılır)
+const SIFRE_ONAYI = false;
 
 const ADIMLAR = [
   ['yedek', 'Yedek alınıyor'],
@@ -95,8 +97,8 @@ export default async function (el, _p, ctx) {
       kaydetMetin: 'Güncellemeyi başlat',
       icerik: html`<p>${s?.yeni?.length ? `${s.yeni.length} değişiklik kurulacak.` : 'Aynı sürüm yeniden kurulacak.'}
         Önce yedek alınır. Program 1–2 dakika kapanıp açılır; bu sırada kimse kayıt yapamaz.</p>
-        <label>Onay için şifreniz<input type="password" name="sifre" autocomplete="current-password" required autofocus></label>`,
-      kaydet: async (f) => { if (!f.sifre) throw new Error('Şifrenizi yazın.'); await api.post('/guncelleme/baslat', { sifre: f.sifre }); return true; },
+        ${SIFRE_ONAYI ? html`<label>Onay için şifreniz<input type="password" name="sifre" autocomplete="current-password" required autofocus></label>` : ''}`,
+      kaydet: async (f) => { if (SIFRE_ONAYI && !f.sifre) throw new Error('Şifrenizi yazın.'); await api.post('/guncelleme/baslat', { sifre: f.sifre }); return true; },
     });
     if (!ok) return;
     izle();

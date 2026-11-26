@@ -11,6 +11,9 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - **Satış fişi ve stok:** hızlı satış, stok arama, barkod okutma (kamera).
 - **Panel ve raporlar:** özet rakamlar, kasa / banka, KDV durumu.
 
+### 2. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
+
 ## İsteğe bağlı fikirler
 - **İptal edildi (kullanıcı 24.11.2026 23:36, "ilk 2 iş iptal, onları istemiyorum"):** ekibe atanan işe "Servis" kalemi eklenmesi;
   cari açarken vergi numarası ile sorgulama.
@@ -23,6 +26,10 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 26.11.2026 — 31.1: Güncellemede şifre onayı geçici olarak kapalı
+- Kullanıcı isteği: "Programı güncelle" artık şifre sormaz (yalnız patron başlatabilir, yetki aynı). Kullanıcının sonraki komutuyla tekrar açılacak:
+  `app/routes/guncelleme.js` ve `app/public/js/sayfa/guncelleme.js` içindeki `SIFRE_ONAYI = true`.
 
 ### 26.11.2026 — 31. derleme: Malzeme ekleme kolaylaştı, liste kutunun altında
 - **Telefonda arama listesi yazılan kutunun hemen altında** açılır, klavyenin üstüne kadar uzanır; altta yer yoksa kutu yukarı kaydırılır. Tüm seçim kutularında (malzeme, stok, cari) aynı.

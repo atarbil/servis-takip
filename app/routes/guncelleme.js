@@ -57,9 +57,13 @@ module.exports = (r, { db, web, oturum, Y }) => {
     return { tamam: true };
   });
 
+  // Güncellemede şifre onayı. Kullanıcı isteğiyle 26.11.2026'dan itibaren geçici olarak kapalı; tekrar açmak için true yapın
+  // (public/js/sayfa/guncelleme.js içindeki SIFRE_ONAYI ile birlikte).
+  const SIFRE_ONAYI = false;
   r.post('/guncelleme/baslat', Y, async (req) => {
     const k = (await db.query('SELECT ad_soyad, sifre_hash FROM kullanicilar WHERE id = $1', [req.kullanici.id])).rows[0];
-    if (!k || !oturum.sifreDogru(String(req.body.sifre || ''), k.sifre_hash)) throw web.hata(400, 'Şifre hatalı.');
+    if (!k) throw web.hata(403, 'Yetkisiz.');
+    if (SIFRE_ONAYI && !oturum.sifreDogru(String(req.body.sifre || ''), k.sifre_hash)) throw web.hata(400, 'Şifre hatalı.');
     const d = durumOku();
     if (d?.durum === 'calisiyor' && Date.now() - Date.parse(d.baslangic) < 40 * 60 * 1000) {
       throw web.hata(409, 'Bir güncelleme zaten sürüyor.');

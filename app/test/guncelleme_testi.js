@@ -68,16 +68,12 @@ function sahteDepo() {
   const liste = await s.$$eval('.gnc-liste li', (l) => l.map((x) => x.textContent));
   kontrol('Yeni sürümdeki 2 değişiklik listelenir', liste.length === 2 && liste.some((x) => x.includes('Güncelle düğmesi')), liste);
 
-  // 3) Yanlış şifre
+  // 3) Şifre onayı geçici olarak kapalı (26.11.2026): pencerede şifre kutusu yok
   await s.click('[data-baslat]');
-  await s.fill('dialog input[name=sifre]', 'yanlis-sifre');
-  await s.click('dialog button[type=submit]');
-  await s.waitForSelector('.pencere-hata:not([hidden])');
-  kontrol('Yanlış şifre reddedilir', (await s.textContent('.pencere-hata')).includes('Şifre hatalı'));
-  kontrol('Yanlış şifrede istek dosyası yazılmaz', !fs.existsSync(path.join(K, 'guncelle.istek')));
+  await s.waitForSelector('dialog.pencere[open]');
+  kontrol('Güncellemede şifre sorulmaz', !(await s.$('dialog input[name=sifre]')));
 
-  // 4) Doğru şifre: güncelleme başlar, adımlar görünür, bitince sayfa yenilenir
-  await s.fill('dialog input[name=sifre]', '12345678');
+  // 4) Başlat: güncelleme başlar, adımlar görünür, bitince sayfa yenilenir
   const yenilendi = s.waitForEvent('load', { timeout: 60000 });
   await s.click('dialog button[type=submit]');
   await s.waitForSelector('.gnc-adimlar', { timeout: 10000 });
