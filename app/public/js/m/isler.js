@@ -89,8 +89,8 @@ export default async function (el, _p, ctx) {
       const l = await api.get('/havuz');
       govde = l.length ? html`<p class="mk-not">${l.length} iş takvime yerleştirilmeyi bekliyor. İşe dokunup <b>Takvime yerleştir</b>'i seçin.</p>
         ${l.map((i) => html`<a class="mk-kart" href="#/is/${i.id}" style="--serit:${i.oncelik === 1 ? 'var(--kirmizi)' : 'var(--cizgi)'}">
-          <div class="mk-kart-ust"><b class="mk-kart-baslik">${i.oncelik === 1 ? html`<span class="mk-acil">Acil</span> ` : ''}${i.baslik}</b></div>
-          ${i.unvan || i.iletisim_ad ? html`<div class="mk-kart-satir">${i.unvan || i.iletisim_ad}</div>` : ''}
+          <div class="mk-kart-ust"><b class="havuz-cari ${i.unvan ? '' : 'yok'}">${i.oncelik === 1 ? html`<span class="mk-acil">Acil</span> ` : ''}${i.unvan || 'Cari bağlı değil'}</b></div>
+          <div class="havuz-aciklama">${i.baslik}</div>
           <div class="mk-kart-alt"><span>⏳ ${sureMetni(i.bekleme_sn)} bekliyor</span>${i.havuza_donus_sayisi ? html`<span class="turuncu-yazi">${i.havuza_donus_sayisi}. kez havuzda</span>` : ''}${i.adres ? html`<span class="mk-kisa">📍 ${i.adres}</span>` : ''}<span class="soluk">#${i.id}</span></div></a>`)}`
         : html`<div class="mk-bos">Havuz boş 🎉</div>`;
     } else if (bolum === 'takvim') {

@@ -205,8 +205,9 @@ export async function teslimEtPenceresi(ctx, isOzet) {
 
 export function havuzKarti(i, { surukle = false } = {}) {
   return html`<div class="is-kart oncelik-${i.oncelik} ${surukle ? 'surukle' : ''}" data-is="${i.id}" ${surukle ? html`draggable="true"` : ''}>
-    <div class="is-ust"><div class="is-baslik">${i.baslik}</div>${i.oncelik === 1 ? html`<span class="rozet kirmizi">Acil</span>` : ''}</div>
-    <div class="is-bilgi"><span>#${i.id}</span>${i.unvan ? html`<span>👤 ${i.unvan}</span>` : html`<span style="color:var(--turuncu)">Cari bağlı değil</span>`}
+    <div class="is-ust"><div class="havuz-cari ${i.unvan ? '' : 'yok'}">${i.unvan || 'Cari bağlı değil'}</div>${i.oncelik === 1 ? html`<span class="rozet kirmizi">Acil</span>` : ''}</div>
+    <div class="havuz-aciklama">${i.baslik}</div>
+    <div class="is-bilgi"><span>#${i.id}</span>
       ${i.iletisim_tel ? html`<span>📞 ${i.iletisim_tel}</span>` : ''}
       <span>⏱ ${sureMetni(i.bekleme_sn)} önce</span>${i.havuza_donus_sayisi ? html`<span>↩ ${i.havuza_donus_sayisi} kez ertelendi</span>` : ''}</div>
     ${i.adres ? html`<div class="is-bilgi">📍 ${i.adres}</div>` : ''}
@@ -225,10 +226,10 @@ export default async function (el, _p, ctx) {
     $('#liste', el).innerHTML = String(liste.length ? html`
       <div class="grup-baslik">${liste.length} iş bekliyor</div>
       ${liste.map((i) => html`<div class="is-kart oncelik-${i.oncelik}">
-        <div class="is-ust"><a class="is-baslik" href="#/is/${i.id}">${i.baslik}</a>
+        <div class="is-ust"><a class="havuz-cari ${i.unvan ? '' : 'yok'}" href="#/is/${i.id}">${i.unvan || 'Cari bağlı değil'}</a>
           <span class="rozet ${i.oncelik === 1 ? 'kirmizi' : i.oncelik === 3 ? '' : 'mavi'}">${ONCELIK[i.oncelik]}</span></div>
+        <div class="havuz-aciklama">${i.baslik}</div>
         <div class="is-bilgi"><span>#${i.id}</span>
-          ${i.unvan ? html`<span>👤 ${i.unvan}</span>` : html`<span style="color:var(--turuncu)">Cari bağlı değil</span>`}
           ${i.iletisim_tel ? html`<span>📞 ${telLink(i.iletisim_tel)}</span>` : ''}
           <span>⏱ ${sureMetni(i.bekleme_sn)} önce</span>
           ${i.havuza_donus_sayisi ? html`<span>↩ ${i.havuza_donus_sayisi} kez havuza döndü</span>` : ''}</div>

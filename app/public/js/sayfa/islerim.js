@@ -75,8 +75,9 @@ export default async function (el, _p, ctx) {
       ${bolumHtml(liste.length)}
       <p class="soluk" style="margin:.2rem 0 .8rem">Henüz kimseye planlanmamış işler. Bir işi yapacaksanız açıp <b>"Bu işi ben alıyorum"</b>a dokunun.</p>
       ${liste.length ? liste.map((i) => html`<a class="is-kart oncelik-${i.oncelik}" href="#/saha/${i.id}">
-          <div class="is-ust"><div class="is-baslik">${i.baslik}</div>${i.oncelik === 1 ? html`<span class="rozet kirmizi">Acil</span>` : ''}</div>
-          <div class="is-bilgi">${i.unvan || i.iletisim_ad ? html`<span>👤 ${i.unvan || i.iletisim_ad}</span>` : ''}<span>⏳ ${sureMetni(i.bekleme_sn)} bekliyor</span></div>
+          <div class="is-ust"><div class="havuz-cari ${i.unvan ? '' : 'yok'}">${i.unvan || 'Cari bağlı değil'}</div>${i.oncelik === 1 ? html`<span class="rozet kirmizi">Acil</span>` : ''}</div>
+          <div class="havuz-aciklama">${i.baslik}</div>
+          <div class="is-bilgi"><span>⏳ ${sureMetni(i.bekleme_sn)} bekliyor</span></div>
           ${i.adres ? html`<div class="is-bilgi">📍 ${i.adres}</div>` : ''}</a>`)
         : html`<div class="bos-durum"><b>Havuz boş</b>Bekleyen iş yok.</div>`}`);
     $('#yenile', el).onclick = ciz;

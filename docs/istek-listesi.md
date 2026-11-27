@@ -32,6 +32,9 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 28.11.2026 — 34.4: İş havuzunda üstte cari adı (büyük, kalın), altta işin açıklaması
+- Havuz kartlarında (bilgisayar havuz sayfası, telefonda İşler → Havuz, teknisyenin Havuz bölümü) üstte **cari adı büyük ve kalın**, altında işin açıklaması; carisi yoksa turuncu "Cari bağlı değil".
+
 ### 28.11.2026 — 34.3: İş eklenince yalnız "İş havuza eklendi."
 - Teknisyen iş eklediğinde bildirim "İş havuza eklendi; yöneticiye bildirildi." yerine yalnız **"İş havuza eklendi."**
 

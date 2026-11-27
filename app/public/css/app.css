@@ -1844,3 +1844,8 @@ body.mobil-kabuk.mf-cubuk-var #bildirimler { bottom: calc(var(--mk-alt) + env(sa
 dialog.te-ozet-mod .hi-izgara { grid-template-columns: 1fr !important; }
 dialog.te-ozet-mod { max-width: 560px; }
 .mz-sabitler { margin-top: .6rem; }
+/* İş havuzu kartı: üstte cari (büyük, kalın), altta işin açıklaması */
+.havuz-cari { flex: 1; min-width: 0; font-size: 1.12rem; font-weight: 800; line-height: 1.25; color: var(--yazi); overflow-wrap: anywhere; }
+.havuz-cari.yok { color: var(--turuncu); font-size: 1rem; }
+.havuz-aciklama { margin-top: .2rem; color: var(--yazi); font-size: .95rem; line-height: 1.35; overflow-wrap: anywhere; }
+a.havuz-cari { text-decoration: none; } a.havuz-cari:hover { color: var(--ana); }
