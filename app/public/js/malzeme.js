@@ -3,6 +3,7 @@
 import { api } from './api.js';
 import { html, ham, $, bildir, miktar, saat, secici, vurgula, sor, sayiCoz, sayiGiris } from './ui.js';
 
+export const SABIT_ISCILIK = 'Servis Kurulum İşçiliği';
 const HIZLI = { metre: [5, 10, 20, 50], m: [5, 10, 20, 50], mt: [5, 10, 20, 50] };
 const stokSinif = (u) => (u.tur === 'hizmet' || u.stok_miktari == null ? '' : Number(u.stok_miktari) <= 0 ? 'yok' : 'var');
 
@@ -84,11 +85,12 @@ export function malzemeBagla(kok, is, ctx, { maliyet = false, tanimsiz } = {}) {
     api.get(`/isler/${is.id}/malzeme-onerileri`).then((o) => {
       const cip = (u) => html`<button type="button" class="mz-cip ${stokSinif(u) === 'yok' ? 'stoksuz' : ''}" data-mz-oner="${u.id}" data-ad="${u.ad}" title="${stokSinif(u) === 'yok' ? 'Stokta yok' : ''}">+ ${u.ad}</button>`;
       const musteriIdler = new Set(o.musteri.map((u) => u.id));
-      const son = o.son.filter((u) => !musteriIdler.has(u.id));
-      if (!o.musteri.length && !son.length) return;
+      const son = o.son.filter((u) => !musteriIdler.has(u.id) && u.ad !== SABIT_ISCILIK);
+      // "Servis Kurulum İşçiliği" her zaman ilk çip (hizmet kartı yoksa ilk eklemede açılır)
       oneriKap.innerHTML = String(html`
         ${o.musteri.length ? html`<div class="mz-oneri-grup"><small>Bu müşteride kullanılanlar</small><div class="mz-cipler">${o.musteri.map(cip)}</div></div>` : ''}
-        ${son.length ? html`<div class="mz-oneri-grup"><small>Son kullandıklarınız</small><div class="mz-cipler">${son.map(cip)}</div></div>` : ''}`);
+        <div class="mz-oneri-grup"><small>Son kullandıklarınız</small><div class="mz-cipler">
+          <button type="button" class="mz-cip mz-sabit" data-mz-sabit>+ ${SABIT_ISCILIK}</button>${son.map(cip)}</div></div>`);
     }).catch(() => {});
   }
 
@@ -101,6 +103,7 @@ export function malzemeBagla(kok, is, ctx, { maliyet = false, tanimsiz } = {}) {
     try {
       mesgul = true;
       if (oner) { await ekle({ urun_id: Number(oner.dataset.mzOner) }, oner.dataset.ad); return; }
+      if (t.closest('[data-mz-sabit]')) { await ekle({ sabit_iscilik: true }, SABIT_ISCILIK); return; }
       if (t.closest('[data-mz-barkod]')) { await surekliBarkod(); return; }
       if (t.closest("[data-mz-tanimsiz]") && tanimsiz) { if (await tanimsiz()) await yenile(); return; }
       if (!m) return;

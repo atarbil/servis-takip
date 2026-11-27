@@ -170,12 +170,13 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
   x = await t('POST', `/isler/${isId}/foto`, { veri: PNG, aciklama: 'Önce' });
   kontrol('Fotoğraf yüklendi', x.durum === 200 && x.veri.dosya_yolu, x.veri);
   const fotoYol = x.veri.dosya_yolu;
-  kontrol('İmzasız tamamlama engellendi', (await t('POST', `/isler/${isId}/tamamla`)).veri.kod === 'IMZA_YOK');
+  kontrol('Teslim bilgisi olmadan tamamlanmaz (34. derleme)', (await t('POST', `/isler/${isId}/tamamla`)).durum === 400);
   x = await t('POST', `/isler/${isId}/teslim`, { teslim_alan_ad: 'Ahmet Yılmaz', imza: PNG });
   kontrol('İmza alındı', x.durum === 200, x.veri);
   x = await t('POST', `/isler/${isId}/teslim`, { teslim_alan_ad: 'Başka', imza: PNG });
   kontrol('İkinci imza engellendi', x.durum === 400);
-  kontrol('Tamamlandı', (await t('POST', `/isler/${isId}/tamamla`, { not: 'Kameralar değişti' })).durum === 200);
+  x = await t('POST', `/isler/${isId}/tamamla`, { not: 'Kameralar değişti' });
+  kontrol('Tamamlandı; cariye taslak fiş arka planda açıldı', x.durum === 200 && !!x.veri.fis_id, x.veri);
   kontrol('Tamamlanan işe teknisyen malzeme ekleyemez', (await t('POST', `/isler/${isId}/malzeme`, { urun_id: kablo.id, miktar: 1 })).durum === 400);
 
   // Dosya erişimi
@@ -393,7 +394,8 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
     const st0 = Number(kab.stok_miktari);
     let r = await y('POST', '/isler/hizli', { mesaj: 'Ahmet Market 50 metre kablo istedi', cari_id: musteri.id });
     const tIs = r.veri.id;
-    r = await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ tip: 'urun', urun_id: kablo.id, miktar: 50 }] });
+    kontrol('Teslim et: kime teslim bilgisi zorunlu', (await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ tip: 'urun', urun_id: kablo.id, miktar: 50 }] })).durum === 400);
+    r = await y('POST', `/isler/${tIs}/teslim-et`, { teslim_alan_tel: '0532 000 00 00', satirlar: [{ tip: 'urun', urun_id: kablo.id, miktar: 50 }] });
     kontrol('Sadece malzeme teslimi: iş kapandı, taslak fiş', r.durum === 200 && r.veri.fis_id && r.veri.imza === false, r.veri);
     const tf = (await y('GET', `/fisler/${r.veri.fis_id}`)).veri;
     kontrol('Fişte malzeme, stoktan düşecek', tf.satirlar.length === 1 && Number(tf.satirlar[0].miktar) === 50 && tf.satirlar[0].stoktan_dus === true && tf.is_id === tIs, tf.satirlar);
@@ -425,7 +427,7 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
     await y('POST', `/isler/${t3}/planla`, { ekip_id: ekipler[0].id, baslangic: new Date().toISOString() });
     await t('POST', `/isler/${t3}/baslat`);
     await t('POST', `/isler/${t3}/malzeme`, { urun_id: kablo.id, miktar: 3 });
-    r = await y('POST', `/isler/${t3}/teslim-et`, { satirlar: [] });
+    r = await y('POST', `/isler/${t3}/teslim-et`, { teslim_alan_ad: 'Kemal Bey', satirlar: [] });
     const t3f = (await y('GET', `/fisler/${r.veri.fis_id}`)).veri;
     kontrol('Sahadaki işin malzemesi fişe geldi (stoktan tekrar düşmez)', r.durum === 200 && t3f.satirlar.length === 1 && t3f.satirlar[0].stoktan_dus === false, t3f.satirlar);
   }

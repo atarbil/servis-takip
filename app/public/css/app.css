@@ -1827,3 +1827,19 @@ body.mobil-kabuk.mf-cubuk-var #bildirimler { bottom: calc(var(--mk-alt) + env(sa
 .mf-daha-govde { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .6rem; margin-top: .4rem; }
 .mf-daha-govde .tam { grid-column: 1 / -1; }
 .mf-bilgi-salt { margin-top: .7rem; padding-top: .6rem; border-top: 1px solid var(--cizgi2); font-size: .9rem; }
+.tamam-ozet { display: grid; gap: .7rem; }
+.tamam-ozet > div { display: grid; gap: .15rem; }
+.tamam-ozet small { color: var(--soluk); font-weight: 600; font-size: .78rem; }
+.tamam-ozet ul { list-style: none; margin: 0; padding: 0; }
+.tamam-ozet li { display: flex; justify-content: space-between; gap: .6rem; padding: .3rem 0; border-top: 1px solid var(--cizgi2); }
+.tamam-ozet li:first-child { border-top: 0; }
+.tamam-ekran { text-align: center; padding-top: 1rem; }
+.tamam-ekran .kart { text-align: left; margin: 1rem 0; }
+.tamam-ikon { width: 72px; height: 72px; margin: 0 auto .5rem; border-radius: 50%; background: var(--yesil-acik, #dcfce7); color: var(--yesil); display: grid; place-items: center; font-size: 2.2rem; font-weight: 800; }
+.te-malzeme small { display: block; color: var(--soluk); font-weight: 600; font-size: .8rem; margin-bottom: .2rem; }
+.te-malzeme ul { list-style: none; margin: 0; padding: .3rem .6rem; border: 1px solid var(--cizgi); border-radius: 10px; background: #fff; }
+.te-malzeme li { display: flex; justify-content: space-between; gap: .6rem; padding: .35rem 0; border-top: 1px solid var(--cizgi2); }
+.te-malzeme li:first-child { border-top: 0; }
+.mz-cip.mz-sabit { background: var(--yesil-acik, #dcfce7); color: var(--yesil); border-color: transparent; }
+dialog.te-ozet-mod .hi-izgara { grid-template-columns: 1fr !important; }
+dialog.te-ozet-mod { max-width: 560px; }

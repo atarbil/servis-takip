@@ -117,7 +117,8 @@ export async function imzaAkisi(ctx, is) {
   const { imzaAl } = await import('../imza.js');
   // Teslim / müşteri onay ekranı: iş, adres ve yapılan iş özeti (malzeme listesi müşteriye gösterilmez)
   const yapilan = document.querySelector('#tek-not')?.value?.trim() || is.teknisyen_notu || '';
-  const s = await imzaAl({ baslik: 'Teslim / müşteri onayı', ad: is.cari_yetkili || is.iletisim_ad || '', tel: is.iletisim_tel || is.cari_telefon || '', metin: ctx.ayarlar.teslim_metni,
+  const s = await imzaAl({ baslik: 'Teslim / müşteri onayı', ad: document.querySelector('#te-ad')?.value?.trim() || is.cari_yetkili || is.iletisim_ad || '',
+    tel: document.querySelector('#te-tel')?.value?.trim() || is.iletisim_tel || is.cari_telefon || '', metin: ctx.ayarlar.teslim_metni,
     onayMetni: '✓ Onaylıyorum',
     ozet: { baslik: [is.unvan, is.baslik].filter(Boolean).join(' · '), adres: is.adres || is.cari_adres || '', yapilan, teknisyen: ctx.kullanici?.ad_soyad || '' } });
   if (!s) return false;
@@ -179,17 +180,18 @@ export default async function (el, [id], ctx) {
         : html`<span class="soluk">İsteğe bağlı: işin önce/sonra fotoğrafları</span>`}</div></div>` : ''}
 
     ${sahada || is.teslim ? html`<div class="kart">
-      <div class="kart-ust"><div class="adim ${is.teslim ? 'tamam' : ''}"><span class="adim-no">3</span><h3>Müşteri teslim onayı</h3></div></div>
-      <div class="kart-govde">${is.teslim ? html`<div class="basari-kutu" style="margin-bottom:.6rem">✓ ${is.teslim.teslim_alan_ad} tarafından ${zaman(is.teslim.zaman)} tarihinde onaylandı.</div>
-          <img class="imza-gor" src="/dosya/${is.teslim.imza_dosya}" alt="İmza">${is.teslim.musteri_notu ? html`<p>Not: ${is.teslim.musteri_notu}</p>` : ''}`
-        : html`<p class="soluk" style="margin-top:0">İş bitince müşteriye telefondan imza attırın. İmza olmadan iş kapatılamaz.</p>
-          <button class="btn birincil buyuk tam" data-akis="imza">✍️ Müşteri imzası al</button>`}</div></div>` : ''}
+      <div class="kart-ust"><div class="adim ${is.teslim ? 'tamam' : ''}"><span class="adim-no">3</span><h3>Kime teslim edildi?</h3></div></div>
+      <div class="kart-govde">${is.teslim ? html`<div class="basari-kutu" style="margin-bottom:.6rem">✓ ${[is.teslim.teslim_alan_ad, is.teslim.teslim_alan_tel].filter(Boolean).join(' · ')}${is.teslim.imza_dosya ? ' imzaladı' : ''} · ${zaman(is.teslim.zaman)}</div>
+          ${is.teslim.imza_dosya ? html`<img class="imza-gor" src="/dosya/${is.teslim.imza_dosya}" alt="İmza">` : ''}${is.teslim.musteri_notu ? html`<p>Not: ${is.teslim.musteri_notu}</p>` : ''}`
+        : html`<p class="soluk" style="margin-top:0">İşi kime teslim ettiniz ya da kime bilgi verdiniz? Ad ya da telefondan en az biri gerekli; imza isteğe bağlı.</p>
+          <div class="satir2"><label class="alan"><span>Ad soyad</span><input id="te-ad" value="${is.cari_yetkili || is.iletisim_ad || ''}" autocomplete="off"></label>
+            <label class="alan"><span>Telefon</span><input id="te-tel" type="tel" inputmode="tel" value="${is.iletisim_tel || ''}"></label></div>
+          <button class="btn ikincil tam" data-akis="imza">✍️ Müşteriye imza attır (isteğe bağlı)</button>`}</div></div>` : ''}
 
     ${sahada ? html`<div class="kart">
       <div class="kart-ust"><div class="adim"><span class="adim-no">4</span><h3>İşi tamamla</h3></div></div>
       <div class="kart-govde"><label class="alan"><span>Yapılan işlem notu</span><textarea id="tek-not" rows="3" placeholder="Örn: 2 kamera değiştirildi, kayıt cihazı ayarlandı">${is.teknisyen_notu || ''}</textarea></label>
-        <button class="btn basari buyuk tam" id="tamamla" ${is.teslim ? '' : 'disabled'}>✓ İşi tamamla</button>
-        ${!is.teslim ? html`<small style="display:block;text-align:center;margin-top:.4rem">Önce müşteri imzası alınmalı</small>` : ''}</div></div>` : ''}
+        <button class="btn basari buyuk tam" id="tamamla">✓ İşi tamamla</button></div></div>` : ''}
 
     ${is.cari_id && is.durum !== 'havuz' ? html`<details class="kart envanter-kart" id="envanter-kart"><summary class="kart-ust"><h3>Müşterideki cihazlar</h3><span class="soluk" id="env-sayi"></span></summary>
       <div class="tablo-kap" id="env-liste"><div class="yukleniyor"><span></span></div></div>
@@ -247,12 +249,34 @@ export default async function (el, [id], ctx) {
     try { await api.post(`/isler/${is.id}/birak`); bildir('İş havuza geri bırakıldı.', 'basari'); ctx.git('islerim?b=havuz'); }
     catch (err) { bildir(err.message, 'hata'); bk.disabled = false; }
   };
+  // Tamamla: önce özet (fiyatsız: yapılan iş, malzeme / işçilik, teslim alan), düğmede yalnız "Tamamla"
   const tamamla = $('#tamamla', el);
   if (tamamla) tamamla.onclick = async () => {
-    if (!is.malzemeler.length && !await onayla('Hiç malzeme eklenmedi. Yine de tamamlansın mı?', { evet: 'Tamamla' })) return;
-    tamamla.disabled = true;
-    try { await api.post(`/isler/${is.id}/tamamla`, { not: $('#tek-not', el).value }); bildir('İş tamamlandı. Teşekkürler!', 'basari'); ctx.git(ctx.yonetici ? `is/${is.id}` : 'islerim'); }
-    catch (err) { bildir(err.message, 'hata'); tamamla.disabled = false; }
+    const not = $('#tek-not', el).value.trim();
+    const ad = is.teslim ? is.teslim.teslim_alan_ad : $('#te-ad', el)?.value.trim();
+    const tel = is.teslim ? is.teslim.teslim_alan_tel : $('#te-tel', el)?.value.trim();
+    if (!ad && !tel) {
+      bildir('Kime teslim ettiğinizi yazın (ad ya da telefon).', 'hata');
+      $('#te-ad', el)?.focus(); return;
+    }
+    const ozet = html`<div class="tamam-ozet">
+      <div><small>İş</small><b>${is.baslik}</b>${is.unvan ? html`<span>${is.unvan}</span>` : ''}</div>
+      ${not ? html`<div><small>Yapılan</small><span>${not}</span></div>` : ''}
+      <div><small>Malzeme / işçilik</small>${is.malzemeler.length ? html`<ul>${is.malzemeler.map((m) => html`<li><span>${m.ad}</span><b>${miktar(m.miktar)} ${m.birim}</b></li>`)}</ul>` : html`<span class="soluk">Malzeme girilmedi</span>`}</div>
+      <div><small>Teslim alan</small><span>${[ad, tel].filter(Boolean).join(' · ')}${is.teslim?.imza_dosya ? ' · imzalı' : ''}</span></div></div>`;
+    const ok = await pencere({ baslik: 'İşi tamamla', icerik: ozet, kaydetMetin: 'Tamamla', kaydet: async () => {
+      await api.post(`/isler/${is.id}/tamamla`, { not, teslim_alan_ad: ad || null, teslim_alan_tel: tel || null });
+      return true;
+    } });
+    if (!ok) return;
+    if (ctx.yonetici) { bildir('İş tamamlandı.', 'basari'); ctx.git(`is/${is.id}`); return; }
+    // Teknisyen: tamamlandı özeti + ana ekrana dön
+    el.innerHTML = String(html`<div class="tamam-ekran">
+      <div class="tamam-ikon" aria-hidden="true">✓</div><h2>İş tamamlandı</h2><p class="soluk">Teşekkürler, kolay gelsin!</p>
+      <div class="kart"><div class="kart-govde">${ozet}</div></div>
+      <button class="btn birincil buyuk tam" id="ana-ekran">Ana ekrana dön</button></div>`);
+    window.scrollTo(0, 0);
+    $('#ana-ekran', el).onclick = () => ctx.git('islerim');
   };
   const fy = $('#form-yazdir', el);
   if (fy) fy.onclick = () => teslimFormuYazdir(ctx, is);

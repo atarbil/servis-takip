@@ -63,10 +63,10 @@ export default async function (el, [id], ctx) {
           <div class="kart-govde">${is.fotograflar.length ? html`<div class="foto-izgara">${is.fotograflar.map((f) => html`<a href="/dosya/${f.dosya_yolu}" target="_blank" title="${f.ad_soyad || ''} ${zaman(f.zaman)}"><img src="/dosya/${f.dosya_yolu}" loading="lazy" alt=""></a>`)}</div>` : html`<span class="soluk">Fotoğraf yok</span>`}</div></div>
 
         <div class="kart"><div class="kart-ust"><h3>Müşteri teslim onayı</h3></div><div class="kart-govde">
-          ${is.teslim ? html`<dl class="bilgi-liste"><dt>Teslim alan</dt><dd><b>${is.teslim.teslim_alan_ad}</b> ${is.teslim.teslim_alan_tel || ''}</dd>
+          ${is.teslim ? html`<dl class="bilgi-liste"><dt>Teslim alan</dt><dd><b>${is.teslim.teslim_alan_ad || ""}</b> ${is.teslim.teslim_alan_tel || ''}</dd>
               <dt>Zaman</dt><dd>${zaman(is.teslim.zaman)}</dd><dt>Teknisyen</dt><dd>${is.teslim.teknisyen || ''}</dd>
               ${is.teslim.musteri_notu ? html`<dt>Müşteri notu</dt><dd>${is.teslim.musteri_notu}</dd>` : ''}</dl>
-              <img class="imza-gor" style="margin-top:.6rem" src="/dosya/${is.teslim.imza_dosya}" alt="İmza">`
+              ${is.teslim.imza_dosya ? html`<img class="imza-gor" style="margin-top:.6rem" src="/dosya/${is.teslim.imza_dosya}" alt="İmza">` : html`<div class="soluk" style="margin-top:.4rem">İmza alınmadı</div>`}`
             : html`<span class="soluk">Henüz alınmadı. Teknisyen saha ekranından müşteriye imza attırır.</span>`}</div></div>
       </div>
 

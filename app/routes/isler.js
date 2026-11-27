@@ -250,10 +250,29 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     return fonk('is_iptal', (b) => metin(b.neden))(req, res);
   });
   r.post('/isler/:id/baslat', G, async (req, res) => { await isErisim(req, req.params.id, true); return fonk('is_baslat')(req, res); });
-  r.post('/isler/:id/tamamla', G, async (req, res) => {
-    await isErisim(req, req.params.id, true);
-    const sonuc = await fonk('is_tamamla', (b) => metin(b.not))(req, res);
-    telegram?.bildirArkada('is_tamamlandi', () => telegram.isTamamlandiMetni(req.params.id));
+  // Sahadaki işi tamamla: teslim bilgisi (ad ya da telefon; imza isteğe bağlı) yoksa bu istekle yazılır.
+  // İş kapanınca carisi varsa taslak satış fişi arka planda açılır (teknisyen fişi görmez; ofis fiyatlayıp onaylar).
+  r.post('/isler/:id/tamamla', G, async (req) => {
+    const is = await isErisim(req, req.params.id, true);
+    const b = req.body || {};
+    const kur = await kurGetir().catch(() => null);
+    const sonuc = await db.islem(req.kullanici.id, async (q) => {
+      if (!(await q.bir('SELECT 1 AS v FROM teslim_onaylari WHERE is_id = $1', [is.id]))) {
+        const ad = metin(b.teslim_alan_ad); const tel = metin(b.teslim_alan_tel);
+        if (!ad && !tel) throw web.hata(400, 'Kime teslim edildiğini / kime bilgi verildiğini yazın (ad ya da telefon).');
+        await q(`INSERT INTO teslim_onaylari (is_id, teslim_alan_ad, teslim_alan_tel, musteri_notu, teknisyen_id) VALUES ($1, $2, $3, $4, $5)`,
+          [is.id, ad, tel, metin(b.not), req.kullanici.id]);
+      }
+      await q('SELECT is_tamamla($1, $2)', [is.id, metin(b.not)]);
+      const cari = (await q.bir('SELECT cari_id FROM isler WHERE id = $1', [is.id]))?.cari_id;
+      let fisId = null;
+      if (cari) {
+        fisId = (await q.bir('SELECT satis_fisi_isten_olustur($1) AS id', [is.id])).id;
+        await q('SELECT fis_doviz_uygula($1, $2, $3)', [fisId, kur?.usd?.satis || null, kur?.eur?.satis || null]);
+      }
+      return { tamam: true, fis_id: fisId };
+    });
+    telegram?.bildirArkada('is_tamamlandi', async () => `${await telegram.isTamamlandiMetni(req.params.id)}${sonuc.fis_id ? '\n🧾 Satış fişi taslağı hazır; fiyatları girip onaylayın.' : ''}`);
     return sonuc;
   });
 
@@ -269,6 +288,11 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
         const b = await q.bir('SELECT barkod_bul($1) AS urun_id', [barkod]);
         if (!b?.urun_id) return q.bir('SELECT is_malzeme_ekle_barkod($1, $2, $3) AS id', [is.id, barkod, miktar]); // tanımsız barkod hatası
         urunId = Number(b.urun_id);
+      }
+      // Sabit "Servis Kurulum İşçiliği": hizmet kartı yoksa açılır (stok tutulmaz)
+      if (!urunId && req.body.sabit_iscilik) {
+        const h = await q.bir("SELECT id FROM urunler WHERE aktif AND tur = 'hizmet' AND arama_metni(ad) = arama_metni($1) ORDER BY id LIMIT 1", [SABIT_ISCILIK]);
+        urunId = Number(h ? h.id : (await q.bir("INSERT INTO urunler (ad, birim, tur, kdv_orani) VALUES ($1, 'adet', 'hizmet', 20) RETURNING id", [SABIT_ISCILIK])).id);
       }
       if (!urunId) zorunlu(req.body, { urun_id: 'Ürün' });
       const urun = await q.bir('SELECT ad, birim FROM urunler WHERE id = $1', [urunId]);
@@ -288,6 +312,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     });
   });
 
+  const SABIT_ISCILIK = 'Servis Kurulum İşçiliği';
   // Malzeme miktarı (− / + düğmeleri, geri al)
   r.put('/malzeme/:id', G, async (req) => {
     const m = (await db.query('SELECT is_id FROM is_malzemeleri WHERE id = $1', [req.params.id])).rows[0];
@@ -347,8 +372,8 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   r.post('/isler/:id/teslim', G, async (req) => {
     const is = await isErisim(req, req.params.id, true);
     if (is.durum !== 'sahada') throw web.hata(400, 'Teslim onayı için önce işi başlatın.');
-    zorunlu(req.body, { teslim_alan_ad: 'Teslim alan kişinin adı', imza: 'Müşteri imzası' });
-    const yol = gorselKaydet(AYAR.dosyaKlasor, req.body.imza, 'imzalar');
+    if (!metin(req.body.teslim_alan_ad) && !metin(req.body.teslim_alan_tel)) throw web.hata(400, 'Teslim alan kişinin adını ya da telefonunu yazın.');
+    const yol = req.body.imza ? gorselKaydet(AYAR.dosyaKlasor, req.body.imza, 'imzalar') : null;
     await db.islem(req.kullanici.id, async (q) => {
       const var_ = await q.bir('SELECT 1 FROM teslim_onaylari WHERE is_id = $1', [is.id]);
       if (var_) throw web.hata(400, 'Bu iş için teslim onayı zaten alınmış.');
@@ -372,7 +397,9 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     const satirlar = doluSatirlar(b.satirlar);
     const malzemeVar = (await db.query('SELECT 1 FROM is_malzemeleri WHERE is_id = $1 LIMIT 1', [is.id])).rows.length > 0;
     if (!satirlar.length && !malzemeVar) throw web.hata(400, 'En az bir hizmet veya malzeme satırı girin.');
-    const teslimAlan = metin(b.teslim_alan_ad);
+    const teslimAlan = metin(b.teslim_alan_ad); const teslimTel = metin(b.teslim_alan_tel);
+    const teslimVar = (await db.query('SELECT 1 FROM teslim_onaylari WHERE is_id = $1', [is.id])).rows.length > 0;
+    if (!teslimVar && !teslimAlan && !teslimTel) throw web.hata(400, 'Kime teslim edildiğini / kime bilgi verildiğini yazın (ad ya da telefon).');
     if (b.imza && !teslimAlan) throw web.hata(400, 'İmza için teslim alan kişinin adını yazın.');
     const imzaYol = b.imza ? gorselKaydet(AYAR.dosyaKlasor, b.imza, 'imzalar') : null;
     const kur = await kurGetir().catch(() => null);
@@ -386,9 +413,9 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
                  baslama_zamani = coalesce(baslama_zamani, now()), bitis_zamani = now(),
                  teknisyen_notu = coalesce(teknisyen_notu, $2) WHERE id = $1`, [is.id, metin(b.not)]);
       await q("SELECT set_config('app.gecmis_notu', '', true)");
-      if (imzaYol && !(await q.bir('SELECT 1 FROM teslim_onaylari WHERE is_id = $1', [is.id]))) {
-        await q(`INSERT INTO teslim_onaylari (is_id, teslim_alan_ad, imza_dosya, musteri_notu, teknisyen_id) VALUES ($1, $2, $3, $4, $5)`,
-          [is.id, teslimAlan, imzaYol, metin(b.not), req.kullanici.id]);
+      if (!teslimVar) {
+        await q(`INSERT INTO teslim_onaylari (is_id, teslim_alan_ad, teslim_alan_tel, imza_dosya, musteri_notu, teknisyen_id) VALUES ($1, $2, $3, $4, $5, $6)`,
+          [is.id, teslimAlan, teslimTel, imzaYol, metin(b.not), req.kullanici.id]);
       }
       const f = await q.bir('SELECT satis_fisi_isten_olustur($1) AS id', [is.id]);
       await fisSatirlariEkle(q, f.id, satirlar);

@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { html, $, bildir, pencere, sor, onayla, sureMetni, telLink, ONCELIK } from '../ui.js';
+import { html, $, bildir, pencere, sor, onayla, sureMetni, telLink, ONCELIK, miktar } from '../ui.js';
 import { planlaPenceresi, yeniIsPenceresi, cariSecici, cariYeniYakala, urunSecici } from '../bilesen.js';
 import { bosSatir, satirEditoruHtml, satirEditoruBagla, satirlariHazirla } from '../satirEditoru.js';
 
@@ -148,30 +148,42 @@ export async function teslimEtPenceresi(ctx, isOzet) {
   let cari = is.cari_id ? { id: is.cari_id, unvan: is.cari_unvan || is.unvan } : null;
   let imza = null;
   const satirlar = [bosSatir('urun')];
-  const sahaMalzeme = (is.malzemeler || []).length;
+  const malzemeler = is.malzemeler || [];
+  // Malzeme yazılmışsa kalem tablosu açılmaz; yalnız özet (ek kalem gerekirse "+ Ek kalem" ile açılır)
+  const ozetMod = malzemeler.length > 0;
+  const t = is.teslim;
   return pencere({
     baslik: `Teslim et / Tamamla · #${is.id}`,
-    sinif: 'hizli-pencere ben-yaptim',
+    sinif: `hizli-pencere ben-yaptim ${ozetMod ? 'te-ozet-mod' : ''}`,
     icerik: html`<div class="hizli-kutu hi-izgara">
       <div class="hi-sol">
         <div class="hi-is-ozet"><b>${is.baslik}</b>${is.aciklama && is.aciklama !== is.baslik ? html`<small>${is.aciklama}</small>` : ''}</div>
         ${cariAlani(cari ? '' : '(işe bağlı cari yok, seçin)')}
-        ${sahaMalzeme ? html`<div class="bilgi-kutu" style="margin:0">Sahada bu işe eklenmiş <b>${sahaMalzeme}</b> kalem malzeme de fişe gelecek.</div>` : ''}
-        <label class="alan" style="margin:0"><span>Teslim alan <small class="soluk">(isteğe bağlı)</small></span>
-          <input name="teslim_alan_ad" value="${is.iletisim_ad || ''}" placeholder="Ad soyad"></label>
-        <div class="hi-imza"><button type="button" class="btn ikincil" id="te-imza">✍ İmza al</button><span class="soluk" id="te-imza-durum">İmza alınmadı (zorunlu değil)</span></div>
+        ${ozetMod ? html`<div class="te-malzeme"><small>Girilen malzeme / işçilik</small><ul>${malzemeler.map((m) => html`<li><span>${m.ad}</span><b>${miktar(m.miktar)} ${m.birim}</b></li>`)}</ul></div>` : ''}
+        ${t ? html`<div class="basari-kutu" style="margin:0">✓ Onay alındı: ${[t.teslim_alan_ad, t.teslim_alan_tel].filter(Boolean).join(' · ')}${t.imza_dosya ? ' (imzalı)' : ''}</div>`
+          : html`<div class="satir2" style="margin:0">
+            <label class="alan" style="margin:0"><span>Kime teslim edildi / bilgi verildi</span><input name="teslim_alan_ad" value="${is.iletisim_ad || ''}" placeholder="Ad soyad"></label>
+            <label class="alan" style="margin:0"><span>Telefon</span><input name="teslim_alan_tel" type="tel" value="${is.iletisim_tel || ''}" placeholder="05xx…"></label></div>
+          <small class="soluk" style="margin-top:-.3rem">Ad ya da telefondan en az biri gerekli.</small>
+          <div class="hi-imza"><button type="button" class="btn ikincil" id="te-imza">✍ İmza al</button><span class="soluk" id="te-imza-durum">İmza isteğe bağlı</span></div>`}
         <label class="alan" style="margin:0"><span>Not <small class="soluk">(isteğe bağlı)</small></span><textarea name="not" rows="2"></textarea></label>
+        ${ozetMod ? html`<button type="button" class="btn-metin" id="te-ek-ac">+ Ek kalem (işçilik / hizmet / malzeme)</button>` : ''}
       </div>
-      ${satirEditoruHtml({ baslik: 'Teslim edilen malzeme / verilen hizmet', not: 'Kaydedince iş "tamamlandı" olur ve cariye taslak satış fişi açılır. Fiyatları yazıp Onayla deyince müşteri borçlanır, malzeme stoktan düşer.' })}
+      <div class="te-ek" ${ozetMod ? 'hidden' : ''}>
+      ${satirEditoruHtml({ baslik: ozetMod ? 'Ek kalem' : 'Teslim edilen malzeme / verilen hizmet', not: 'Kaydedince iş "tamamlandı" olur ve cariye taslak satış fişi açılır. Fiyatları yazıp Onayla deyince müşteri borçlanır, malzeme stoktan düşer.' })}
+      </div>
     </div>`,
-    kaydetMetin: 'Tamamla ve fişi aç',
+    kaydetMetin: ozetMod ? 'Tamamla ve satış fişine geç' : 'Tamamla ve fişi aç',
     acildi: (d) => {
       cariAlaniBagla(d, cari, (c) => { cari = c; });
       satirEditoruBagla(d, satirlar);
-      if (cari) $('#hi-satirlar [data-k=aciklama]', d)?.focus();
-      $('#te-imza', d).onclick = async () => {
+      if (cari && !ozetMod) $('#hi-satirlar [data-k=aciklama]', d)?.focus();
+      const ek = $('#te-ek-ac', d);
+      if (ek) ek.onclick = () => { $('.te-ek', d).hidden = false; ek.hidden = true; d.classList.remove('te-ozet-mod'); $('#hi-satirlar [data-k=aciklama]', d)?.focus(); };
+      const ib = $('#te-imza', d);
+      if (ib) ib.onclick = async () => {
         const { imzaAl } = await import('../imza.js');
-        const s = await imzaAl({ baslik: 'Teslim onayı', ad: $('[name=teslim_alan_ad]', d).value || is.iletisim_ad || '', tel: is.iletisim_tel || '', metin: ctx.ayarlar.teslim_metni });
+        const s = await imzaAl({ baslik: 'Teslim onayı', ad: $('[name=teslim_alan_ad]', d).value || is.iletisim_ad || '', tel: $('[name=teslim_alan_tel]', d).value || is.iletisim_tel || '', metin: ctx.ayarlar.teslim_metni });
         if (!s) return;
         imza = s.imza;
         if (s.teslim_alan_ad) $('[name=teslim_alan_ad]', d).value = s.teslim_alan_ad;
@@ -181,10 +193,11 @@ export async function teslimEtPenceresi(ctx, isOzet) {
     kaydet: async (v) => {
       if (!cari) throw new Error('Cari seçin.');
       const dolu = satirlariHazirla(satirlar);
-      if (!dolu.length && !sahaMalzeme) throw new Error('En az bir malzeme veya hizmet girin.');
+      if (!dolu.length && !malzemeler.length) throw new Error('En az bir malzeme veya hizmet girin.');
+      if (!t && !String(v.teslim_alan_ad || '').trim() && !String(v.teslim_alan_tel || '').trim()) throw new Error('Kime teslim edildiğini / kime bilgi verildiğini yazın (ad ya da telefon).');
       if (imza && !String(v.teslim_alan_ad || '').trim()) throw new Error('İmza için teslim alan kişinin adını yazın.');
-      const r = await api.post(`/isler/${is.id}/teslim-et`, { cari_id: cari.id, satirlar: dolu, teslim_alan_ad: v.teslim_alan_ad, imza, not: v.not });
-      bildir(`İş #${is.id} tamamlandı, fiş açıldı. Fiyatları kontrol edip onaylayın.`, 'basari', 5000);
+      const r = await api.post(`/isler/${is.id}/teslim-et`, { cari_id: cari.id, satirlar: dolu, teslim_alan_ad: v.teslim_alan_ad, teslim_alan_tel: v.teslim_alan_tel, imza, not: v.not });
+      bildir(`İş #${is.id} tamamlandı, satış fişi açıldı. Fiyatları kontrol edip onaylayın.`, 'basari', 5000);
       return r;
     },
   }).then((r) => { if (r) { ctx.sayacYenile?.(); ctx.git(`fis/${r.fis_id}`); } return r; });

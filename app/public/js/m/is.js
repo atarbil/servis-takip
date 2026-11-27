@@ -90,10 +90,10 @@ export default async function (el, [id], ctx) {
     </section>
 
     ${is.teslim ? html`<section class="mk-blok"><h3>Müşteri teslim onayı</h3>
-      <dl class="mk-dl"><dt>Teslim alan</dt><dd><b>${is.teslim.teslim_alan_ad}</b> ${is.teslim.teslim_alan_tel || ''}</dd>
+      <dl class="mk-dl"><dt>Teslim alan</dt><dd><b>${is.teslim.teslim_alan_ad || ''}</b> ${is.teslim.teslim_alan_tel || ''}</dd>
         <dt>Zaman</dt><dd>${zaman(is.teslim.zaman)}</dd>${is.teslim.teknisyen ? html`<dt>Teknisyen</dt><dd>${is.teslim.teknisyen}</dd>` : ''}
         ${is.teslim.musteri_notu ? html`<dt>Not</dt><dd>${is.teslim.musteri_notu}</dd>` : ''}</dl>
-      <img class="imza-gor" src="/dosya/${is.teslim.imza_dosya}" alt="İmza"></section>` : ''}
+      ${is.teslim.imza_dosya ? html`<img class="imza-gor" src="/dosya/${is.teslim.imza_dosya}" alt="İmza">` : html`<p class="soluk">İmza alınmadı</p>`}</section>` : ''}
 
     <section class="mk-blok kar-bilgi"><h3>Maliyet ve kâr</h3>
       <dl class="mk-dl sayilar">

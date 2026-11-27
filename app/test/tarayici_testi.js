@@ -220,8 +220,10 @@ async function sec(p, inputSec, metin, secim) {
   const [secici] = await Promise.all([t.waitForEvent('filechooser'), t.click('[data-akis=foto]')]);
   await secici.setFiles({ name: 'foto.png', mimeType: 'image/png', buffer: require('node:fs').readFileSync(require('node:path').join(__dirname, '../public/ikon/ikon-512.png')) });
   await t.waitForSelector('.foto-izgara img');
-  // İmzasız tamamlanamaz
-  const tamamlaKapali = await t.locator('#tamamla').isDisabled();
+  // Teslim bilgisi (ad / telefon) boşken tamamlanamaz; imza isteğe bağlı
+  await t.fill('#te-ad', ''); await t.fill('#te-tel', '');
+  await t.click('#tamamla'); await t.waitForTimeout(300);
+  const tamamlaKapali = !(await t.$('dialog.pencere[open]'));
   // İmza
   await t.click('[data-akis=imza]');
   await t.waitForSelector('.imza-ekran canvas');
@@ -237,8 +239,15 @@ async function sec(p, inputSec, metin, secim) {
   await t.waitForSelector('.imza-gor');
   await t.fill('#tek-not', '3 kamera değişti, kayıt cihazı ayarlandı');
   await t.click('#tamamla');
+  await t.waitForSelector(`${pen} .tamam-ozet`);
+  if (!/Ahmet Yılmaz/.test(await t.textContent(`${pen} .tamam-ozet`)) || /₺/.test(await t.textContent(`${pen} .tamam-ozet`))) throw new Error('Tamamla özeti hatalı (teslim alan yok ya da fiyat görünüyor)');
+  if ((await t.textContent(`${pen} button[type=submit]`)).trim() !== 'Tamamla') throw new Error('Tamamla düğmesi yazısı');
+  await penKaydet(t);
+  await t.waitForSelector('#ana-ekran');
+  await foto(t, '22b_is_tamamlandi');
+  await t.click('#ana-ekran');
   await t.waitForSelector('.is-kart.bitti');
-  ok(`Fotoğraf + müşteri imzası alındı, iş tamamlandı (imzasızken buton kapalı: ${tamamlaKapali})`);
+  ok(`Fotoğraf + müşteri imzası alındı, özet → Tamamla → "Ana ekrana dön" (teslim bilgisi boşken engellendi: ${tamamlaKapali})`);
   await t.goto(T + `/#/saha/${isId}`);
   await t.waitForSelector('#form-yazdir');
   await foto(t, '23_saha_tamamlandi', true);
@@ -246,9 +255,10 @@ async function sec(p, inputSec, metin, secim) {
   // 9) Yönetici: fiş (sayfa aynı adreste açık kaldığı için yeniden yükle)
   await y.goto(T + `/#/is/${isId}`);
   await y.reload();
-  await y.waitForSelector('[data-a=fis]');
+  // Teknisyen tamamlayınca taslak fiş arka planda açılmış olur (34. derleme)
+  await y.waitForSelector('a.btn:has-text("Taslak fişe git")');
   await foto(y, '13_is_detay', true);
-  await y.click('[data-a=fis]');
+  await y.click('a.btn:has-text("Taslak fişe git")');
   await y.waitForURL(/#\/fis\/\d+/);
   await y.waitForSelector('.uyari-kutu >> text=maliyeti girilmemiş');
   // Ürün onayı

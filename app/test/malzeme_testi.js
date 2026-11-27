@@ -104,6 +104,26 @@ const istemci = () => {
   kontrol('Geri al → satır geri geldi', (await p.textContent('.mz-satir .mz-sayi')).startsWith('1'));
   await p.click('.mz-satir [data-mz-azalt]'); await p.waitForTimeout(600);
   if (process.env.EKRAN) await p.screenshot({ path: '/tmp/mz_is.png', fullPage: true });
+  // Sabit "Servis Kurulum İşçiliği" çipi: hizmet kartı açılır / eklenir, stok tutulmaz
+  await p.waitForSelector('[data-mz-sabit]');
+  await p.click('[data-mz-sabit]'); await p.waitForSelector('.mz-satir:has-text("Servis Kurulum İşçiliği")');
+  const isc = (await y('GET', `/urunler?q=${encodeURIComponent('Servis Kurulum İşçiliği')}`)).veri.find((u) => u.ad === 'Servis Kurulum İşçiliği');
+  kontrol('Sabit işçilik çipi: hizmet kartı açıldı ve eklendi', isc && isc.tur === 'hizmet');
+  await p.click('[data-mz-sabit]'); await p.waitForTimeout(500);
+  kontrol('İkinci dokunuş aynı kartı kullanır (tek satır × 2)', (await y('GET', '/urunler?q=servis kurulum')).veri.filter((u) => u.ad === 'Servis Kurulum İşçiliği').length === 1
+    && (await p.textContent('.mz-satir:has-text("Servis Kurulum İşçiliği") .mz-sayi')).startsWith('2'));
+  // Ofis: Teslim et / Tamamla → özet (kalem tablosu kapalı), teslim bilgisi zorunlu, fişe geçer
+  await p.click('[data-a="teslimet"]'); await p.waitForSelector('dialog.pencere[open] .te-malzeme');
+  kontrol('Teslim et: malzeme özeti var, kalem tablosu kapalı', await p.$eval('dialog.pencere[open] .te-ek', (e) => e.hidden));
+  kontrol('Düğme: "Tamamla ve satış fişine geç"', (await p.textContent('dialog.pencere[open] button[type=submit]')).includes('satış fişine geç'));
+  await p.fill('dialog.pencere[open] [name=teslim_alan_ad]', ''); await p.fill('dialog.pencere[open] [name=teslim_alan_tel]', '');
+  await p.click('dialog.pencere[open] button[type=submit]'); await p.waitForTimeout(400);
+  kontrol('Teslim bilgisi boşken kapanmaz', /Kime teslim/.test(await p.textContent('dialog.pencere[open]')));
+  await p.fill('dialog.pencere[open] [name=teslim_alan_ad]', 'Ayşe Hanım');
+  await p.click('dialog.pencere[open] button[type=submit]');
+  await p.waitForSelector('.mf-ust');
+  const fisMetin = await p.textContent('.mf-kalemler');
+  kontrol('Satış fişine geçildi; işçilik fişte', fisMetin.includes('Servis Kurulum İşçiliği'));
   kontrol('Sayfa hatası yok', !hatalar.length, hatalar);
   await b.close();
   console.log(hata ? `\n${hata} KONTROL BAŞARISIZ` : '\nTÜM KONTROLLER BAŞARILI');
