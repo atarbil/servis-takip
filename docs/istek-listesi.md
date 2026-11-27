@@ -14,7 +14,14 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 ### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
 Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
-### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+### 3. Sahadaki işi kapatınca doğrudan satış fişi (28.11.2026)
+Kullanıcı: "Sahada durumundaki işi kapatmak için Teslim et / Tamamla'ya basınca stok listesi açılıyor. İş havuza cariyle eklendi, müsait olan aldı, kullandığı malzemeleri yazdı, müşteri onayını isteğe bağlı aldı; bundan sonra iş kapansın, satış fişine dönsün."
+- **Teslim et / Tamamla (ofis):** işe malzeme girilmişse malzeme / hizmet satır tablosu açılmaz; pencerede yalnız özet: cari, girilen malzemeler listesi, (alınmışsa) müşteri onayı, isteğe bağlı not. Tek düğme: **"Tamamla ve satış fişine geç"** → iş kapanır, malzemelerle taslak fiş açılır, fişe gidilir. Ek hizmet / işçilik gerekirse "+ Ek kalem" ile açılır (kapalı gelir). Malzeme girilmemişse bugünkü gibi satır girilir.
+- Müşteri onayı (imza) teknisyen ekranında alındıysa pencerede "✓ Onay alındı" görünür, tekrar istenmez.
+- **Teknisyen "İşi tamamla" dediğinde** (malzeme yazdı, onay isteğe bağlı): iş kapanır ve **taslak satış fişi kendiliğinden açılır** (fiyatları ofis yazıp onaylar); ofise "İş #… tamamlandı, fiş taslağı hazır" bildirimi. (Varsayım)
+- Telefonda iş detayındaki "Teslim et / Tamamla" da aynı sade akış.
+
+### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
 
 ## İsteğe bağlı fikirler
