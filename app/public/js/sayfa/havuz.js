@@ -162,7 +162,7 @@ export async function teslimEtPenceresi(ctx, isOzet) {
         ${ozetMod ? html`<div class="te-malzeme"><small>Girilen malzeme / işçilik</small><ul>${malzemeler.map((m) => html`<li><span>${m.ad}</span><b>${miktar(m.miktar)} ${m.birim}</b></li>`)}</ul></div>` : ''}
         ${t ? html`<div class="basari-kutu" style="margin:0">✓ Onay alındı: ${[t.teslim_alan_ad, t.teslim_alan_tel].filter(Boolean).join(' · ')}${t.imza_dosya ? ' (imzalı)' : ''}</div>`
           : html`<div class="satir2" style="margin:0">
-            <label class="alan" style="margin:0"><span>Kime teslim edildi / bilgi verildi</span><input name="teslim_alan_ad" value="${is.iletisim_ad || ''}" placeholder="Ad soyad"></label>
+            <label class="alan" style="margin:0"><span>Malzeme teslim / İş bilgisi verilen kişi</span><input name="teslim_alan_ad" value="${is.iletisim_ad || ''}" placeholder="Ad soyad"></label>
             <label class="alan" style="margin:0"><span>Telefon</span><input name="teslim_alan_tel" type="tel" value="${is.iletisim_tel || ''}" placeholder="05xx…"></label></div>
           <small class="soluk" style="margin-top:-.3rem">Ad ya da telefondan en az biri gerekli.</small>
           <div class="hi-imza"><button type="button" class="btn ikincil" id="te-imza">✍ İmza al</button><span class="soluk" id="te-imza-durum">İmza isteğe bağlı</span></div>`}

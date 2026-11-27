@@ -16,12 +16,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 ### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
 Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
-### 3. Satış fişinde teslim alan / bilgi verilen kişi (28.11.2026)
-Kullanıcı: "Satış fişinde 3. satırda Malzeme teslim - İş bilgisi verilen kişi."
-- İşten açılan satış fişinde, cari satırının altında (3. satır) işin teslim bilgisi: **"Malzeme teslim / iş bilgisi verilen: Ayşe Hanım · 0532 …"** (imza alındıysa "imzalı").
-- Telefon ve bilgisayar fiş ekranında; yazdırılan fişte de aynı satır (soruldu).
-
-### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
 
 ## İsteğe bağlı fikirler
@@ -36,6 +31,9 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 28.11.2026 — 34.2: "Malzeme teslim / İş bilgisi verilen kişi"
+- Saha ekranındaki 3. adımın başlığı "Kime teslim edildi?" yerine **"Malzeme teslim / İş bilgisi verilen kişi"**; ofisteki Teslim et / Tamamla penceresinde de aynı etiket. (Önceki "satış fişinde 3. satır" isteği bu başlık değişikliği olarak netleşti.)
 
 ### 28.11.2026 — 34.1: Malzemede yalnız iki sabit düğme: "Servis" ve "Kurulum İşçiliği"
 - "Servis Kurulum İşçiliği" tek çipi ikiye ayrıldı: **+ Servis** ve **+ Kurulum İşçiliği** (aynı adlı kart varsa o kullanılır, yoksa hizmet kartı açılır; stok tutulmaz).
