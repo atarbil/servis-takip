@@ -116,6 +116,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   r.post('/isler', Y, async (req) => {
     const b = req.body;
     zorunlu(b, { baslik: 'İş başlığı' });
+    if (!Number(b.cari_id)) throw web.hata(400, 'Cari seçin (yoksa "Yeni cari" ile açın).');
     if (b.plan_baslangic && !b.ekip_id) throw web.hata(400, 'Takvime eklemek için ekip seçin.');
     return db.islem(req.kullanici.id, async (q) => {
       const { id } = await q.bir(`SELECT is_olustur($1, $2, $3, $4, $5, $6, $7::smallint, $8, $9, $10, $11) AS id`, [
@@ -134,7 +135,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     return db.islem(req.kullanici.id, async (q) => {
       const sonuc = await hizliIsEkle(db, req.kullanici.id, mesaj, {
         oncelik: Number(req.body.oncelik) || undefined, planBaslangic: req.body.plan_baslangic || null, ekipId: req.body.ekip_id || null,
-        cariId: Number(req.body.cari_id) || null, q,
+        cariId: Number(req.body.cari_id) || null, cariZorunlu: true, q,
       });
       for (const m of malzemeler) await q('SELECT is_malzeme_ekle($1, $2, $3, false, false)', [sonuc.id, Number(m.urun_id), pozitif(m.miktar ?? 1, 'Miktar')]);
       return { ...sonuc, malzeme: malzemeler.length };
@@ -149,7 +150,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     const ben = !!req.body.ben;
     if (ben && !req.kullanici.ekip_id) throw web.hata(400, 'Hesabınız bir ekibe bağlı değil; iş havuza eklensin.');
     const sonuc = await hizliIsEkle(db, req.kullanici.id, mesaj, {
-      oncelik: Number(req.body.oncelik) || undefined, kaynak: 'teknisyen',
+      oncelik: Number(req.body.oncelik) || undefined, kaynak: 'teknisyen', cariId: Number(req.body.cari_id) || null, cariZorunlu: true,
       planBaslangic: ben ? new Date().toISOString() : null, ekipId: ben ? req.kullanici.ekip_id : null,
     });
     telegram?.bildirArkada('yeni_is', async () => `🆕 <b>${req.kullanici.ad_soyad}</b> iş ekledi${ben ? ' (kendisi yapıyor)' : ' — havuzda'}:\n${mesaj}${sonuc.cari ? `\nMüşteri: ${sonuc.cari.unvan}` : ''}`);
@@ -168,7 +169,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     if (!satirlar.length) throw web.hata(400, 'En az bir hizmet veya malzeme satırı girin.');
     const kur = await kurGetir().catch(() => null);
     return db.islem(req.kullanici.id, async (q) => {
-      const is = await hizliIsEkle(db, req.kullanici.id, mesaj, { oncelik: Number(b.oncelik) || undefined, cariId, q });
+      const is = await hizliIsEkle(db, req.kullanici.id, mesaj, { oncelik: Number(b.oncelik) || undefined, cariId, cariZorunlu: true, q });
       await q("SELECT set_config('app.gecmis_notu', 'Ofiste tamamlandı (hizmet/malzeme girildi)', true)");
       await q(`UPDATE isler SET durum = 'tamamlandi', plan_baslangic = coalesce(plan_baslangic, now() - interval '1 minute'), plan_bitis = NULL,
                  baslama_zamani = coalesce(baslama_zamani, now()), bitis_zamani = now(),
@@ -186,6 +187,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
   r.put('/isler/:id', Y, async (req) => {
     const alanlar = sec(req.body, ['baslik', 'aciklama', 'adres', 'iletisim_ad', 'iletisim_tel', 'oncelik', 'cari_id', 'ham_mesaj', 'plan_bitis', 'teknisyen_notu', 'envanter_id']);
     if ('baslik' in alanlar && !metin(alanlar.baslik)) throw web.hata(400, 'İş başlığı boş olamaz.');
+    if ('cari_id' in alanlar && !Number(alanlar.cari_id)) throw web.hata(400, 'İşin carisi kaldırılamaz; başka bir cari seçin.');
     if (!Object.keys(alanlar).length) return { tamam: true };
     await db.islem(req.kullanici.id, async (q) => {
       const { ifade, degerler } = setIfadesi(alanlar, 2);

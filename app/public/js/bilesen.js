@@ -366,7 +366,7 @@ export async function yeniIsPenceresi(ctx, { baslangic, ekipId, havuza = false, 
     icerik: html`
       <label class="alan"><span>Ne yapılacak? *</span><input name="baslik" required placeholder="Örn: 4 kamera arızalı, kayıt cihazı kontrol"></label>
       <div class="satir2">
-        <label class="alan"><span>Cari (müşteri)</span><input id="is-cari" value="${cari?.unvan || ''}" placeholder="Ara: ad, telefon…"></label>
+        <label class="alan"><span>Cari (müşteri) *</span><input id="is-cari" value="${cari?.unvan || ''}" placeholder="Ara: ad, telefon…"></label>
         <label class="alan"><span>Öncelik</span><select name="oncelik"><option value="2">Normal</option><option value="1">Acil</option><option value="3">Düşük</option></select></label>
         <label class="alan"><span>İletişim kişisi</span><input name="iletisim_ad"></label>
         <label class="alan"><span>Telefon</span><input name="iletisim_tel" type="tel" value="${cari?.telefon || ''}"></label>
@@ -390,7 +390,8 @@ export async function yeniIsPenceresi(ctx, { baslangic, ekipId, havuza = false, 
     kaydetMetin: 'İşi oluştur',
     kaydet: async (v) => {
       if (!v.baslik) throw new Error('İş başlığı gerekli.');
-      const govde = { baslik: v.baslik, cari_id: secilenCari?.id || null, oncelik: Number(v.oncelik), iletisim_ad: v.iletisim_ad, iletisim_tel: v.iletisim_tel, adres: v.adres, aciklama: v.aciklama };
+      if (!secilenCari) throw new Error('Cari seçin (yoksa listeden "Yeni cari").');
+      const govde = { baslik: v.baslik, cari_id: secilenCari.id, oncelik: Number(v.oncelik), iletisim_ad: v.iletisim_ad, iletisim_tel: v.iletisim_tel, adres: v.adres, aciklama: v.aciklama };
       if (v.takvime) {
         const b = new Date(v.baslangic);
         Object.assign(govde, { ekip_id: Number(v.ekip_id), plan_baslangic: b.toISOString(), plan_bitis: new Date(b.getTime() + Number(v.sure) * 60000).toISOString() });

@@ -403,8 +403,14 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
     kontrol('Kapanmış iş tekrar teslim edilemez', (await y('POST', `/isler/${tIs}/teslim-et`, { satirlar: [{ urun_id: kurulumK.id }] })).durum === 400);
 
     // Carisiz havuz işi: pencerede cari seçilir; hizmet + malzeme + imza
-    r = await y('POST', '/isler/hizli', { mesaj: 'Ofis ağ kurulumu (cari sonra)' });
-    const t2 = r.veri.id;
+    // Programdan carisiz iş açılamaz (33. derleme); Telegram'dan gelmiş carisiz iş veritabanından oluşturulur
+    kontrol('Hızlı iş: cari yoksa reddedilir', (await y('POST', '/isler/hizli', { mesaj: 'Ofis ağ kurulumu (cari sonra)' })).durum === 400);
+    kontrol('İş formu: cari yoksa reddedilir', (await y('POST', '/isler', { baslik: 'Carisiz form' })).durum === 400);
+    r = await y('POST', '/isler/hizli', { mesaj: `${musteri.unvan} yazıcı toner istedi` });
+    kontrol('Hızlı iş: mesajdaki ünvandan cari bulunur', r.durum === 200 && r.veri.cari?.id === musteri.id, r.veri);
+    kontrol('İşin carisi kaldırılamaz', (await y('PUT', `/isler/${r.veri.id}`, { cari_id: null })).durum === 400);
+    const t2 = Number(require('child_process').execFileSync('psql', ['-h', process.env.PGHOST || '/tmp', '-p', process.env.PGPORT || '5544', '-U', process.env.PGUSER || 'postgres', '-d', process.env.PGDATABASE || 'servis', '-Atc',
+      "SELECT is_olustur('Ofis ağ kurulumu (cari sonra)')"]).toString().trim());
     kontrol('Carisiz iş cari seçilmeden kapanmaz', (await y('POST', `/isler/${t2}/teslim-et`, { satirlar: [{ urun_id: kurulumK.id }] })).veri?.hata?.includes('Cari') ?? true);
     kontrol('İmza için ad gerekir', (await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, imza: PNG, satirlar: [{ urun_id: kurulumK.id }] })).durum === 400);
     r = await y('POST', `/isler/${t2}/teslim-et`, { cari_id: musteri.id, teslim_alan_ad: 'Mehmet Bey', imza: PNG,

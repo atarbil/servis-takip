@@ -14,15 +14,7 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 ### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
 Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
-### 3. Cariye bağlanmadan iş eklenmesin (27.11.2026)
-Kullanıcı: "Cariye bağlamadan iş eklenmesin."
-- Tüm iş ekleme ekranlarında **Cari zorunlu**: hızlı iş ekle (bilgisayar / telefon alt menü "İş ekle"), teknisyenin "İş ekle"si, iş formu. Cari seçilmeden "Kaydet" çalışmaz; aynı pencerede **"+ Yeni cari"** ile hemen cari açılabilir (yalnız ünvan zorunlu; telefon zorunlu değil — kullanıcı 23:17).
-- Sunucu da kontrol eder: programdan (panel / telefon / teknisyen) cari olmadan iş kaydı reddedilir.
-- İşten cari kaldırılamaz ("Cariyi değiştir" kalır, "cari bağlı değil" durumu yeni işlerde olmaz).
-- **Telegram'dan iş ekleme carisiz açılabilir** (kullanıcı 23:17): mesajdaki telefon / ünvan bir cariyle eşleşirse bağlanır, eşleşmezse iş carisiz açılır (havuzda "Cari bağlı değil" uyarısıyla; planlarken / fiş keserken cari bağlanır).
-- Mevcut carisiz işler olduğu gibi kalır (listede "Cari bağlı değil" uyarısı sürer, fiş kesmeden önce cari istenir).
-
-### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
 
 ## İsteğe bağlı fikirler
@@ -37,6 +29,14 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 - Logonun yüksek çözünürlüklü orijinal dosyası gelirse Ayarlar'dan değiştirilmesi (şu anki logo e-posta imzasından kırpıldı, ~300 px).
 
 ## Tamamlananlar
+
+### 28.11.2026 — 33. derleme: Cariye bağlanmadan iş eklenmez
+- Programdan eklenen her işte **cari zorunlu**: İş ekle penceresi (bilgisayar / telefon alt menü), havuz sayfasındaki hızlı kutu, iş formu, teknisyenin İş ekle'si, "İşi ben yaptım". Sunucu da reddeder ("Cari seçin (yoksa Yeni cari ile açın)").
+- Cari kendiliğinden bulunur: mesajdaki telefon kayıtlı bir cariyle eşleşirse, ya da mesajda kayıtlı bir carinin ünvanı geçiyorsa (tek eşleşme). Bulunamazsa havuz sayfasındaki hızlı kutu, yazılanı İş ekle penceresine taşır; cari orada seçilir.
+- **"+ Yeni cari"**: yalnız ünvan zorunlu, telefon isteğe bağlı. Teknisyen de İş ekle'de cari arayabilir ve yeni cari açabilir (bakiye / finans bilgisi görmeden).
+- İşin carisi kaldırılamaz (değiştirilebilir).
+- **Telegram'dan gelen işler carisiz açılabilir** (telefon / ünvan eşleşirse bağlanır); havuzda "Cari bağlı değil" uyarısı, fiş keserken cari istenir. Eski carisiz işler olduğu gibi kaldı.
+- Telefonda Menü → "Bilgisayar görünümüne geç" bazen çalışmıyordu (menü kapanışı ile sayfa yenileme yarışıyordu); düzeltildi.
 
 ### 27.11.2026 — 32.2: Cari kartında Detaylı ekstre önce; iş başlığı gösterilmez
 - Cari kartı alt başlıklarında **Detaylı ekstre** ile **Ekstre** yer değiştirdi; cari kartı Detaylı ekstre ile açılır.

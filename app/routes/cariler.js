@@ -4,7 +4,21 @@ const { bugun, zorunlu, metin, sayi, tarih, sec, setIfadesi } = require('../lib/
 const ALANLAR = ['kod', 'tip', 'unvan', 'yetkili', 'telefon', 'telefon2', 'eposta', 'adres', 'il', 'ilce',
   'vergi_dairesi', 'vergi_no', 'notlar', 'aktif'];
 
-module.exports = (r, { db, web, Y }) => {
+module.exports = (r, { db, web, Y, G }) => {
+  // Teknisyen iş eklerken: cari arama (yalnız ad / telefon / konum) ve yeni cari açma (ünvan zorunlu, telefon isteğe bağlı)
+  r.get('/cariler/ara', G, async (req) => {
+    const q = String(req.query.q || '').trim();
+    const p = []; let kosul = 'aktif';
+    if (q) { p.push(q); kosul += ` AND (arama_metni(concat_ws(' ', unvan, kod, telefon, telefon2, yetkili)) LIKE '%' || arama_metni($1) || '%'
+      OR regexp_replace(concat_ws(' ', telefon, telefon2), '\\D', '', 'g') LIKE '%' || nullif(regexp_replace($1, '\\D', '', 'g'), '') || '%')`; }
+    return (await db.query(`SELECT id, unvan, telefon, il, ilce, adres FROM cariler WHERE ${kosul} ORDER BY unvan LIMIT 20`, p)).rows;
+  });
+  r.post('/cariler/hizli', G, async (req) => {
+    const unvan = metin(req.body.unvan);
+    if (!unvan) throw web.hata(400, 'Ünvan / ad soyad yazın.');
+    return db.islem(req.kullanici.id, (q) => q.bir(`INSERT INTO cariler (unvan, telefon, adres, tip) VALUES ($1, $2, $3, 'musteri') RETURNING id, unvan, telefon, adres`,
+      [unvan, metin(req.body.telefon), metin(req.body.adres)]));
+  });
   r.get('/cariler', Y, async (req) => {
     const p = []; const k = [];
     if (req.query.q) {

@@ -73,6 +73,8 @@ export async function mobilKabuk(ctx, a) {
       if (e.target.closest('.mk-kapat') || e.target.closest('a')) return kapat();
       const m = e.target.closest('[data-m]')?.dataset.m;
       if (!m) return;
+      // Görünüm değişince sayfa yeniden yüklenir; menüyü kapatmak (geçmişte geri gitmek) yüklemeyle yarışmasın
+      if (m === 'masa') { gorunumSec('masa'); return; }
       kapat();
       if (m === 'masa') gorunumSec('masa');
       else if (m === 'sifre') sifreDegistir();

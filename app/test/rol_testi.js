@@ -75,7 +75,8 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   is = (await y('GET', `/isler/${isId}`)).veri;
   kontrol('Teknisyenin eklediği "ilave"', x.durum === 200 && is.malzemeler.find((q) => q.urun_id === u2.id)?.sahada_eklendi === true, is.malzemeler);
   // Havuzdaki işten malzeme çıkarılabilir
-  const is2 = (await y('POST', '/isler/hizli', { mesaj: 'Çıkarma denemesi', malzemeler: [{ urun_id: u1.id, miktar: 1 }] })).veri.id;
+  const rolCari = (await y('POST', '/cariler', { unvan: 'Rol Testi Carisi', tip: 'musteri' })).veri;
+  const is2 = (await y('POST', '/isler/hizli', { mesaj: 'Çıkarma denemesi', cari_id: rolCari.id, malzemeler: [{ urun_id: u1.id, miktar: 1 }] })).veri.id;
   const mid = (await y('GET', `/isler/${is2}`)).veri.malzemeler[0].id;
   x = await y('DELETE', `/malzeme/${mid}`);
   kontrol('Havuzdaki işten malzeme çıkarılır, stok geri girer', x.durum === 200 && Number((await y('GET', `/urunler/${u1.id}`)).veri.stok_miktari) === stok0 - 2, x.veri);
@@ -85,7 +86,13 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   kontrol('Teknisyen iş ekledi (havuz)', x.durum === 200 && !x.veri.ben, x.veri);
   const hv = (await y('GET', '/havuz')).veri;
   kontrol('İş havuzda', hv.some((q) => q.id === x.veri.id));
-  x = await t('POST', '/isler/teknisyen', { mesaj: 'Kendi işim: kamera ayarı', ben: true });
+  kontrol('Teknisyen: carisiz iş eklenemez', (await t('POST', '/isler/teknisyen', { mesaj: 'Carisiz deneme' })).durum === 400);
+  const aranan = await t('GET', '/cariler/ara?q=rol testi');
+  kontrol('Teknisyen cari arayabilir (bakiye yok)', aranan.durum === 200 && aranan.veri.some((c) => c.id === rolCari.id) && aranan.veri.every((c) => !('bakiye' in c)), aranan.veri);
+  const tekCari = await t('POST', '/cariler/hizli', { unvan: 'Teknisyenin Açtığı Cari' });
+  kontrol('Teknisyen telefonsuz yeni cari açar', tekCari.durum === 200 && tekCari.veri.id, tekCari.veri);
+  kontrol('Teknisyen cari listesine / bakiyeye erişemez', (await t('GET', '/cariler')).durum === 403);
+  x = await t('POST', '/isler/teknisyen', { mesaj: 'Kendi işim: kamera ayarı', ben: true, cari_id: tekCari.veri.id });
   is = (await y('GET', `/isler/${x.veri.id}`)).veri;
   kontrol('"Ben yapıyorum": kendi ekibine bugün planlandı', is.durum === 'planlandi' && Number(is.ekip_id) === Number(ekip.id), { d: is.durum, e: is.ekip_id });
   kontrol('Yönetici /isler/teknisyen kullanamaz', (await y('POST', '/isler/teknisyen', { mesaj: 'x' })).durum === 403);
@@ -102,7 +109,7 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   kontrol('Muhasebe menüsü: Ayarlar / Form / Güncelle / Konum / Fiyatlandırma yok; Havuz / Takvim var', !['ayarlar', 'formlar', 'guncelleme', 'ekip-konum', 'fiyatlandirma', 'silinenler'].some((q) => menu.includes(q)) && ['cariler', 'fisler', 'kdv', 'kasa', 'alislar', 'havuz', 'takvim'].every((q) => menu.includes(q)), menu);
   kontrol('Muhasebe: sağ üstte "+ İş ekle" ve "+ Satış fişi"', await mp.isVisible('#btn-hizli') && !!(await mp.$('#btn-fis')));
   await mp.click('#btn-hizli'); await mp.waitForSelector('dialog[open] #hi-malzeme');
-  await mp.fill('dialog[open] textarea[name=mesaj]', 'Muhasebe pencereden iş'); await mp.click('dialog[open] button[type=submit]'); await mp.waitForTimeout(700);
+  await mp.fill('dialog[open] textarea[name=mesaj]', 'Muhasebe pencereden iş Ahmet Market'); await mp.click('dialog[open] button[type=submit]'); await mp.waitForTimeout(700);
   kontrol('Muhasebe pencereden iş ekledi', (await y('GET', '/havuz')).veri.some((q) => /Muhasebe pencereden/.test(q.ham_mesaj || q.baslik)));
   await mp.evaluate(() => { location.hash = '#/takvim'; }); await mp.waitForTimeout(700);
   kontrol('Muhasebe takvimi açar', (await mp.$eval('#sayfa', (e) => e.className)).includes('sayfa-takvim'));
@@ -138,7 +145,7 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   const yc = await b.newContext({ viewport: { width: 1440, height: 900 } }); const yp = await yc.newPage(); yp.on('pageerror', (e) => hatalar.push(e.message));
   await yp.goto(T); await yp.fill('[name=kullanici_adi]', 'Patron'); await yp.fill('[name=sifre]', '12345678'); await yp.click('button');
   await yp.waitForSelector('#btn-hizli'); await yp.click('#btn-hizli'); await yp.waitForSelector('dialog[open] #hi-malzeme');
-  await yp.fill('dialog[open] textarea[name=mesaj]', 'Pencereden malzemeli iş');
+  await yp.fill('dialog[open] textarea[name=mesaj]', 'Pencereden malzemeli iş Ahmet Market');
   await yp.click('dialog[open] [data-hm-ekle]'); await yp.waitForSelector('dialog[open] .hm-ara');
   await yp.click('dialog[open] .hm-ara'); await yp.keyboard.type(u2.ad.slice(0, 5), { delay: 20 });
   await yp.waitForSelector('.secici-liste .secici-oge'); await yp.keyboard.press('Enter'); await yp.waitForTimeout(200);
@@ -156,7 +163,7 @@ const karAlaniVar = (v) => JSON.stringify(v).match(/"([a-z_]*(maliyet|maliyeti|_
   const tm = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }); const tmp = await tm.newPage(); tmp.on('pageerror', (e) => hatalar.push(e.message));
   await tmp.goto(T); await tmp.fill('[name=kullanici_adi]', 'Patron'); await tmp.fill('[name=sifre]', '12345678'); await tmp.click('button');
   await tmp.waitForSelector('#btn-hizli'); await tmp.evaluate(() => document.querySelector('#btn-hizli').click()); await tmp.waitForSelector('dialog[open] #hi-malzeme');
-  await tmp.fill('dialog[open] textarea[name=mesaj]', 'Telefonda stok listesinden');
+  await tmp.fill('dialog[open] textarea[name=mesaj]', 'Telefonda stok listesinden Ahmet Market');
   await tmp.tap('dialog[open] [data-hm-stok]'); await tmp.waitForFunction(() => document.querySelectorAll('dialog[open]').length === 2);
   await tmp.waitForSelector('dialog[open] tbody input[type=checkbox]'); await (await tmp.$$('dialog[open] tbody input[type=checkbox]'))[0].tap(); await tmp.waitForTimeout(150);
   await tmp.tap('dialog[open] button[type=submit]:has-text("Seçilenleri")'); await tmp.waitForTimeout(500);

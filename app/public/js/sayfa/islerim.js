@@ -1,18 +1,47 @@
 import { api } from '../api.js';
-import { html, $, saat, tarih, bugunStr, durumRozet, pencere, bildir, sureMetni } from '../ui.js';
+import { html, ham, $, saat, tarih, bugunStr, durumRozet, pencere, bildir, sureMetni, secici, vurgula } from '../ui.js';
 
 // Teknisyen iş ekler: havuza düşer ya da "bu işi ben yapıyorum" ile bugün kendi ekibine planlanır
+// Teknisyen için cari seçimi: ad / telefonla arama, yoksa "Yeni cari" (ünvan zorunlu, telefon isteğe bağlı)
+function teknisyenCariSecici(input, sec) {
+  return secici(input, {
+    getir: (q) => api.get('/cariler/ara', { q }),
+    goster: (c, q) => html`<div class="secici-satir"><div class="ss-ana"><b>${ham(vurgula(c.unvan, q))}</b>
+      <small>${[c.telefon, [c.ilce, c.il].filter(Boolean).join(' / ')].filter(Boolean).join(' · ')}</small></div></div>`,
+    sec,
+    bosMetin: 'Cari bulunamadı',
+    sonKullanilan: 'cari-tek',
+    yeni: (q) => pencere({
+      baslik: 'Yeni cari',
+      icerik: html`<label class="alan"><span>Ünvan / ad soyad *</span><input name="unvan" value="${q || ''}" required></label>
+        <label class="alan"><span>Telefon</span><input name="telefon" type="tel" inputmode="tel"></label>
+        <label class="alan"><span>Adres</span><textarea name="adres" rows="2"></textarea></label>`,
+      kaydetMetin: 'Cariyi aç',
+      kaydet: (v) => { if (!String(v.unvan || '').trim()) throw new Error('Ünvan yazın.'); return api.post('/cariler/hizli', v); },
+    }),
+    yeniMetin: 'Yeni cari',
+  });
+}
+
 export async function teknisyenIsEkle(ctx) {
+  let cari = null;
   const r = await pencere({
     baslik: 'İş ekle',
-    icerik: html`<label class="alan"><span>Ne istendi? *</span><textarea name="mesaj" rows="4" autofocus placeholder="Örn: Ahmet Market toner istedi 0532 111 22 33"></textarea></label>
-      <p class="soluk" style="font-size:.82rem;margin:-.3rem 0 .6rem">Müşterinin adını ve telefonunu yazarsanız kayıtlı müşteri kendiliğinden bulunur.</p>
+    icerik: html`<label class="alan"><span>Cari (müşteri) *</span><input id="tek-cari" placeholder="Müşteri ara: ad, telefon…" autocomplete="off"></label>
+      <label class="alan"><span>Ne istendi? *</span><textarea name="mesaj" rows="4" placeholder="Örn: toner istedi, yazıcı kağıt sıkıştırıyor"></textarea></label>
+      <p class="soluk" style="font-size:.82rem;margin:-.3rem 0 .6rem">Müşteri listede yoksa aramada "Yeni cari" ile açın.</p>
       <label class="alan"><span>Öncelik</span><select name="oncelik"><option value="2">Normal</option><option value="1">Acil</option><option value="3">Düşük</option></select></label>
       <label class="kutu-sec"><input type="checkbox" name="ben"> <span><b>Bu işi ben yapıyorum</b> — bugün ekibime planlansın</span></label>`,
     kaydetMetin: 'Ekle',
+    acildi: (d) => {
+      const inp = $('#tek-cari', d);
+      teknisyenCariSecici(inp, (c) => { cari = c; inp.value = c.unvan; inp.classList.add('secili'); });
+      inp.addEventListener('input', () => { if (cari && inp.value !== cari.unvan) { cari = null; inp.classList.remove('secili'); } });
+    },
     kaydet: async (v) => {
       if (!String(v.mesaj || '').trim()) throw new Error('Ne istendiğini yazın.');
-      return api.post('/isler/teknisyen', { mesaj: v.mesaj, oncelik: Number(v.oncelik), ben: !!v.ben });
+      // Cari seçilmediyse sunucu mesajdaki telefon / ünvandan bulmayı dener; bulamazsa "Cari seçin" der
+      return api.post('/isler/teknisyen', { mesaj: v.mesaj, oncelik: Number(v.oncelik), ben: !!v.ben, cari_id: cari?.id || null });
     },
   });
   if (!r) return false;

@@ -9,7 +9,7 @@ export function hizliKutu(kap, ctx, sonra) {
     <textarea name="mesaj" placeholder="Örn: Ahmet Bey Kadıköy 4 kamera görüntü yok 0532 111 22 33" required></textarea>
     <div class="btn-grup"><button class="btn birincil">Havuza ekle</button>
       <select name="oncelik" style="width:auto"><option value="2">Normal</option><option value="1">Acil</option><option value="3">Düşük</option></select>
-      <span class="soluk" style="font-size:.85rem">Telefon numarası yazarsanız müşteri otomatik bulunur. Ctrl+Enter ile ekleyin.</span></div></form>`);
+      <span class="soluk" style="font-size:.85rem">Müşterinin telefonunu ya da adını yazarsanız kayıtlı cari bulunur; bulunamazsa cari seçme penceresi açılır. Ctrl+Enter ile ekleyin.</span></div></form>`);
   const f = $('form', kap);
   f.mesaj.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) f.requestSubmit(); });
   f.onsubmit = async (e) => {
@@ -18,10 +18,17 @@ export function hizliKutu(kap, ctx, sonra) {
     const btn = $('button', f); btn.disabled = true;
     try {
       const r = await api.post('/isler/hizli', { mesaj: f.mesaj.value, oncelik: Number(f.oncelik.value) });
-      bildir(r.cari ? `Havuza eklendi · ${r.cari.unvan} ile eşleşti` : 'Havuza eklendi (müşteri eşleşmedi, sonra bağlayabilirsiniz)', 'basari', 4500);
+      bildir(`Havuza eklendi · ${r.cari?.unvan || ''} ile eşleşti`, 'basari', 4500);
       f.reset();
       sonra?.(r);
-    } catch (err) { bildir(err.message, 'hata'); }
+    } catch (err) {
+      // Müşteri bulunamadı: İş ekle penceresi yazılanla açılır, cari orada seçilir / yeni açılır
+      if (/cari/i.test(err.message)) {
+        bildir('Müşteri bulunamadı; cariyi seçin ya da yeni cari açın.', 'uyari', 4500);
+        const mesaj = f.mesaj.value; f.reset();
+        hizliIs(ctx, { mesaj, sonra });
+      } else bildir(err.message, 'hata');
+    }
     btn.disabled = false;
   };
 }
@@ -29,7 +36,7 @@ export function hizliKutu(kap, ctx, sonra) {
 // Üst çubuktaki "+ Hızlı iş" düğmesi
 // Üst çubuktaki "+ İş ekle": iş havuza atılır veya "işi ben yaptım" ile hizmet/malzeme girilip cariye taslak fiş açılır.
 // Not: pencere zaten bir form; içine ikinci form konamaz (tarayıcı yok sayar), alanlar doğrudan pencerede.
-export function hizliIs(ctx) {
+export function hizliIs(ctx, { mesaj: ilkMesaj = '', sonra: sonraFn = null } = {}) {
   let cari = null; let benYaptim = false;
   const satirlar = [];
   const malzemeler = [];
@@ -40,9 +47,9 @@ export function hizliIs(ctx) {
     icerik: html`<div class="hizli-kutu hi-izgara">
       <div class="hi-sol">
       <label class="alan" style="margin:0"><span>İş / telefondaki konuşma</span>
-        <textarea name="mesaj" rows="5" autofocus placeholder="Örn: Ahmet Bey Kadıköy 4 kamera görüntü yok 0532 111 22 33"></textarea></label>
+        <textarea name="mesaj" rows="5" ${ilkMesaj ? '' : 'autofocus'} placeholder="Örn: Ahmet Bey Kadıköy 4 kamera görüntü yok 0532 111 22 33">${ilkMesaj}</textarea></label>
       <div class="satir2 hi-cari-satir">
-        ${cariAlani('(boşsa telefondan bulunur)')}
+        ${cariAlani('(telefonu kayıtlıysa kendiliğinden bulunur)')}
         <label class="alan" style="margin:0"><span>Öncelik</span>
           <select name="oncelik"><option value="2">Normal</option><option value="1">Acil</option><option value="3">Düşük</option></select></label>
       </div>
@@ -62,6 +69,8 @@ export function hizliIs(ctx) {
       const kaydetBtn = $('button[type=submit]', d);
       d.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('form', d).requestSubmit(); } });
       cariAlaniBagla(d, null, (c) => { cari = c; });
+      if (ilkMesaj) setTimeout(() => $('#hi-cari', d)?.focus(), 60);
+      void sonraFn;
       // Ekibe verilecek malzeme listesi
       const hmCiz = () => {
         $('#hm-liste', d).innerHTML = String(html`${malzemeler.map((m, i) => html`<div class="hm-satir" data-hm="${i}">
@@ -117,7 +126,7 @@ export function hizliIs(ctx) {
 }
 
 // Cari alanı (ara / seç / yeni cari / temizle) — iki pencerede ortak
-const cariAlani = (ipucu) => html`<label class="alan" style="margin:0"><span>Cari ${ipucu ? html`<small class="soluk">${ipucu}</small>` : ''}</span>
+const cariAlani = (ipucu) => html`<label class="alan" style="margin:0"><span>Cari * ${ipucu ? html`<small class="soluk">${ipucu}</small>` : ''}</span>
   <div class="hi-cari"><input id="hi-cari" placeholder="Müşteri ara…" autocomplete="off"><button type="button" class="btn-ikon" id="hi-cari-temizle" title="Cariyi kaldır" hidden>✕</button></div></label>`;
 function cariAlaniBagla(d, baslangic, degisti) {
   const ci = $('#hi-cari', d); const temizle = $('#hi-cari-temizle', d);

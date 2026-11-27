@@ -113,8 +113,18 @@ async function sec(p, inputSec, metin, secim) {
   await y.fill('#hizli textarea', 'Ahmet bey 4 kamera görüntü gelmiyor\n0532 111 22 33 akşam 5ten sonra');
   await y.click('#hizli button.birincil');
   await y.waitForSelector('.bildirim >> text=Ahmet Market ile eşleşti');
+  // Kayıtlı olmayan müşteri: İş ekle penceresi açılır, "Yeni cari" ile telefonsuz cari açılıp iş eklenir
   await y.fill('#hizli textarea', 'Zeynep Hanım Ataşehir DVR kurulumu 0544 777 88 99');
   await y.click('#hizli button.birincil');
+  await y.waitForSelector(`${pen} #hi-cari`);
+  if (!(await y.inputValue(`${pen} textarea[name=mesaj]`)).includes('Zeynep')) throw new Error('Mesaj pencereye taşınmadı');
+  await y.click(`${pen} #hi-cari`); await y.keyboard.type('Zeynep Hanım');
+  await y.waitForSelector('.secici-liste [data-yeni-kart]'); await y.click('.secici-liste [data-yeni-kart]');
+  await y.waitForFunction(() => document.querySelectorAll('dialog.pencere[open]').length === 2);
+  await y.locator('dialog.pencere[open] button[type=submit]').last().click();
+  await y.waitForFunction(() => document.querySelectorAll('dialog.pencere[open]').length === 1);
+  await y.click(`${pen} button[type=submit]`);
+  await y.waitForFunction(() => !document.querySelector('dialog.pencere[open]'));
   await y.waitForTimeout(600);
   await foto(y, '11_havuz');
   ok('Havuza 2 iş eklendi, ilki müşteriyle otomatik eşleşti');
