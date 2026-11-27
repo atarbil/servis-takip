@@ -16,12 +16,14 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 ### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
 Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
-### 3. Sahadaki işi kapatınca doğrudan satış fişi (28.11.2026)
+### 3. Sahadaki işi kapatınca doğrudan satış fişi (28.11.2026, cevaplarla netleşti)
 Kullanıcı: "Sahada durumundaki işi kapatmak için Teslim et / Tamamla'ya basınca stok listesi açılıyor. İş havuza cariyle eklendi, müsait olan aldı, kullandığı malzemeleri yazdı, müşteri onayını isteğe bağlı aldı; bundan sonra iş kapansın, satış fişine dönsün."
-- **Teslim et / Tamamla (ofis):** işe malzeme girilmişse malzeme / hizmet satır tablosu açılmaz; pencerede yalnız özet: cari, girilen malzemeler listesi, (alınmışsa) müşteri onayı, isteğe bağlı not. Tek düğme: **"Tamamla ve satış fişine geç"** → iş kapanır, malzemelerle taslak fiş açılır, fişe gidilir. Ek hizmet / işçilik gerekirse "+ Ek kalem" ile açılır (kapalı gelir). Malzeme girilmemişse bugünkü gibi satır girilir.
-- Müşteri onayı (imza) teknisyen ekranında alındıysa pencerede "✓ Onay alındı" görünür, tekrar istenmez.
-- **Teknisyen "İşi tamamla" dediğinde** (malzeme yazdı, onay isteğe bağlı): iş kapanır ve **taslak satış fişi kendiliğinden açılır** (fiyatları ofis yazıp onaylar); ofise "İş #… tamamlandı, fiş taslağı hazır" bildirimi. (Varsayım)
-- Telefonda iş detayındaki "Teslim et / Tamamla" da aynı sade akış.
+1. **Ofis "Teslim et / Tamamla":** işe malzeme yazılmışsa malzeme tablosu açılmaz; yalnız özet (cari, malzemeler, onay / teslim bilgisi, not). (Uygun)
+2. **Teknisyen "Tamamla":** yalnız özet görür (yapılan iş, malzemeler / işçilik — fiyatsız; teslim alan), düğmede yalnız **"Tamamla"** yazar. Teknisyen satış fişiyle uğraşmaz; fiş taslağı arka planda oluşur, ofis fiyatlayıp onaylar.
+3. **Malzeme önerilerinde sabit "Servis Kurulum İşçiliği"** çipi ("Son kullandıklarınız" kısmında her zaman). Yoksa hizmet kartı olarak açılır; stoktan düşmez, fişe hizmet kalemi olarak gelir.
+4. **Teslim bilgisi zorunlu:** iş kapatılırken kime teslim edildiği / kime bilgi verildiği için en az bir bilgi (ad soyad ya da telefon) girilmeli; imza isteğe bağlı. (Ofis ve teknisyen)
+5. Malzeme yazılmamışsa ofis penceresi bugünkü gibi kalem girişiyle açılır. (Evet)
+6. Teknisyen tamamlayınca: "✓ İş tamamlandı" özeti + **"Ana ekrana dön"** düğmesi.
 
 ### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
