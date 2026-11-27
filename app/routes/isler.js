@@ -289,10 +289,12 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
         if (!b?.urun_id) return q.bir('SELECT is_malzeme_ekle_barkod($1, $2, $3) AS id', [is.id, barkod, miktar]); // tanımsız barkod hatası
         urunId = Number(b.urun_id);
       }
-      // Sabit "Servis Kurulum İşçiliği": hizmet kartı yoksa açılır (stok tutulmaz)
-      if (!urunId && req.body.sabit_iscilik) {
-        const h = await q.bir("SELECT id FROM urunler WHERE aktif AND tur = 'hizmet' AND arama_metni(ad) = arama_metni($1) ORDER BY id LIMIT 1", [SABIT_ISCILIK]);
-        urunId = Number(h ? h.id : (await q.bir("INSERT INTO urunler (ad, birim, tur, kdv_orani) VALUES ($1, 'adet', 'hizmet', 20) RETURNING id", [SABIT_ISCILIK])).id);
+      // Sabit çipler ("Servis", "Kurulum İşçiliği"): aynı adlı kart varsa o (önce hizmet kartı), yoksa hizmet kartı açılır (stok tutulmaz)
+      const sabitAd = SABIT_KALEM[req.body.sabit];
+      if (!urunId && sabitAd) {
+        const h = await q.bir(`SELECT id FROM urunler WHERE aktif AND arama_metni(ad) = arama_metni($1)
+          ORDER BY (tur = 'hizmet') DESC, id LIMIT 1`, [sabitAd]);
+        urunId = Number(h ? h.id : (await q.bir("INSERT INTO urunler (ad, birim, tur, kdv_orani) VALUES ($1, 'adet', 'hizmet', 20) RETURNING id", [sabitAd])).id);
       }
       if (!urunId) zorunlu(req.body, { urun_id: 'Ürün' });
       const urun = await q.bir('SELECT ad, birim FROM urunler WHERE id = $1', [urunId]);
@@ -312,7 +314,7 @@ module.exports = (r, { db, web, AYAR, G, Y, telegram }) => {
     });
   });
 
-  const SABIT_ISCILIK = 'Servis Kurulum İşçiliği';
+  const SABIT_KALEM = { servis: 'Servis', kurulum: 'Kurulum İşçiliği' };
   // Malzeme miktarı (− / + düğmeleri, geri al)
   r.put('/malzeme/:id', G, async (req) => {
     const m = (await db.query('SELECT is_id FROM is_malzemeleri WHERE id = $1', [req.params.id])).rows[0];

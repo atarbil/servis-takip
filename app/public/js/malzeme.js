@@ -3,7 +3,8 @@
 import { api } from './api.js';
 import { html, ham, $, bildir, miktar, saat, secici, vurgula, sor, sayiCoz, sayiGiris } from './ui.js';
 
-export const SABIT_ISCILIK = 'Servis Kurulum İşçiliği';
+// Malzeme önerilerinde her zaman duran çipler (hizmet kartı yoksa ilk dokunuşta açılır)
+export const SABIT_KALEMLER = [['servis', 'Servis'], ['kurulum', 'Kurulum İşçiliği']];
 const HIZLI = { metre: [5, 10, 20, 50], m: [5, 10, 20, 50], mt: [5, 10, 20, 50] };
 const stokSinif = (u) => (u.tur === 'hizmet' || u.stok_miktari == null ? '' : Number(u.stok_miktari) <= 0 ? 'yok' : 'var');
 
@@ -13,7 +14,7 @@ export function malzemeBolumu(is, { duzenlenebilir, maliyet = false }) {
         <input type="search" class="mz-ara" data-mz-ara placeholder="Malzeme ara: ad, kod, barkod…" enterkeyhint="search" autocomplete="off">
         <button type="button" class="btn ikincil mz-barkod" data-mz-barkod title="Arka arkaya barkod okut" aria-label="Barkod okut">📷</button>
       </div>
-      <div class="mz-oneriler" data-mz-oneriler></div>` : ''}
+      <div class="mz-cipler mz-sabitler">${SABIT_KALEMLER.map(([k, ad]) => html`<button type="button" class="mz-cip mz-sabit" data-mz-sabit="${k}">+ ${ad}</button>`)}</div>` : ''}
     <div class="mz-liste" data-mz-liste>${malzemeSatirlari(is, { duzenlenebilir, maliyet })}</div>
     ${duzenlenebilir ? html`<div class="mz-alt"><button type="button" class="btn-metin" data-mz-tanimsiz>+ Listede olmayan ürün</button></div>` : ''}
   </div>`;
@@ -79,31 +80,17 @@ export function malzemeBagla(kok, is, ctx, { maliyet = false, tanimsiz } = {}) {
     });
   }
 
-  // Son kullanılanlar / bu müşteride kullanılanlar
-  const oneriKap = $('[data-mz-oneriler]', bolum);
-  if (oneriKap) {
-    api.get(`/isler/${is.id}/malzeme-onerileri`).then((o) => {
-      const cip = (u) => html`<button type="button" class="mz-cip ${stokSinif(u) === 'yok' ? 'stoksuz' : ''}" data-mz-oner="${u.id}" data-ad="${u.ad}" title="${stokSinif(u) === 'yok' ? 'Stokta yok' : ''}">+ ${u.ad}</button>`;
-      const musteriIdler = new Set(o.musteri.map((u) => u.id));
-      const son = o.son.filter((u) => !musteriIdler.has(u.id) && u.ad !== SABIT_ISCILIK);
-      // "Servis Kurulum İşçiliği" her zaman ilk çip (hizmet kartı yoksa ilk eklemede açılır)
-      oneriKap.innerHTML = String(html`
-        ${o.musteri.length ? html`<div class="mz-oneri-grup"><small>Bu müşteride kullanılanlar</small><div class="mz-cipler">${o.musteri.map(cip)}</div></div>` : ''}
-        <div class="mz-oneri-grup"><small>Son kullandıklarınız</small><div class="mz-cipler">
-          <button type="button" class="mz-cip mz-sabit" data-mz-sabit>+ ${SABIT_ISCILIK}</button>${son.map(cip)}</div></div>`);
-    }).catch(() => {});
-  }
+  // Yalnız iki sabit çip (Servis, Kurulum İşçiliği); başka öneri gösterilmez (kullanıcı isteği 28.11.2026)
 
   bolum.addEventListener('click', async (e) => {
     if (mesgul) return;
     const t = e.target;
-    const oner = t.closest('[data-mz-oner]');
     const satir = t.closest('[data-mz-id]');
     const m = satir ? is.malzemeler.find((x) => String(x.id) === satir.dataset.mzId) : null;
     try {
       mesgul = true;
-      if (oner) { await ekle({ urun_id: Number(oner.dataset.mzOner) }, oner.dataset.ad); return; }
-      if (t.closest('[data-mz-sabit]')) { await ekle({ sabit_iscilik: true }, SABIT_ISCILIK); return; }
+      const sb = t.closest('[data-mz-sabit]');
+      if (sb) { await ekle({ sabit: sb.dataset.mzSabit }, sb.textContent.replace(/^\+\s*/, '')); return; }
       if (t.closest('[data-mz-barkod]')) { await surekliBarkod(); return; }
       if (t.closest("[data-mz-tanimsiz]") && tanimsiz) { if (await tanimsiz()) await yenile(); return; }
       if (!m) return;

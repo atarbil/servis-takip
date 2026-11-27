@@ -75,8 +75,7 @@ const istemci = () => {
   await p.goto(T); await p.fill('[name=kullanici_adi]', 'Patron'); await p.fill('[name=sifre]', '12345678'); await p.click('#giris-form button');
   await p.waitForSelector('.mk-alt');
   await p.goto(`${T}/#/is/${is2.id}`); await p.waitForSelector('[data-mz-ara]');
-  await p.waitForSelector('[data-mz-oner]');
-  kontrol('Telefon: öneri çipleri', (await p.$$('[data-mz-oner]')).length > 0);
+  kontrol('Telefon: yalnız 2 sabit çip, başka öneri yok', (await p.$$('[data-mz-sabit]')).length === 2 && !(await p.$('[data-mz-oner]')));
   await p.click('[data-mz-ara]'); await p.keyboard.type('cat6');
   await p.waitForFunction(() => (document.querySelector('.secici-liste .secici-oge')?.textContent || '').includes('Cat 6 UTP') || (document.querySelector('.secici-liste .secici-oge')?.textContent || '').includes('CAT6'));
   kontrol('Arama sonuçları yalnız eşleşenler', await p.$$eval('.secici-liste .secici-oge', (x) => x.every((e) => /cat ?6/i.test(e.textContent))));
@@ -104,14 +103,16 @@ const istemci = () => {
   kontrol('Geri al → satır geri geldi', (await p.textContent('.mz-satir .mz-sayi')).startsWith('1'));
   await p.click('.mz-satir [data-mz-azalt]'); await p.waitForTimeout(600);
   if (process.env.EKRAN) await p.screenshot({ path: '/tmp/mz_is.png', fullPage: true });
-  // Sabit "Servis Kurulum İşçiliği" çipi: hizmet kartı açılır / eklenir, stok tutulmaz
-  await p.waitForSelector('[data-mz-sabit]');
-  await p.click('[data-mz-sabit]'); await p.waitForSelector('.mz-satir:has-text("Servis Kurulum İşçiliği")');
-  const isc = (await y('GET', `/urunler?q=${encodeURIComponent('Servis Kurulum İşçiliği')}`)).veri.find((u) => u.ad === 'Servis Kurulum İşçiliği');
-  kontrol('Sabit işçilik çipi: hizmet kartı açıldı ve eklendi', isc && isc.tur === 'hizmet');
-  await p.click('[data-mz-sabit]'); await p.waitForTimeout(500);
-  kontrol('İkinci dokunuş aynı kartı kullanır (tek satır × 2)', (await y('GET', '/urunler?q=servis kurulum')).veri.filter((u) => u.ad === 'Servis Kurulum İşçiliği').length === 1
-    && (await p.textContent('.mz-satir:has-text("Servis Kurulum İşçiliği") .mz-sayi')).startsWith('2'));
+  // Sabit çipler: "Servis" ve "Kurulum İşçiliği" ayrı; hizmet kartı açılır / eklenir, stok tutulmaz
+  await p.waitForSelector('[data-mz-sabit="kurulum"]');
+  kontrol('İki sabit çip: Servis, Kurulum İşçiliği', (await p.$$eval('[data-mz-sabit]', (x) => x.map((e) => e.textContent.trim()))).join('|') === '+ Servis|+ Kurulum İşçiliği');
+  await p.click('[data-mz-sabit="kurulum"]'); await p.waitForSelector('.mz-satir:has-text("Kurulum İşçiliği")');
+  await p.click('[data-mz-sabit="servis"]'); await p.waitForSelector('.mz-satir:has-text("Servis")');
+  const hz = (await y('GET', '/urunler?q=kurulum')).veri.find((u) => u.ad === 'Kurulum İşçiliği');
+  kontrol('Kurulum İşçiliği hizmet kartı açıldı', hz && hz.tur === 'hizmet');
+  await p.click('[data-mz-sabit="kurulum"]'); await p.waitForTimeout(500);
+  kontrol('İkinci dokunuş aynı kartı kullanır (tek satır × 2)', (await y('GET', '/urunler?q=kurulum')).veri.filter((u) => u.ad === 'Kurulum İşçiliği').length === 1
+    && (await p.textContent('.mz-satir:has-text("Kurulum İşçiliği") .mz-sayi')).startsWith('2'));
   // Ofis: Teslim et / Tamamla → özet (kalem tablosu kapalı), teslim bilgisi zorunlu, fişe geçer
   await p.click('[data-a="teslimet"]'); await p.waitForSelector('dialog.pencere[open] .te-malzeme');
   kontrol('Teslim et: malzeme özeti var, kalem tablosu kapalı', await p.$eval('dialog.pencere[open] .te-ek', (e) => e.hidden));
@@ -123,7 +124,7 @@ const istemci = () => {
   await p.click('dialog.pencere[open] button[type=submit]');
   await p.waitForSelector('.mf-ust');
   const fisMetin = await p.textContent('.mf-kalemler');
-  kontrol('Satış fişine geçildi; işçilik fişte', fisMetin.includes('Servis Kurulum İşçiliği'));
+  kontrol('Satış fişine geçildi; servis ve işçilik fişte', fisMetin.includes('Kurulum İşçiliği') && /Servis/.test(fisMetin));
   kontrol('Sayfa hatası yok', !hatalar.length, hatalar);
   await b.close();
   console.log(hata ? `\n${hata} KONTROL BAŞARISIZ` : '\nTÜM KONTROLLER BAŞARILI');

@@ -1843,3 +1843,4 @@ body.mobil-kabuk.mf-cubuk-var #bildirimler { bottom: calc(var(--mk-alt) + env(sa
 .mz-cip.mz-sabit { background: var(--yesil-acik, #dcfce7); color: var(--yesil); border-color: transparent; }
 dialog.te-ozet-mod .hi-izgara { grid-template-columns: 1fr !important; }
 dialog.te-ozet-mod { max-width: 560px; }
+.mz-sabitler { margin-top: .6rem; }

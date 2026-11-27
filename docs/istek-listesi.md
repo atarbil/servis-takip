@@ -32,6 +32,10 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 28.11.2026 — 34.1: Malzemede yalnız iki sabit düğme: "Servis" ve "Kurulum İşçiliği"
+- "Servis Kurulum İşçiliği" tek çipi ikiye ayrıldı: **+ Servis** ve **+ Kurulum İşçiliği** (aynı adlı kart varsa o kullanılır, yoksa hizmet kartı açılır; stok tutulmaz).
+- "Bu müşteride kullanılanlar" ve "Son kullandıklarınız" önerileri kaldırıldı; arama kutusunun altında yalnız bu iki sabit düğme var.
+
 ### 28.11.2026 — 34. derleme: İş kapanınca satış fişi; teslim bilgisi zorunlu, imza isteğe bağlı
 - **Teknisyen "İşi tamamla":** önce fiyatsız özet (iş, yapılan, malzeme / işçilik, teslim alan), düğmede yalnız **"Tamamla"**. Sonra "✓ İş tamamlandı" ekranı ve **"Ana ekrana dön"**. Teknisyen fiş görmez; iş kapanınca carisi varsa **taslak satış fişi arka planda açılır**, Telegram'a "fiş taslağı hazır" bildirimi gider.
 - **Kime teslim edildi:** iş kapatılırken ad ya da telefondan en az biri zorunlu (teknisyen ve ofis); **imza isteğe bağlı** (alındıysa "✓ Onay alındı").
