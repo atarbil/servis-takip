@@ -3,6 +3,8 @@
 Kullanım sırasında gelen istekler. Derleme komutu **"OK"** (24.11.2026'dan itibaren; eskiden "Derle"): yalnız "OK" yazılınca
 bekleyenler öncelik sırasına konup birlikte uygulanır.
 
+**Soru sorma şekli (28.11.2026):** Birden çok madde sorulacaksa her madde ayrı soru olarak, altında cevap yeri (seçenekler + "Diğer" ile serbest yazı) olacak şekilde sorulur; en sona "Başlayayım mı?" gibi genel soru eklenir.
+
 ## Bekleyen istekler
 
 ### 1. Telefon arayüzü — kalan aşamalar (26.11.2026 isteğinin devamı)
