@@ -45,7 +45,7 @@ export async function teknisyenIsEkle(ctx) {
     },
   });
   if (!r) return false;
-  bildir(r.ben ? 'İş eklendi ve size planlandı.' : 'İş havuza eklendi; yöneticiye bildirildi.', 'basari', 4500);
+  bildir(r.ben ? 'İş eklendi ve size planlandı.' : 'İş havuza eklendi.', 'basari', 4500);
   if (r.ben) ctx.git(`saha/${r.id}`);
   return true;
 }

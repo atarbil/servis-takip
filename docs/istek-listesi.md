@@ -32,6 +32,9 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
+### 28.11.2026 — 34.3: İş eklenince yalnız "İş havuza eklendi."
+- Teknisyen iş eklediğinde bildirim "İş havuza eklendi; yöneticiye bildirildi." yerine yalnız **"İş havuza eklendi."**
+
 ### 28.11.2026 — 34.2: "Teslim alan / bilgilendirilen kişi"
 - Saha ekranındaki 3. adımın başlığı "Kime teslim edildi?" yerine **"Teslim alan / bilgilendirilen kişi"** (kullanıcının seçtiği öneri); ofisteki Teslim et / Tamamla penceresinde de aynı etiket. (Önceki "satış fişinde 3. satır" isteği bu başlık değişikliği olarak netleşti.)
 
