@@ -16,7 +16,12 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 ### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
 Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
-### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+### 3. Satış fişinde teslim alan / bilgi verilen kişi (28.11.2026)
+Kullanıcı: "Satış fişinde 3. satırda Malzeme teslim - İş bilgisi verilen kişi."
+- İşten açılan satış fişinde, cari satırının altında (3. satır) işin teslim bilgisi: **"Malzeme teslim / iş bilgisi verilen: Ayşe Hanım · 0532 …"** (imza alındıysa "imzalı").
+- Telefon ve bilgisayar fiş ekranında; yazdırılan fişte de aynı satır (soruldu).
+
+### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
 
 ## İsteğe bağlı fikirler
@@ -35,6 +40,7 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 ### 28.11.2026 — 34.1: Malzemede yalnız iki sabit düğme: "Servis" ve "Kurulum İşçiliği"
 - "Servis Kurulum İşçiliği" tek çipi ikiye ayrıldı: **+ Servis** ve **+ Kurulum İşçiliği** (aynı adlı kart varsa o kullanılır, yoksa hizmet kartı açılır; stok tutulmaz).
 - "Bu müşteride kullanılanlar" ve "Son kullandıklarınız" önerileri kaldırıldı; arama kutusunun altında yalnız bu iki sabit düğme var.
+- Telefonda pencere kapanır kapanmaz başka sayfaya geçilince (ör. "havuza geri bırak" sonrası) bazen sayfanın değişmemesi düzeltildi.
 
 ### 28.11.2026 — 34. derleme: İş kapanınca satış fişi; teslim bilgisi zorunlu, imza isteğe bağlı
 - **Teknisyen "İşi tamamla":** önce fiyatsız özet (iş, yapılan, malzeme / işçilik, teslim alan), düğmede yalnız **"Tamamla"**. Sonra "✓ İş tamamlandı" ekranı ve **"Ana ekrana dön"**. Teknisyen fiş görmez; iş kapanınca carisi varsa **taslak satış fişi arka planda açılır**, Telegram'a "fiş taslağı hazır" bildirimi gider.

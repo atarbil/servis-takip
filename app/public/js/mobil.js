@@ -160,6 +160,9 @@ function cekYenile() {
 }
 
 // ---------- Geri tuşu pencereyi kapatsın ----------
+// Telefon kabuğu sayfa değiştirmeden önce bunu bekler
+export let gecmisSakin = () => Promise.resolve();
+
 function geriTusu() {
   const asil = HTMLDialogElement.prototype.showModal;
   const asilKapat = HTMLDialogElement.prototype.close;
@@ -170,7 +173,14 @@ function geriTusu() {
   // O arada açılan pencerenin kaydı, silme bitince eklenir (yoksa yanlış kayıt silinir).
   let bekleyen = 0;
   let kuyruk = [];
-  const kuyrukCalis = () => { if (yoksay || bekleyen || !kuyruk.length) return; const k = kuyruk; kuyruk = []; k.forEach((f) => f()); };
+  const kuyrukCalis = () => {
+    if (yoksay || bekleyen) return;
+    if (kuyruk.length) { const k = kuyruk; kuyruk = []; k.forEach((f) => f()); }
+    if (!yoksay && !bekleyen) { const b = sakinBekleyen; sakinBekleyen = []; b.forEach((f) => f()); }
+  };
+  // Pencere kapanışının geçmiş temizliği bitene kadar bekler (hemen ardından sayfa değiştirilirse geri alma onu bozmasın)
+  let sakinBekleyen = [];
+  gecmisSakin = () => (yoksay || bekleyen ? new Promise((coz) => { sakinBekleyen.push(coz); setTimeout(coz, 800); }) : Promise.resolve());
   const kayitEkle = (d, no) => { if (d.open) history.pushState({ ...(history.state || {}), mbPencere: no }, '', location.href); };
   const kayitSil = (d) => {
     if (!d._mbNo || d._mbSilindi) return;

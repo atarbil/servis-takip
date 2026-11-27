@@ -3,6 +3,7 @@
 // Telefon için yazılmış sayfalar js/m/ altında; henüz yazılmamış sayfalar bilgisayar sayfasıyla açılır.
 import { api } from '../api.js';
 import { html, $, $$, bildir } from '../ui.js';
+import { gecmisSakin } from '../mobil.js';
 
 // Telefona özel sayfalar (ad → modül)
 const MOBIL = { isler: 'isler', havuz: 'isler', takvim: 'isler', is: 'is', fis: 'fis' };
@@ -33,6 +34,8 @@ export async function mobilKabuk(ctx, a) {
   // Alt sekmenin hangi sayfalarda seçili görüneceği
   const SEKME_ESLES = { is: 'isler', havuz: 'isler', takvim: 'isler', 'dis-servis': 'isler', saha: teknisyen ? 'islerim' : 'isler', fis: 'fisler', teklifler: 'fisler', teklif: 'fisler', cari: 'cariler', envanter: 'cariler' };
   const firma = ctx.ayarlar.firma_adi || 'Servis Takip';
+  // Sayfa değiştirmeden önce açık pencerenin geçmiş kaydı temizlensin (yoksa geri alma yeni sayfayı bozar)
+  ctx.git = async (yol) => { await gecmisSakin(); location.hash = `#/${String(yol).replace(/^#?\//, '')}`; };
 
   document.body.className = `mobil-kabuk ${ctx.muhasebe ? 'rol-muhasebe' : ''}`;
   document.body.innerHTML = String(html`
@@ -152,7 +155,8 @@ export async function mobilKabuk(ctx, a) {
     sctx.sorgu = y.sorgu;
     sctx.baslik = (metin) => { if (no === sayfaNo) ctx.baslik(metin); };
     sctx.yenile = () => yukle({ yeni: false });
-    sctx.kapatVeGit = (yol) => { location.replace(`#/${yol.replace(/^#?\//, '')}`); };
+    sctx.kapatVeGit = async (yol) => { await gecmisSakin(); location.replace(`#/${yol.replace(/^#?\//, '')}`); };
+    sctx.git = async (yol) => { await gecmisSakin(); location.hash = `#/${String(yol).replace(/^#?\//, '')}`; };
     // Telefon sayfaları üst çubuğa düğme koyabilir
     sctx.ustEylem = (...dugmeler) => { if (no === sayfaNo) $('#mk-eylem').replaceChildren(...dugmeler); };
     try {
