@@ -16,10 +16,10 @@ Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kal
 
 ### 3. Cariye bağlanmadan iş eklenmesin (27.11.2026)
 Kullanıcı: "Cariye bağlamadan iş eklenmesin."
-- Tüm iş ekleme ekranlarında **Cari zorunlu**: hızlı iş ekle (bilgisayar / telefon alt menü "İş ekle"), teknisyenin "İş ekle"si, iş formu. Cari seçilmeden "Kaydet" çalışmaz; aynı pencerede **"+ Yeni cari"** ile hemen cari açılabilir (ünvan + telefon yeter).
-- Sunucu da kontrol eder: cari olmadan iş kaydı reddedilir (eski ekranlar / yanlış istek de giremez).
+- Tüm iş ekleme ekranlarında **Cari zorunlu**: hızlı iş ekle (bilgisayar / telefon alt menü "İş ekle"), teknisyenin "İş ekle"si, iş formu. Cari seçilmeden "Kaydet" çalışmaz; aynı pencerede **"+ Yeni cari"** ile hemen cari açılabilir (yalnız ünvan zorunlu; telefon zorunlu değil — kullanıcı 23:17).
+- Sunucu da kontrol eder: programdan (panel / telefon / teknisyen) cari olmadan iş kaydı reddedilir.
 - İşten cari kaldırılamaz ("Cariyi değiştir" kalır, "cari bağlı değil" durumu yeni işlerde olmaz).
-- **Telegram'dan iş ekleme:** mesajdaki telefon / ünvan bir cariyle eşleşirse bağlanır; eşleşmezse iş açılmaz, bota "Cari bulunamadı, programdan ekleyin" cevabı gider. (Varsayım)
+- **Telegram'dan iş ekleme carisiz açılabilir** (kullanıcı 23:17): mesajdaki telefon / ünvan bir cariyle eşleşirse bağlanır, eşleşmezse iş carisiz açılır (havuzda "Cari bağlı değil" uyarısıyla; planlarken / fiş keserken cari bağlanır).
 - Mevcut carisiz işler olduğu gibi kalır (listede "Cari bağlı değil" uyarısı sürer, fiş kesmeden önce cari istenir).
 
 ### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
