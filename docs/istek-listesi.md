@@ -32,8 +32,8 @@ Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut geli
 
 ## Tamamlananlar
 
-### 28.11.2026 — 34.2: "Malzeme teslim / İş bilgisi verilen kişi"
-- Saha ekranındaki 3. adımın başlığı "Kime teslim edildi?" yerine **"Malzeme teslim / İş bilgisi verilen kişi"**; ofisteki Teslim et / Tamamla penceresinde de aynı etiket. (Önceki "satış fişinde 3. satır" isteği bu başlık değişikliği olarak netleşti.)
+### 28.11.2026 — 34.2: "Teslim alan / bilgilendirilen kişi"
+- Saha ekranındaki 3. adımın başlığı "Kime teslim edildi?" yerine **"Teslim alan / bilgilendirilen kişi"** (kullanıcının seçtiği öneri); ofisteki Teslim et / Tamamla penceresinde de aynı etiket. (Önceki "satış fişinde 3. satır" isteği bu başlık değişikliği olarak netleşti.)
 
 ### 28.11.2026 — 34.1: Malzemede yalnız iki sabit düğme: "Servis" ve "Kurulum İşçiliği"
 - "Servis Kurulum İşçiliği" tek çipi ikiye ayrıldı: **+ Servis** ve **+ Kurulum İşçiliği** (aynı adlı kart varsa o kullanılır, yoksa hizmet kartı açılır; stok tutulmaz).

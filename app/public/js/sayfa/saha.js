@@ -180,7 +180,7 @@ export default async function (el, [id], ctx) {
         : html`<span class="soluk">İsteğe bağlı: işin önce/sonra fotoğrafları</span>`}</div></div>` : ''}
 
     ${sahada || is.teslim ? html`<div class="kart">
-      <div class="kart-ust"><div class="adim ${is.teslim ? 'tamam' : ''}"><span class="adim-no">3</span><h3>Malzeme teslim / İş bilgisi verilen kişi</h3></div></div>
+      <div class="kart-ust"><div class="adim ${is.teslim ? 'tamam' : ''}"><span class="adim-no">3</span><h3>Teslim alan / bilgilendirilen kişi</h3></div></div>
       <div class="kart-govde">${is.teslim ? html`<div class="basari-kutu" style="margin-bottom:.6rem">✓ ${[is.teslim.teslim_alan_ad, is.teslim.teslim_alan_tel].filter(Boolean).join(' · ')}${is.teslim.imza_dosya ? ' imzaladı' : ''} · ${zaman(is.teslim.zaman)}</div>
           ${is.teslim.imza_dosya ? html`<img class="imza-gor" src="/dosya/${is.teslim.imza_dosya}" alt="İmza">` : ''}${is.teslim.musteri_notu ? html`<p>Not: ${is.teslim.musteri_notu}</p>` : ''}`
         : html`<p class="soluk" style="margin-top:0">Ad ya da telefondan en az biri gerekli; imza isteğe bağlı.</p>
