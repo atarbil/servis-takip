@@ -14,7 +14,15 @@ bekleyenler öncelik sırasına konup birlikte uygulanır.
 ### 2. Teklif / proforma ve alış faturası telefonda sade (32. derlemedeki satış fişi düzeniyle)
 Satış fişi 32. derlemede yapıldı; aynı düzen (kalem kartı, tam ekran kalem düzenleme, alt toplam çubuğu, ⋯ menüsü) teklif / proforma ve alış faturasına uygulanacak.
 
-### 3. (Hatırlatma) Güncellemede şifre onayını tekrar aç
+### 3. Cariye bağlanmadan iş eklenmesin (27.11.2026)
+Kullanıcı: "Cariye bağlamadan iş eklenmesin."
+- Tüm iş ekleme ekranlarında **Cari zorunlu**: hızlı iş ekle (bilgisayar / telefon alt menü "İş ekle"), teknisyenin "İş ekle"si, iş formu. Cari seçilmeden "Kaydet" çalışmaz; aynı pencerede **"+ Yeni cari"** ile hemen cari açılabilir (ünvan + telefon yeter).
+- Sunucu da kontrol eder: cari olmadan iş kaydı reddedilir (eski ekranlar / yanlış istek de giremez).
+- İşten cari kaldırılamaz ("Cariyi değiştir" kalır, "cari bağlı değil" durumu yeni işlerde olmaz).
+- **Telegram'dan iş ekleme:** mesajdaki telefon / ünvan bir cariyle eşleşirse bağlanır; eşleşmezse iş açılmaz, bota "Cari bulunamadı, programdan ekleyin" cevabı gider. (Varsayım)
+- Mevcut carisiz işler olduğu gibi kalır (listede "Cari bağlı değil" uyarısı sürer, fiş kesmeden önce cari istenir).
+
+### 4. (Hatırlatma) Güncellemede şifre onayını tekrar aç
 Kullanıcı "bir sonraki komutumla tekrar ekleriz" dedi (26.11.2026). Komut gelince `SIFRE_ONAYI = true` (iki dosya), test/guncelleme_testi.js'te şifre adımları geri.
 
 ## İsteğe bağlı fikirler
